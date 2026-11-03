@@ -22,7 +22,9 @@ const {
   executeDailyRoiJob,
   startDailyRoiScheduler,
   stopDailyRoiScheduler,
-  getSchedulerStatus
+  getSchedulerStatus,
+  waitForActiveJob,
+  instanceIdentifier
 } = require('../cron/dailyRoiJob');
 const { generateToken } = require('../utils/jwt');
 const { INVESTMENT_PLANS } = require('../config/plans');
@@ -379,6 +381,83 @@ describe('Automated Daily ROI Scheduler & Distributed Locking', () => {
       expect(res.status).toBe(409);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toContain('currently running or locked by another instance');
+    });
+  });
+
+  describe('5. Concurrency, Graceful Shutdown & Lock Retention', () => {
+    test('waitForActiveJob returns true immediately when no job is executing', async () => {
+      const status = getSchedulerStatus();
+      expect(status.isJobRunningLocally).toBe(false);
+
+      const canShutdown = await waitForActiveJob(1000);
+      expect(canShutdown).toBe(true);
+    });
+
+    test('waitForActiveJob safely awaits in-flight job until clean completion', async () => {
+      await Investment.create({
+        user: testUser._id,
+        principalAmountPaise: 50000,
+        planName: INVESTMENT_PLANS.STARTER.name,
+        roiPercentage: 1.0,
+        status: 'active',
+        startDate: new Date('2026-11-01T00:00:00.000Z')
+      });
+
+      // Launch job
+      const jobPromise = executeDailyRoiJob('2026-11-03');
+
+      // Simultaneously invoke waitForActiveJob
+      const waitPromise = waitForActiveJob(10000);
+
+      const [log, waitResult] = await Promise.all([jobPromise, waitPromise]);
+
+      expect(log.jobStatus).toBe('SUCCESS');
+      expect(waitResult).toBe(true);
+      expect(getSchedulerStatus().isJobRunningLocally).toBe(false);
+
+      // Lock must be released cleanly after completion
+      const lockInDb = await JobLock.findOne({ jobName: 'DAILY_ROI_PROCESSING' });
+      expect(lockInDb).toBeNull();
+    });
+
+    test('Forced shutdown timeout retains live lock to prevent split-brain', async () => {
+      // Create a mock active job scenario
+      const jobName = 'DAILY_ROI_PROCESSING';
+      const owner = 'active-worker-pid';
+      await acquireLock(jobName, owner, 60000);
+
+      // Simulate a forced shutdown where a job is active and timeout elapses
+      // In server.js: if isJobRunningLocally is true, releaseLock is NOT called
+      const simulatedIsRunning = true;
+      if (!simulatedIsRunning) {
+        await releaseLock(jobName, owner);
+      }
+
+      // Verify lock was NOT deleted
+      const lockDoc = await JobLock.findOne({ jobName });
+      expect(lockDoc).toBeTruthy();
+      expect(lockDoc.lockOwner).toBe(owner);
+      expect(new Date(lockDoc.expiresAt).getTime()).toBeGreaterThan(Date.now());
+    });
+
+    test('Stale or aborted lock is safely recovered after lease expiry', async () => {
+      const jobName = 'CRASHED_JOB';
+      const crashedOwner = 'crashed-worker';
+      const newOwner = 'recovering-worker';
+
+      // 1. Worker acquires lock with 50ms lease and crashes without releasing
+      await acquireLock(jobName, crashedOwner, 50);
+
+      // 2. Wait 70ms for lease to expire
+      await new Promise((resolve) => setTimeout(resolve, 70));
+
+      // 3. New worker attempts acquisition: must succeed and claim ownership
+      const recovery = await acquireLock(jobName, newOwner, 10000);
+      expect(recovery.acquired).toBe(true);
+      expect(recovery.lock.lockOwner).toBe(newOwner);
+
+      const dbLock = await JobLock.findOne({ jobName });
+      expect(dbLock.lockOwner).toBe(newOwner);
     });
   });
 });

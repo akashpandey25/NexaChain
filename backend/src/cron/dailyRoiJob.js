@@ -216,10 +216,10 @@ const startDailyRoiScheduler = (customConfig = {}) => {
 /**
  * Awaits completion of an actively running in-flight job up to timeoutMs.
  * 
- * @param {number} [timeoutMs=8000] Graceful shutdown timeout in ms
+ * @param {number} [timeoutMs=CRON_CONFIG.shutdownGracePeriodMs] Graceful shutdown timeout in ms
  * @returns {Promise<boolean>} True if completed or not running, false if timed out
  */
-const waitForActiveJob = async (timeoutMs = 8000) => {
+const waitForActiveJob = async (timeoutMs = CRON_CONFIG.shutdownGracePeriodMs) => {
   if (!isJobRunningLocally || !activeJobPromise) {
     return true;
   }

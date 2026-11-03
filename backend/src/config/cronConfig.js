@@ -34,7 +34,10 @@ const cronConfigSchema = z.object({
   lockLeaseDurationMs: z.number().int().positive(),
 
   // Heartbeat refresh interval for active distributed locks in ms (default: 30 seconds)
-  lockHeartbeatIntervalMs: z.number().int().positive()
+  lockHeartbeatIntervalMs: z.number().int().positive(),
+
+  // Graceful shutdown wait period for in-flight job completion (default: 8000 ms)
+  shutdownGracePeriodMs: z.number().int().positive().optional().default(8000)
 });
 
 /**
@@ -57,7 +60,10 @@ const CRON_CONFIG = {
   lockLeaseDurationMs: parseInt(process.env.CRON_LOCK_LEASE_MS, 10) || 10 * 60 * 1000,
 
   // Lock heartbeat interval (30 seconds)
-  lockHeartbeatIntervalMs: parseInt(process.env.CRON_HEARTBEAT_MS, 10) || 30 * 1000
+  lockHeartbeatIntervalMs: parseInt(process.env.CRON_HEARTBEAT_MS, 10) || 30 * 1000,
+
+  // Graceful shutdown wait period (default: 8000 ms, configurable via CRON_SHUTDOWN_TIMEOUT_MS)
+  shutdownGracePeriodMs: parseInt(process.env.CRON_SHUTDOWN_TIMEOUT_MS, 10) || 8000
 };
 
 /**

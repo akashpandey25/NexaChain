@@ -1,6 +1,7 @@
 const env = require('./config/env');
 const app = require('./app');
 const { connectDB, disconnectDB } = require('./config/db');
+const { CRON_CONFIG } = require('./config/cronConfig');
 const {
   startDailyRoiScheduler,
   stopDailyRoiScheduler,
@@ -57,7 +58,7 @@ const gracefulShutdown = async (signal) => {
 
   // 2. Await in-flight financial job before releasing locks and terminating database connection
   try {
-    await waitForActiveJob(8000);
+    await waitForActiveJob(CRON_CONFIG.shutdownGracePeriodMs);
   } catch (waitErr) {
     console.warn(`[Shutdown] Warning awaiting in-flight financial job: ${waitErr.message}`);
   }
@@ -75,7 +76,7 @@ const gracefulShutdown = async (signal) => {
     console.warn(`[Shutdown] Warning releasing distributed lock: ${lockErr.message}`);
   }
 
-  // 3. Close HTTP server and terminate database connection
+  // 4. Close HTTP server and terminate database connection
   if (server) {
     server.close(async () => {
       console.log('🔒 HTTP server closed');
@@ -89,11 +90,12 @@ const gracefulShutdown = async (signal) => {
       }
     });
 
-    // Fallback: force exit if closing takes longer than 10 seconds
+    // Fallback: force exit if closing takes longer than configured grace period + buffer
+    const forceExitTimeoutMs = Math.max(10000, CRON_CONFIG.shutdownGracePeriodMs + 2000);
     setTimeout(() => {
       console.error('⚠️ Forcefully terminating process due to shutdown timeout');
       process.exit(1);
-    }, 10000).unref();
+    }, forceExitTimeoutMs).unref();
   } else {
     try {
       await disconnectDB();
