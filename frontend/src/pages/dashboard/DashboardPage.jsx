@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TrendingUp,
@@ -8,20 +8,27 @@ import {
   Users,
   RefreshCw,
   Plus,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2
+  ArrowRight
 } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { AppButton } from '../../components/common/AppButton';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 import { useGetDashboardDataQuery } from '../../features/dashboard/dashboardApi';
 import { StatCard } from '../../features/dashboard/components/StatCard';
-import { RoiHistoryChart } from '../../features/dashboard/components/RoiHistoryChart';
-import { InvestmentDistributionChart } from '../../features/dashboard/components/InvestmentDistributionChart';
 import { RecentActivitySection } from '../../features/dashboard/components/RecentActivitySection';
 import { DashboardSkeleton } from '../../features/dashboard/components/DashboardSkeleton';
 import { formatPaiseToINR } from '../../utils/formatters';
+
+// Lazy-load heavier Recharts visualization components to optimize initial bundle
+const RoiHistoryChart = React.lazy(() => import('../../features/dashboard/components/RoiHistoryChart'));
+const InvestmentDistributionChart = React.lazy(() => import('../../features/dashboard/components/InvestmentDistributionChart'));
+
+const ChartLoadingFallback = () => (
+  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-80 flex flex-col justify-between animate-pulse">
+    <div className="h-4 w-36 bg-slate-800 rounded" />
+    <div className="h-56 bg-slate-950/60 rounded-xl" />
+  </div>
+);
 
 /**
  * DashboardPage Component
@@ -29,8 +36,8 @@ import { formatPaiseToINR } from '../../utils/formatters';
  * Comprehensive data-driven dashboard integrating all metrics from GET /api/dashboard:
  * 1. KPI Metric Overview Cards (Total, Active, ROI Yield, Wallet)
  * 2. Secondary Referral Income & Team Metrics
- * 3. Recharts Visualizations: ROI Yield Over Time & Portfolio Allocation by Status
- * 4. Recent Activity Log (Recent ROI Distributions & Investments)
+ * 3. Lazy-Loaded Recharts Visualizations (ROI Yield Over Time & Portfolio Allocation)
+ * 4. Recent Activity Log (Verified ROI Transactions, Investments, and Daily Summary)
  */
 export const DashboardPage = () => {
   const { data, isLoading, isFetching, error, refetch } = useGetDashboardDataQuery();
@@ -182,16 +189,20 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* 4. Charts & Visualizations Grid */}
+      {/* 4. Lazy-Loaded Charts & Visualizations Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Historical ROI Line/Area Chart */}
-        <RoiHistoryChart chartData={roi.chartData} />
+        <Suspense fallback={<ChartLoadingFallback />}>
+          <RoiHistoryChart chartData={roi.chartData} />
+        </Suspense>
 
         {/* Right: Investment Allocation Donut Chart */}
-        <InvestmentDistributionChart
-          amountByStatus={investments.amountByStatus}
-          totalCount={investments.totalCount}
-        />
+        <Suspense fallback={<ChartLoadingFallback />}>
+          <InvestmentDistributionChart
+            amountByStatus={investments.amountByStatus}
+            totalCount={investments.totalCount}
+          />
+        </Suspense>
       </div>
 
       {/* 5. Recent Activity Section */}

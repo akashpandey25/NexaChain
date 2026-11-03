@@ -142,3 +142,4 @@ export const InvestmentDistributionChart = ({ amountByStatus = [], totalCount = 
 };
 
 export default InvestmentDistributionChart;
+

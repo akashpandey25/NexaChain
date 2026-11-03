@@ -9,7 +9,11 @@ import {
   CartesianGrid
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
-import { formatPaiseToINR, formatChartDate, formatDate } from '../../../utils/formatters';
+import {
+  formatPaiseToINR,
+  formatBusinessDate,
+  formatChartBusinessDate
+} from '../../../utils/formatters';
 import { EmptyState } from '../../../components/feedback/EmptyState';
 
 /**
@@ -21,14 +25,14 @@ const CustomRoiTooltip = ({ active, payload }) => {
     return (
       <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 shadow-xl text-xs space-y-1">
         <div className="text-slate-400 font-medium">
-          {formatDate(dataPoint.businessDate)}
+          {formatBusinessDate(dataPoint.businessDate)}
         </div>
         <div className="text-sm font-bold text-emerald-400">
           {formatPaiseToINR(dataPoint.amountPaise)}
         </div>
         {dataPoint.count !== undefined && (
           <div className="text-[11px] text-slate-500">
-            {dataPoint.count} payout {dataPoint.count === 1 ? 'event' : 'events'}
+            {dataPoint.count} active {dataPoint.count === 1 ? 'investment cycle' : 'investment cycles'}
           </div>
         )}
       </div>
@@ -61,13 +65,13 @@ export const RoiHistoryChart = ({ chartData = [] }) => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-white tracking-tight">ROI Yield History</h3>
-            <p className="text-xs text-slate-400">Daily automated returns generated over time</p>
+            <p className="text-xs text-slate-400">Aggregated daily returns generated over time</p>
           </div>
         </div>
 
         {hasData && (
           <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/40">
-            {formattedData.length} records
+            {formattedData.length} business dates
           </span>
         )}
       </div>
@@ -96,7 +100,7 @@ export const RoiHistoryChart = ({ chartData = [] }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis
                   dataKey="businessDate"
-                  tickFormatter={formatChartDate}
+                  tickFormatter={formatChartBusinessDate}
                   stroke="#64748b"
                   fontSize={11}
                   tickLine={false}

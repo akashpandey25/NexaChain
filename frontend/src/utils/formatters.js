@@ -2,7 +2,8 @@
  * Formatting Utilities for NexaChain
  * 
  * Handles strict conversion of integer paise to Indian Rupees (INR),
- * regional Indian number formatting, date/time localization, and status badges.
+ * regional Indian number formatting, timezone-safe business date localization,
+ * and status badge styling.
  */
 
 /**
@@ -61,22 +62,49 @@ export const formatIndianNumber = (num = 0) => {
 };
 
 /**
- * Format an ISO date string or timestamp into readable date representation.
+ * Timezone-Safe Business Date Formatter.
  * 
- * @param {string|Date|number|null|undefined} dateInput Date input
- * @param {object} [options] Intl.DateTimeFormat options
- * @returns {string} Formatted date (e.g. "03 Nov 2026")
+ * The backend stores business dates normalized to UTC midnight representing the
+ * calendar day in Asia/Kolkata (e.g. "2026-11-03T00:00:00.000Z" for 2026-11-03).
+ * To prevent local browser timezones (such as US UTC-5) from shifting the date
+ * to the previous day ("Nov 02"), this parser extracts the year-month-day components
+ * directly or parses in UTC, guaranteeing the calendar day is never altered.
+ * 
+ * @param {string|Date|number|null|undefined} dateInput ISO date string or Date
+ * @param {object} [options] Custom Intl.DateTimeFormat options
+ * @returns {string} Safe formatted date (e.g. "03 Nov 2026")
  */
-export const formatDate = (dateInput, options = {}) => {
+export const formatBusinessDate = (dateInput, options = {}) => {
   if (!dateInput) return '—';
   try {
+    // If input is an ISO string with 'T', extract the calendar date part strictly
+    if (typeof dateInput === 'string' && dateInput.includes('T')) {
+      const datePart = dateInput.substring(0, 10); // "YYYY-MM-DD"
+      const [yearStr, monthStr, dayStr] = datePart.split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+      const day = parseInt(dayStr, 10);
+
+      if (year && month && day) {
+        const utcDate = new Date(Date.UTC(year, month - 1, day));
+        return new Intl.DateTimeFormat('en-IN', {
+          timeZone: 'UTC',
+          day: '2-digit',
+          month: 'short',
+          year: options.year !== undefined ? options.year : 'numeric',
+          ...options
+        }).format(utcDate);
+      }
+    }
+
     const d = new Date(dateInput);
     if (isNaN(d.getTime())) return '—';
 
     return new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
       day: '2-digit',
       month: 'short',
-      year: 'numeric',
+      year: options.year !== undefined ? options.year : 'numeric',
       ...options
     }).format(d);
   } catch (err) {
@@ -85,28 +113,29 @@ export const formatDate = (dateInput, options = {}) => {
 };
 
 /**
- * Format an ISO date string or timestamp into short chart axis label.
+ * Format a business date for chart X-Axis labels without day-shifting.
+ * Returns: "03 Nov"
  * 
  * @param {string|Date|null|undefined} dateInput Date input
- * @returns {string} Formatted chart date (e.g. "03 Nov")
+ * @returns {string} Short chart date (e.g. "03 Nov")
  */
-export const formatChartDate = (dateInput) => {
+export const formatChartBusinessDate = (dateInput) => {
   if (!dateInput) return '';
-  try {
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return '';
-
-    return new Intl.DateTimeFormat('en-IN', {
-      day: '2-digit',
-      month: 'short'
-    }).format(d);
-  } catch (err) {
-    return '';
-  }
+  return formatBusinessDate(dateInput, { year: undefined });
 };
 
 /**
- * Format an ISO date string into date + time.
+ * Format standard created/updated timestamps with local or Asia/Kolkata time.
+ * 
+ * @param {string|Date|null|undefined} dateInput Date input
+ * @returns {string} Formatted date (e.g. "03 Nov 2026")
+ */
+export const formatDate = (dateInput, options = {}) => {
+  return formatBusinessDate(dateInput, options);
+};
+
+/**
+ * Format an ISO date string into date + time in Asia/Kolkata.
  * 
  * @param {string|Date|null|undefined} dateInput Date input
  * @returns {string} Formatted datetime (e.g. "03 Nov 2026, 12:00 AM")
@@ -118,6 +147,7 @@ export const formatDateTime = (dateInput) => {
     if (isNaN(d.getTime())) return '—';
 
     return new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -133,7 +163,7 @@ export const formatDateTime = (dateInput) => {
 /**
  * Returns consistent Tailwind badge color styling based on investment/transaction status.
  * 
- * @param {string} status Status string ('active', 'pending', 'completed', 'cancelled')
+ * @param {string} status Status string ('active', 'pending', 'completed', 'cancelled', 'processed', 'failed')
  * @returns {{ badge: string, dot: string, label: string }}
  */
 export const getStatusStyle = (status = '') => {
@@ -145,6 +175,12 @@ export const getStatusStyle = (status = '') => {
         badge: 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60',
         dot: 'bg-emerald-400',
         label: 'ACTIVE'
+      };
+    case 'processed':
+      return {
+        badge: 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60',
+        dot: 'bg-emerald-400',
+        label: 'PROCESSED'
       };
     case 'pending':
       return {
@@ -164,11 +200,11 @@ export const getStatusStyle = (status = '') => {
         dot: 'bg-rose-400',
         label: 'CANCELLED'
       };
-    case 'processed':
+    case 'failed':
       return {
-        badge: 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60',
-        dot: 'bg-emerald-400',
-        label: 'PROCESSED'
+        badge: 'bg-rose-950/70 text-rose-400 border border-rose-800/60',
+        dot: 'bg-rose-400',
+        label: 'FAILED'
       };
     default:
       return {
