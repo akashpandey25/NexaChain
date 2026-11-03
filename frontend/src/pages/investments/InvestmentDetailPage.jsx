@@ -1,144 +1,313 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
-import { AppButton } from '../../components/common/AppButton';
-import { LoadingSpinner } from '../../components/feedback/LoadingSpinner';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
+import { EmptyState } from '../../components/feedback/EmptyState';
 import { useGetInvestmentByIdQuery } from '../../features/investments/investmentApi';
-import { ArrowLeft, PiggyBank, Calendar, TrendingUp, ShieldCheck } from 'lucide-react';
+import { InvestmentDetailSkeleton } from '../../features/investments/components/InvestmentDetailSkeleton';
+import {
+  formatPaiseToINR,
+  formatBusinessDate,
+  formatDateTime,
+  getStatusStyle
+} from '../../utils/formatters';
+import {
+  ArrowLeft,
+  PiggyBank,
+  TrendingUp,
+  Percent,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  Copy,
+  Check,
+  FileText,
+  AlertCircle
+} from 'lucide-react';
 
-const formatPaise = (paise = 0) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 2
-  }).format(paise / 100);
-};
-
+/**
+ * Investment Details Page
+ * Displays full contract details, dates, and server-calculated ROI accumulation.
+ * Scoped strictly to the authenticated owner.
+ */
 export const InvestmentDetailPage = () => {
   const { id } = useParams();
-  const { data, isLoading, error, refetch } = useGetInvestmentByIdQuery(id);
+  const {
+    data: investment,
+    isLoading,
+    isFetching,
+    error,
+    refetch
+  } = useGetInvestmentByIdQuery(id);
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyId = (e) => {
+    e.preventDefault();
+    if (investment?._id) {
+      navigator.clipboard?.writeText(investment._id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  // 1. Loading State
   if (isLoading) {
+    return <InvestmentDetailSkeleton />;
+  }
+
+  // 2. 404 / Unauthorized / Not Found State
+  if (error?.status === 404 || (!isLoading && !investment && !error)) {
     return (
-      <div className="py-20 flex justify-center">
-        <LoadingSpinner message="Loading investment details..." />
+      <div className="space-y-6">
+        <Link
+          to="/investments"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Investments</span>
+        </Link>
+
+        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8">
+          <EmptyState
+            icon={AlertCircle}
+            title="Investment Not Found"
+            description="The requested investment contract does not exist or does not belong to your account. Access to another user's financial contracts is strictly forbidden."
+            actionText="Return to Portfolio"
+            onAction={() => window.location.assign('/investments')}
+          />
+        </div>
       </div>
     );
   }
 
+  // 3. General Error State
   if (error) {
     return (
-      <div className="space-y-4">
-        <Link to="/investments" className="inline-flex items-center text-xs text-slate-400 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Investments
+      <div className="space-y-6">
+        <Link
+          to="/investments"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Investments</span>
         </Link>
+
         <ErrorMessage
-          title="Could not load investment"
-          message={error.message}
+          title="Could Not Load Investment Details"
+          message={
+            error?.data?.message ||
+            error?.message ||
+            'Failed to retrieve investment details from the server.'
+          }
+          errors={error?.data?.errors}
           onRetry={refetch}
         />
       </div>
     );
   }
 
-  const investment = data?.data || {};
+  const statusStyle = getStatusStyle(investment.status);
 
   return (
     <div className="space-y-6">
+      {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
-        <Link to="/investments" className="inline-flex items-center text-xs text-slate-400 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Investments
+        <Link
+          to="/investments"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Investments Portfolio</span>
         </Link>
+
+        {isFetching && (
+          <span className="text-xs text-emerald-400 animate-pulse font-mono">
+            Refreshing...
+          </span>
+        )}
       </div>
 
+      {/* Page Header */}
       <PageHeader
-        title={`Investment: ${investment.planName || 'Package'}`}
-        subtitle={`ID: ${investment._id}`}
-        action={
+        title={`${investment.planName || 'Investment'} Package`}
+        subtitle={
+          <span className="inline-flex items-center gap-2 font-mono text-xs text-slate-400">
+            <span>Reference ID: {investment._id}</span>
+            <button
+              type="button"
+              onClick={handleCopyId}
+              className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              title="Copy Investment ID"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </span>
+        }
+        actions={
           <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
-              investment.status === 'ACTIVE'
-                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                : 'bg-slate-800 text-slate-400'
-            }`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusStyle.badge}`}
           >
-            {investment.status}
+            <span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />
+            {statusStyle.label}
           </span>
         }
       />
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase">Principal Amount</span>
-            <PiggyBank className="w-4 h-4 text-indigo-400" />
+      {/* Financial Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metric 1: Principal Amount */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Principal Amount
+            </span>
+            <div className="p-2 bg-indigo-950/60 text-indigo-400 border border-indigo-800/40 rounded-lg">
+              <PiggyBank className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-white">
-            {formatPaise(investment.principalAmountPaise)}
+          <div className="mt-3 text-2xl font-bold tracking-tight text-white">
+            {formatPaiseToINR(investment.principalAmountPaise)}
           </div>
-          <div className="text-xs text-slate-400 mt-2">
-            Locked in yield generation contract
-          </div>
+          <p className="mt-1 text-xs text-slate-400">
+            Locked capital allocation
+          </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase">Total ROI Generated</span>
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
+        {/* Metric 2: Total ROI Generated */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Total ROI Generated
+            </span>
+            <div className="p-2 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 rounded-lg">
+              <TrendingUp className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-emerald-400">
-            {formatPaise(investment.totalRoiEarnedPaise || 0)}
+          <div className="mt-3 text-2xl font-bold tracking-tight text-emerald-400">
+            {formatPaiseToINR(investment.totalRoiEarnedPaise || 0)}
           </div>
-          <div className="text-xs text-slate-400 mt-2">
-            Credited directly to available wallet
-          </div>
+          <p className="mt-1 text-xs text-slate-400">
+            Credited to available wallet
+          </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-semibold uppercase">Status & Verification</span>
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+        {/* Metric 3: Daily Rate */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Daily Yield Rate
+            </span>
+            <div className="p-2 bg-cyan-950/60 text-cyan-400 border border-cyan-800/40 rounded-lg">
+              <Percent className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="mt-3 text-2xl font-bold tracking-tight text-cyan-400">
+            {Number(investment.roiPercentage).toFixed(2)}%
+          </div>
+          <p className="mt-1 text-xs text-slate-400">
+            Server-authoritative rate
+          </p>
+        </div>
+
+        {/* Metric 4: Lifecycle Status */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Contract Lifecycle
+            </span>
+            <div className="p-2 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </div>
+          </div>
+          <div className="mt-3 text-2xl font-bold tracking-tight text-white capitalize">
             {investment.status}
           </div>
-          <div className="text-xs text-slate-400 mt-2">
-            Verified on-chain contract
+          <p className="mt-1 text-xs text-slate-400">
+            Automated processing active
+          </p>
+        </div>
+      </div>
+
+      {/* Contract & Lifecycle Details */}
+      <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold text-white">
+              Contract Specifications & Dates
+            </h2>
+          </div>
+          <span className="text-[11px] text-slate-400 font-mono">
+            Asia/Kolkata Business Dates
+          </span>
+        </div>
+
+        <div className="divide-y divide-slate-800/60 text-xs">
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Investment Reference</span>
+            <span className="text-white font-mono font-medium">{investment._id}</span>
+          </div>
+
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Plan Name</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-950/70 text-indigo-300 border border-indigo-800/50 w-fit">
+              {investment.planName}
+            </span>
+          </div>
+
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Contract Start Date</span>
+            <span className="text-slate-200 font-medium">
+              {formatBusinessDate(investment.startDate || investment.createdAt)}
+            </span>
+          </div>
+
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Contract End Date</span>
+            <span className="text-slate-200 font-medium">
+              {investment.endDate ? (
+                formatBusinessDate(investment.endDate)
+              ) : (
+                <span className="text-slate-400 italic">Ongoing / Indefinite Contract</span>
+              )}
+            </span>
+          </div>
+
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Created Timestamp</span>
+            <span className="text-slate-300">
+              {formatDateTime(investment.createdAt)}
+            </span>
+          </div>
+
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Last Record Update</span>
+            <span className="text-slate-300">
+              {formatDateTime(investment.updatedAt)}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Meta Details Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
-          <h4 className="text-sm font-semibold text-white">Investment Information</h4>
-        </div>
-        <div className="divide-y divide-slate-800 text-xs">
-          <div className="px-6 py-3 flex justify-between">
-            <span className="text-slate-400">Investment ID</span>
-            <span className="text-white font-mono">{investment._id}</span>
-          </div>
-          <div className="px-6 py-3 flex justify-between">
-            <span className="text-slate-400">Plan Identifier</span>
-            <span className="text-white font-medium">{investment.planName}</span>
-          </div>
-          <div className="px-6 py-3 flex justify-between">
-            <span className="text-slate-400">Created Date</span>
-            <span className="text-white">
-              {investment.createdAt ? new Date(investment.createdAt).toLocaleString() : 'N/A'}
-            </span>
-          </div>
-          <div className="px-6 py-3 flex justify-between">
-            <span className="text-slate-400">Last ROI Calculation Date</span>
-            <span className="text-white">
-              {investment.lastRoiDate ? new Date(investment.lastRoiDate).toLocaleDateString() : 'Pending Next Cron Run'}
-            </span>
-          </div>
+      {/* Governance & Security Disclaimer */}
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 flex items-start gap-3.5 text-xs text-slate-400">
+        <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-semibold text-slate-300">
+            Server-Authoritative Contract Governance
+          </p>
+          <p className="leading-relaxed">
+            All daily yields are calculated and credited via automated server batch jobs based on verified business dates. Contract terms, percentages, and balances are immutable and cryptographically bound to your account ID.
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
+export default InvestmentDetailPage;

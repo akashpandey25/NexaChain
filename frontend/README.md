@@ -13,7 +13,7 @@ frontend/src/
 ├── app/
 │   ├── api/
 │   │   └── baseApi.js            # Central RTK Query API with token injection & error normalization
-│   ├── router.jsx                # React Router DOM configuration with route guards
+│   ├── router.jsx                # React Router DOM configuration with route guards & lazy routes
 │   └── store.js                  # Central Redux store with custom hooks
 ├── features/
 │   ├── auth/
@@ -28,7 +28,15 @@ frontend/src/
 │   │       ├── RecentActivitySection.jsx      # Activity tabs for ROI payouts & investments
 │   │       └── DashboardSkeleton.jsx          # Pulse skeleton for loading states
 │   ├── investments/
-│   │   └── investmentApi.js      # Endpoints: /investments (create, list, getById)
+│   │   ├── investmentApi.js      # Endpoints: /investments (create, list, getById)
+│   │   └── components/
+│   │       ├── InvestmentsOverview.jsx        # Portfolio KPI summary cards & status breakdown
+│   │       ├── InvestmentsFilterBar.jsx       # Status filter tabs, page-size dropdown & reset
+│   │       ├── InvestmentsTable.jsx           # Responsive desktop table with copyable IDs & actions
+│   │       ├── InvestmentsCardList.jsx        # Mobile touch-friendly card list view
+│   │       ├── InvestmentsPagination.jsx      # Server-driven accessible pagination bar
+│   │       ├── InvestmentsSkeleton.jsx        # Loading skeleton for listing views
+│   │       └── InvestmentDetailSkeleton.jsx   # Loading skeleton for /investments/:id
 │   ├── referrals/
 │   │   └── referralApi.js        # Endpoints: /referrals/direct, /referrals/tree, /referrals/income
 │   ├── roi/
@@ -56,8 +64,8 @@ frontend/src/
 │   ├── dashboard/
 │   │   └── DashboardPage.jsx     # Full data-driven dashboard integrating all metrics & Recharts
 │   ├── investments/
-│   │   ├── InvestmentsPage.jsx   # Investment package listings with modal creation form
-│   │   └── InvestmentDetailPage.jsx # Single investment contract inspection and yield details
+│   │   ├── InvestmentsPage.jsx   # Investments portfolio: KPI overview, filters, table, cards & pagination
+│   │   └── InvestmentDetailPage.jsx # Dedicated /investments/:id contract inspector & lifecycle breakdown
 │   ├── referrals/
 │   │   └── ReferralsPage.jsx     # Referral code share card, direct affiliates, tree view, commission log
 │   ├── roi/
@@ -75,7 +83,37 @@ frontend/src/
 
 ---
 
-## 3. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
+## 3. Investments Management Feature (`InvestmentsPage.jsx` & `InvestmentDetailPage.jsx`)
+
+The Investments section is built directly on the server-authoritative contracts and pagination APIs.
+
+### A. Endpoints Used
+1. `GET /api/investments`:
+   - Query Parameters: `page` (integer >= 1), `limit` (10, 20, 50), and optional `status` (`pending`, `active`, `completed`, `cancelled`).
+   - Scoped strictly to the authenticated user ID (`req.user._id`).
+   - Returns paginated investment documents with pagination metadata (`currentPage`, `pageSize`, `totalRecords`, `totalPages`, `hasNextPage`, `hasPrevPage`).
+2. `GET /api/investments/:id`:
+   - Query Parameter: MongoDB 24-character hexadecimal ObjectId.
+   - Enforces ownership: returns `404 Not Found` if the contract ID belongs to another user.
+3. `GET /api/dashboard`:
+   - Supplies the aggregated overview metrics (`totalCount`, `activeCount`, `totalInvestmentPaise`, `activeInvestmentPaise`, and status breakdowns) to guarantee absolute consistency with the main dashboard.
+
+### B. UI Components
+- **`InvestmentsOverview.jsx`**: Displays 4 high-level metric cards: Total Invested Principal, Active Capital, Total Packages, and Active Contracts, accompanied by an interactive status chip breakdown.
+- **`InvestmentsFilterBar.jsx`**: Server-side status filters (`All`, `Active`, `Pending`, `Completed`, `Cancelled`) with live badge counts, page-size selector, and clear filter button.
+- **`InvestmentsTable.jsx`**: Clean desktop table displaying Reference ID (copyable monospace), Plan Name badge, Principal Amount in INR, ROI Rate, Start Date, End Date, Status badge, and View Details action.
+- **`InvestmentsCardList.jsx`**: Touch-optimized card list for mobile viewport (< 768px), preventing horizontal overflow.
+- **`InvestmentsPagination.jsx`**: Accessible pagination bar with record range information ("Showing 1 to 10 of 25 investments"), previous/next buttons, and windowed page numbers.
+- **`InvestmentsSkeleton.jsx` & `InvestmentDetailSkeleton.jsx`**: Responsive pulse skeletons for smooth layout transitions during network fetches.
+- **`InvestmentDetailPage.jsx`**: Dedicated `/investments/:id` view presenting contract specifications, accumulated ROI yield, daily rate, verified calendar dates, and security governance notices.
+
+### C. Backend Limitations & Unsupported Features
+- **Full-Text / ID Search**: The backend Zod schema (`listInvestmentsQuerySchema`) strictly validates query parameters and only accepts `page`, `limit`, and `status`. Arbitrary client query parameters are filtered out by Zod. Client-side search over a partial page was intentionally omitted to prevent misleading users into believing their search covers their entire historical portfolio.
+- **Client-Side Creation & Modification**: Modification of investment status, ownership, or ROI yields is strictly forbidden by the server; all lifecycle transitions are driven by server cron batch processes.
+
+---
+
+## 4. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
 
 The dashboard directly consumes the actual payload returned by `GET /api/dashboard`.
 
@@ -99,27 +137,24 @@ The dashboard directly consumes the actual payload returned by `GET /api/dashboa
    - Accessible hover tooltip displays exact formatted date, INR amount, and package count.
    - Renders a clean empty state when no distributions have been processed yet.
 2. **Portfolio Allocation Donut Chart (`InvestmentDistributionChart.jsx`)**:
-   - Responsive `PieChart` donut with status color coding:
-     - `active`: `#10b981` (Emerald)
-     - `pending`: `#f59e0b` (Amber)
-     - `completed`: `#3b82f6` (Blue)
-     - `cancelled`: `#f43f5e` (Rose)
+   - Responsive `PieChart` donut with status color coding (`active`, `pending`, `completed`, `cancelled`).
    - Filters out zero-value statuses to avoid empty slices.
    - Hover tooltip displays status label, formatted amount in INR, and package count.
 
-### C. Recent Activity Section (`RecentActivitySection.jsx`)
-- **ROI Distributions Tab**: Lists recent daily payout records extracted directly from `roi.chartData` (sorted newest first, with date, amount, package count, and `CREDITED` badge).
-- **Investments Tab**: Lists recent investments fetched via `useGetInvestmentsQuery({ limit: 5 })` with plan name, created date, amount in INR, and lifecycle status badge.
+### C. Activity Semantics
+- **ROI Transactions Tab**: Queries `GET /api/roi/history` (`limit: 5`) for genuine individual distribution records with confirmed status (`PROCESSED`, `PENDING`, `FAILED`).
+- **Investments Tab**: Queries `GET /api/investments` (`limit: 5`) for recent plan contracts.
+- **Daily ROI Summary Tab**: Displays daily aggregated yield totals from `roi.chartData` with an explicit notice that entries represent aggregated daily earnings.
 
 ### D. Currency and Number Formatting (`formatters.js`)
 All monetary values in the database are stored in **integer paise**. The frontend uses strict precision math:
 - `amountRupees = amountPaise / 100`
 - Regional Indian number grouping (`en-IN`) formatting: `formatPaiseToINR(paise)` produces `₹1,50,000.00`.
-- Dates formatted via `Intl.DateTimeFormat('en-IN')`.
+- Timezone-safe calendar dates formatted via `formatBusinessDate(date)` avoiding day-shifts in Western timezones.
 
 ---
 
-## 4. Verification & Testing
+## 5. Verification & Testing
 
 ```powershell
 # Build frontend for production
