@@ -163,3 +163,4 @@ The platform protects against duplicate payouts via 3 redundant layers:
 | **Simple vs Compounding ROI** | Daily simple interest on initial `principalAmountPaise` | Confirm whether any VIP or high-yield tiers offer daily compounding (reinvestment of accrued ROI into principal). |
 | **Weekend / Holiday Accruals** | Accrues 7 days per week (365 days/year) | Confirm whether ROI runs daily or excludes bank holidays / non-trading weekends. |
 | **Minimum Accrual Threshold** | Truncates below 1 paise (`Math.floor`) | Confirm whether investments producing `< 1 paise` daily should accumulate fractional balances in an internal balance buffer. |
+

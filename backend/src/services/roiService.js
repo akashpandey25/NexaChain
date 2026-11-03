@@ -5,6 +5,7 @@ const WalletTransaction = require('../models/WalletTransaction');
 const User = require('../models/User');
 const { validateRoiConfig } = require('../config/roiConfig');
 const { findPlan } = require('../config/plans');
+const { processRoiReferralCommissionsInSession } = require('./referralCommissionService');
 
 /**
  * ROI Processing Service Layer
@@ -357,6 +358,18 @@ const processDailyROI = async (businessDateInput, options = {}) => {
             description: `Daily ROI payout (${roiPercentage}%) for plan "${investment.planName}" on ${dateKey}`
           });
           await walletDoc.save({ session });
+        }
+
+        // 4. Atomically process referral commissions if configured for ROI_PAYOUT trigger
+        const sourceUser = await User.findById(investment.user).select('name email referralCode referredBy isActive').lean();
+        if (sourceUser) {
+          await processRoiReferralCommissionsInSession({
+            roiDoc,
+            sourceInvestment: investment,
+            sourceUser,
+            session,
+            customRules: options.referralCustomRules || {}
+          });
         }
 
         await session.commitTransaction();

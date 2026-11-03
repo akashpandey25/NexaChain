@@ -1,4 +1,5 @@
 const referralService = require('../services/referralService');
+const { processReferralCommissions } = require('../services/referralCommissionService');
 
 /**
  * Referral Controller
@@ -59,9 +60,36 @@ const getReferralIncome = async (req, res, next) => {
   }
 };
 
+/**
+ * Process multi-level referral commissions for an approved database event.
+ * Route: POST /api/referrals/process
+ * Access: Admin only
+ */
+const processCommissions = async (req, res, next) => {
+  try {
+    const { sourceType, sourceId } = req.body;
+
+    const sourceEvent =
+      sourceType === 'investment'
+        ? { type: 'INVESTMENT_ACTIVATION', investmentId: sourceId }
+        : { type: 'ROI_PAYOUT', roiHistoryId: sourceId };
+
+    const summary = await processReferralCommissions(sourceEvent);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Referral commission processing completed successfully',
+      data: summary
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDirectReferrals,
   getReferralTree,
-  getReferralIncome
+  getReferralIncome,
+  processCommissions
 };
 

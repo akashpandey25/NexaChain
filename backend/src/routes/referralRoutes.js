@@ -1,12 +1,14 @@
 const express = require('express');
 const referralController = require('../controllers/referralController');
 const authMiddleware = require('../middleware/authMiddleware');
-const { validateQuery } = require('../middleware/validate');
+const roleMiddleware = require('../middleware/roleMiddleware');
+const { validateQuery, validateBody } = require('../middleware/validate');
 const {
   directReferralsQuerySchema,
   referralTreeQuerySchema,
   referralIncomeQuerySchema
 } = require('../validators/referralValidator');
+const { processReferralCommissionSchema } = require('../validators/referralCommissionValidator');
 
 const router = express.Router();
 
@@ -21,6 +23,14 @@ router.get('/tree', validateQuery(referralTreeQuerySchema), referralController.g
 
 // Get referral income records and status summaries
 router.get('/income', validateQuery(referralIncomeQuerySchema), referralController.getReferralIncome);
+
+// Administrative trigger for multi-level referral commission processing
+router.post(
+  '/process',
+  roleMiddleware('admin'),
+  validateBody(processReferralCommissionSchema),
+  referralController.processCommissions
+);
 
 module.exports = router;
 

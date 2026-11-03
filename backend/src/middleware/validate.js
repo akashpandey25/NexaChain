@@ -84,5 +84,6 @@ const validateParams = (schema) => (req, res, next) => {
 
 module.exports = validate;
 module.exports.validate = validate;
+module.exports.validateBody = validate;
 module.exports.validateQuery = validateQuery;
 module.exports.validateParams = validateParams;

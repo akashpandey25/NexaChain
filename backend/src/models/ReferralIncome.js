@@ -74,6 +74,9 @@ const referralIncomeSchema = new mongoose.Schema(
 // Performance compound index for reporting beneficiary commissions by level
 referralIncomeSchema.index({ beneficiary: 1, level: 1 });
 
+// Query optimization index for source investment deduplication and auditing
+referralIncomeSchema.index({ sourceInvestment: 1, beneficiary: 1, level: 1 });
+
 // Prevent OverwriteModelError
 const ReferralIncome = mongoose.models.ReferralIncome || mongoose.model('ReferralIncome', referralIncomeSchema);
 

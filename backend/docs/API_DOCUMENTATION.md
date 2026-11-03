@@ -536,6 +536,84 @@ curl -X GET "http://localhost:5000/api/referrals/income?status=processed&page=1&
 
 ---
 
+### 4.4 Trigger Multi-Level Referral Commission Processing
+- **Method:** `POST`
+- **Route:** `/api/referrals/process`
+- **Access:** Private (Admin Role required)
+- **Description:** Administratively triggers multi-level upline referral commission evaluation and distribution for a specific verified database event. Resolves event parameters and calculates commissions in integer paise across all eligible ancestors within an atomic transaction.
+
+#### Headers
+| Header | Value | Required |
+|---|---|---|
+| `Authorization` | `Bearer <ADMIN_JWT_TOKEN>` | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+#### Request Body
+```json
+{
+  "sourceType": "investment",
+  "sourceId": "67273934338947fbb3000001"
+}
+```
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `sourceType` | String | Yes | Type of source event: `"investment"` (investment activation) or `"roi"` (ROI distribution) |
+| `sourceId` | String | Yes | 24-character hexadecimal MongoDB ObjectId of the originating record |
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "Referral commission processing completed successfully",
+  "data": {
+    "sourceEventId": "67273934338947fbb3000001",
+    "sourceUserId": "660d1b2f4f1a2b001a111111",
+    "sourceInvestmentId": "67273934338947fbb3000001",
+    "triggerEvent": "INVESTMENT_ACTIVATION",
+    "calculationBasis": "INVESTMENT_PRINCIPAL",
+    "basisAmountPaise": 1000000,
+    "ancestorsEvaluated": 3,
+    "commissionsGenerated": 3,
+    "commissionsSkipped": 0,
+    "commissionsFailed": 0,
+    "totalCommissionPaise": 90000,
+    "commissions": [
+      {
+        "referralIncomeId": "67273934338947fbb3111111",
+        "beneficiaryId": "660d1b2f4f1a2b001a222222",
+        "level": 1,
+        "rateBps": 500,
+        "percentageApplied": 5,
+        "amountPaise": 50000,
+        "status": "processed"
+      },
+      {
+        "referralIncomeId": "67273934338947fbb3222222",
+        "beneficiaryId": "660d1b2f4f1a2b001a333333",
+        "level": 2,
+        "rateBps": 300,
+        "percentageApplied": 3,
+        "amountPaise": 30000,
+        "status": "processed"
+      },
+      {
+        "referralIncomeId": "67273934338947fbb3333333",
+        "beneficiaryId": "660d1b2f4f1a2b001a444444",
+        "level": 3,
+        "rateBps": 100,
+        "percentageApplied": 1,
+        "amountPaise": 10000,
+        "status": "processed"
+      }
+    ],
+    "failures": []
+  }
+}
+```
+
+---
+
 ## 5. Return on Investment (ROI) Endpoints
 
 ### 5.1 List Personal ROI History

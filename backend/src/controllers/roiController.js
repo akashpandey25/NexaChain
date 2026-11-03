@@ -69,3 +69,4 @@ module.exports = {
   getRoiSummary,
   triggerDailyRoi
 };
+
