@@ -192,7 +192,61 @@ The dashboard directly consumes the actual payload returned by `GET /api/dashboa
 
 ---
 
-## 7. Verification & Testing
+## 7. User Profile and Account Management (`ProfilePage.jsx`)
+
+The Profile page provides authenticated users with a consolidated, secure view of their verified account credentials, referral identity, and session governance.
+
+### A. Data Sources & Endpoint
+- **Endpoint**: `GET /api/auth/me`
+- **Payload Structure**:
+  ```json
+  {
+    "success": true,
+    "message": "User profile retrieved successfully.",
+    "data": {
+      "user": {
+        "id": "672...",
+        "name": "Alice Investor",
+        "email": "alice@example.com",
+        "referralCode": "ALICE100",
+        "referredBy": null,
+        "role": "investor",
+        "walletBalancePaise": 5000000,
+        "isActive": true,
+        "createdAt": "2026-11-01T10:00:00.000Z",
+        "updatedAt": "2026-11-03T10:00:00.000Z"
+      }
+    }
+  }
+  ```
+
+### B. UI Components & Layout
+- **Profile Header**:
+  - Avatar badge dynamically rendering 1–2 letter uppercase initials (`getInitials(user.name)`).
+  - Name, verified email address, role badge (`INVESTOR` / `ADMIN`), and account status (`ACTIVE` / `INACTIVE`).
+  - Member registration date formatted via `formatBusinessDate`.
+  - Manual profile refresh action triggering RTK Query `refetch()`.
+- **Account Specifications**:
+  - Full Name, registered email address, copyable MongoDB User ID (monospace with copy feedback).
+  - Affiliate referral code and sponsor linkage (e.g. `Direct Platform Registration (Root)` or sponsor ID).
+  - Registration timestamp and last profile synchronization timestamp formatted via `formatDateTime`.
+- **Referral Sharing Tools**:
+  - Primary referral code box with one-click copy button.
+  - Formatted registration URL (`${window.location.origin}/register?ref=CODE`) with one-click copy button.
+- **Authentication & Session Governance**:
+  - Displays session mechanism: JWT Bearer (HTTP Authorization Header).
+  - Security boundary: Server-enforced role-based access control (RBAC).
+  - Read-Only Profile Policy Disclaimer: Primary identity properties (name, email, sponsor) are locked to maintain financial audit integrity.
+- **Session Termination / Logout**:
+  - Prominent Sign Out action invoking `dispatch(logout())`, clearing user credentials, resetting RTK Query cache (`dispatch(baseApi.util.resetApiState())`), and navigating to `/login`.
+
+### C. Backend Limitations
+- **Profile Editing / Mutation**: The current backend does not expose a profile update endpoint (`PUT /api/auth/me` or `PATCH /api/auth/me`). In accordance with system security specifications, the Profile page remains strictly read-only and no simulated update endpoints are introduced.
+- **Password Reset**: Self-service password reset endpoints are not implemented on the backend; password changes require administrative assistance.
+
+---
+
+## 8. Verification & Testing
 
 ```powershell
 # Build frontend for production

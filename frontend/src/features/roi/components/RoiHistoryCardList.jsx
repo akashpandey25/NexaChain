@@ -121,3 +121,4 @@ export const RoiHistoryCardList = ({ records = [] }) => {
 };
 
 export default RoiHistoryCardList;
+

@@ -160,3 +160,4 @@ export const RoiHistoryTable = ({ records = [] }) => {
 };
 
 export default RoiHistoryTable;
+
