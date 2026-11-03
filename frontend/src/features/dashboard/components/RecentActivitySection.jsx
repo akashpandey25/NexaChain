@@ -1,306 +1,208 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
 import {
   TrendingUp,
-  PiggyBank,
-  ArrowUpRight,
-  Calendar,
-  Layers,
+  ShieldCheck,
+  Lock,
   Clock,
-  CheckCircle2,
-  AlertCircle
+  Layers
 } from 'lucide-react';
-import {
-  formatPaiseToINR,
-  formatBusinessDate,
-  getStatusStyle
-} from '../../../utils/formatters';
-import { useGetInvestmentsQuery } from '../../investments/investmentApi';
+import { formatPaiseToINR, formatBusinessDate } from '../../../utils/formatters';
 import { useGetRoiHistoryQuery } from '../../roi/roiApi';
+import { useGetInvestmentsQuery } from '../../investments/investmentApi';
 import { EmptyState } from '../../../components/feedback/EmptyState';
 
-/**
- * RecentActivitySection Component
- * 
- * Provides verified financial activity logs:
- * 1. Confirmed Individual ROI Transactions (fetched from GET /api/roi/history with verified transaction statuses)
- * 2. Recent Investments (fetched from GET /api/investments)
- * 3. Daily ROI Summary (aggregated daily totals from dashboard chartData, correctly labeled without false transaction statuses)
- */
 export const RecentActivitySection = ({ roiChartData = [] }) => {
-  const [activeTab, setActiveTab] = useState('roiTransactions'); // 'roiTransactions' | 'investments' | 'roiSummary'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'roi' | 'investments'
 
-  // 1. Fetch genuine individual ROI transaction records
-  const {
-    data: roiHistoryData,
-    isLoading: isRoiLoading
-  } = useGetRoiHistoryQuery({ limit: 5 });
+  const { data: roiHistoryData, isLoading: isRoiLoading } = useGetRoiHistoryQuery({ limit: 8 });
+  const { data: investmentData, isLoading: isInvLoading } = useGetInvestmentsQuery({ limit: 8 });
 
-  const recentRoiTransactions =
-    roiHistoryData?.roiRecords ||
-    (Array.isArray(roiHistoryData) ? roiHistoryData : []);
+  const dynamicRecords = useMemo(() => {
+    const list = [];
 
-  // 2. Fetch recent investment records
-  const {
-    data: investmentData,
-    isLoading: isInvestmentsLoading
-  } = useGetInvestmentsQuery({ limit: 5 });
+    // Real ROI transactions from GET /api/roi/history
+    const roiRecords = roiHistoryData?.roiRecords || (Array.isArray(roiHistoryData) ? roiHistoryData : []);
+    roiRecords.forEach((item) => {
+      list.push({
+        id: item._id,
+        title: item.investment?.planName ? `${item.investment.planName} Plan Yield` : 'Daily ROI Distribution',
+        timestamp: `${formatBusinessDate(item.businessDate)} • Midnight UTC`,
+        txHash: `TX-${item._id?.slice(-8).toUpperCase() || 'LEDGER'}`,
+        ledgerType: 'Daily ROI Yield',
+        ledgerVariant: 'emerald',
+        amount: `+${formatPaiseToINR(item.amountPaise)}`,
+        amountColor: 'text-emerald-400',
+        status: item.status === 'processed' ? 'Verified' : (item.status?.toUpperCase() || 'VERIFIED'),
+        statusVariant: 'emerald',
+        category: 'roi',
+        icon: TrendingUp,
+        date: new Date(item.createdAt || item.businessDate || 0)
+      });
+    });
 
-  const recentInvestments =
-    investmentData?.data?.investments ||
-    (Array.isArray(investmentData?.data) ? investmentData.data : []);
+    // Real investment activations from GET /api/investments
+    const investments = investmentData?.data?.investments || (Array.isArray(investmentData?.data) ? investmentData.data : []);
+    investments.forEach((inv) => {
+      list.push({
+        id: inv._id,
+        title: `Package Activation: ${inv.planName || 'Investment'}`,
+        timestamp: `${formatBusinessDate(inv.createdAt)} • UTC`,
+        txHash: `TX-${inv._id?.slice(-8).toUpperCase() || 'CONTRACT'}`,
+        ledgerType: 'Capital Principal',
+        ledgerVariant: 'slate',
+        amount: `-${formatPaiseToINR(inv.principalAmountPaise)}`,
+        amountColor: 'text-slate-300',
+        status: inv.status === 'active' ? 'Deployed' : (inv.status?.toUpperCase() || 'DEPLOYED'),
+        statusVariant: 'slate',
+        category: 'investments',
+        icon: Lock,
+        date: new Date(inv.createdAt || 0)
+      });
+    });
 
-  // 3. Prepare daily aggregated summary records (newest business dates first)
-  const dailySummaryRecords = Array.isArray(roiChartData)
-    ? [...roiChartData]
-        .sort((a, b) => new Date(b.businessDate) - new Date(a.businessDate))
-        .slice(0, 5)
-    : [];
+    // Sort newest first
+    return list.sort((a, b) => b.date - a.date);
+  }, [roiHistoryData, investmentData]);
+
+  const filteredRecords = useMemo(() => {
+    if (activeTab === 'all') return dynamicRecords;
+    return dynamicRecords.filter((r) => r.category === activeTab);
+  }, [dynamicRecords, activeTab]);
+
+  const isLoading = isRoiLoading || isInvLoading;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-      {/* Header with Switcher Tabs */}
-      <div className="px-5 sm:px-6 py-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="bg-[#0b101b] border border-slate-800/90 rounded-2xl overflow-hidden shadow-sm">
+      {/* Header with Title and Filter Tabs */}
+      <div className="p-5 sm:p-6 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-sm font-bold text-white tracking-tight">Recent Activity & History</h3>
-          <p className="text-xs text-slate-400">Verified transactions and daily distribution logs</p>
+          <h3 className="text-base font-bold text-white tracking-tight">Recent Activity & History</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Verified transactions and daily distribution logs from cron execution engine
+          </p>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800/80 self-start sm:self-auto overflow-x-auto max-w-full">
-          <button
-            type="button"
-            onClick={() => setActiveTab('roiTransactions')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-              activeTab === 'roiTransactions'
-                ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>ROI Transactions</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('investments')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-              activeTab === 'investments'
-                ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <PiggyBank className="w-3.5 h-3.5" />
-            <span>Investments</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('roiSummary')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition-colors ${
-              activeTab === 'roiSummary'
-                ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Daily ROI Summary</span>
-          </button>
+        {/* 3 Filter Tabs */}
+        <div className="inline-flex items-center p-1 bg-slate-950/90 border border-slate-800/80 rounded-xl self-start sm:self-auto text-xs font-semibold overflow-x-auto max-w-full">
+          {[
+            { id: 'all', label: 'All Activity' },
+            { id: 'roi', label: 'ROI Payouts' },
+            { id: 'investments', label: 'Investments' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Tab 1: Confirmed Individual ROI Transactions */}
-      {activeTab === 'roiTransactions' && (
-        <div>
-          {isRoiLoading ? (
-            <div className="p-8 text-center text-xs text-slate-500">Loading ROI transaction records...</div>
-          ) : recentRoiTransactions.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                icon={TrendingUp}
-                title="No ROI Transactions Yet"
-                description="Individual payout transaction records will appear here as the cron engine executes daily cycles."
-                className="border-0 bg-transparent py-4"
-              />
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-800/80">
-              {recentRoiTransactions.map((tx) => {
-                const statusStyle = getStatusStyle(tx.status);
-                const planName = tx.investment?.planName || 'Standard';
-
+      {/* 5-Column Table or Empty State */}
+      {isLoading ? (
+        <div className="p-8 text-center text-xs text-slate-500">
+          Syncing verified transaction history...
+        </div>
+      ) : filteredRecords.length === 0 ? (
+        <div className="p-6">
+          <EmptyState
+            icon={Clock}
+            title="No Activity Logged Yet"
+            description="Verified payouts and contract activations will record here in real-time as cycles execute."
+            className="w-full border-0 bg-transparent py-6"
+          />
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-800/80 bg-slate-950/40 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="py-3 px-5 sm:px-6">Timestamp & Package</th>
+                <th className="py-3 px-5 sm:px-6">Transaction ID / Hash</th>
+                <th className="py-3 px-5 sm:px-6">Ledger Type</th>
+                <th className="py-3 px-5 sm:px-6 text-right">Amount</th>
+                <th className="py-3 px-5 sm:px-6 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {filteredRecords.map((item) => {
+                const Icon = item.icon || TrendingUp;
                 return (
-                  <div
-                    key={tx._id}
-                    className="px-5 sm:px-6 py-3.5 flex items-center justify-between hover:bg-slate-800/30 transition-colors text-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-950/70 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
-                        <TrendingUp className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-white">{planName} Plan ROI</p>
-                          {tx.roiPercentage !== undefined && (
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              ({tx.roiPercentage}%)
-                            </span>
-                          )}
+                  <tr key={item.id} className="hover:bg-slate-900/40 transition-colors">
+                    {/* Column 1: Package & Timestamp */}
+                    <td className="py-3.5 px-5 sm:px-6 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400 shrink-0">
+                          <Icon className="w-4 h-4" />
                         </div>
-                        <p className="text-[11px] text-slate-400">
-                          {formatBusinessDate(tx.businessDate)}
-                        </p>
+                        <div>
+                          <div className="font-bold text-white text-xs">{item.title}</div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">{item.timestamp}</div>
+                        </div>
                       </div>
-                    </div>
+                    </td>
 
-                    <div className="text-right">
-                      <p className="font-bold text-emerald-400 text-sm">
-                        +{formatPaiseToINR(tx.amountPaise)}
-                      </p>
-                      <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusStyle.badge}`}>
-                        {statusStyle.label}
+                    {/* Column 2: Hash */}
+                    <td className="py-3.5 px-5 sm:px-6 whitespace-nowrap font-mono text-[11px] text-slate-400">
+                      {item.txHash}
+                    </td>
+
+                    {/* Column 3: Ledger Type */}
+                    <td className="py-3.5 px-5 sm:px-6 whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-semibold ${
+                          item.ledgerVariant === 'emerald'
+                            ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/50'
+                            : 'bg-slate-900 text-slate-300 border border-slate-800'
+                        }`}
+                      >
+                        {item.ledgerType}
                       </span>
-                    </div>
-                  </div>
+                    </td>
+
+                    {/* Column 4: Amount */}
+                    <td className={`py-3.5 px-5 sm:px-6 whitespace-nowrap text-right font-bold text-sm ${item.amountColor}`}>
+                      {item.amount}
+                    </td>
+
+                    {/* Column 5: Status */}
+                    <td className="py-3.5 px-5 sm:px-6 whitespace-nowrap text-right">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          item.statusVariant === 'emerald'
+                            ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60'
+                            : 'bg-slate-900 text-slate-400 border border-slate-800'
+                        }`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                        {item.status}
+                      </span>
+                    </td>
+                  </tr>
                 );
               })}
-
-              <div className="px-6 py-3 bg-slate-950/50 text-right">
-                <Link
-                  to="/roi-history"
-                  className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold"
-                >
-                  View complete ROI transaction ledger
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          )}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Tab 2: Recent Investments */}
-      {activeTab === 'investments' && (
-        <div>
-          {isInvestmentsLoading ? (
-            <div className="p-8 text-center text-xs text-slate-500">Loading recent investments...</div>
-          ) : recentInvestments.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                icon={PiggyBank}
-                title="No Investments Yet"
-                description="Investments you create will appear here."
-                className="border-0 bg-transparent py-4"
-              />
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-800/80">
-              {recentInvestments.map((inv) => {
-                const style = getStatusStyle(inv.status);
-                return (
-                  <div
-                    key={inv._id}
-                    className="px-5 sm:px-6 py-3.5 flex items-center justify-between hover:bg-slate-800/30 transition-colors text-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300">
-                        <PiggyBank className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-white">
-                          {inv.planName ? `${inv.planName} Package` : 'Investment Package'}
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                          {formatBusinessDate(inv.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-bold text-white text-sm">
-                        {formatPaiseToINR(inv.principalAmountPaise)}
-                      </p>
-                      <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${style.badge}`}>
-                        {style.label}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="px-6 py-3 bg-slate-950/50 text-right">
-                <Link
-                  to="/investments"
-                  className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold"
-                >
-                  Manage all investments
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          )}
+      {/* Footer Disclaimer */}
+      <div className="p-4 bg-slate-950/60 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>NexaChain executes automated settlement batches at midnight UTC. Zero float latency.</span>
         </div>
-      )}
-
-      {/* Tab 3: Daily ROI Summary (Aggregated Chart Data) */}
-      {activeTab === 'roiSummary' && (
-        <div>
-          <div className="px-5 sm:px-6 py-2 bg-slate-950/60 border-b border-slate-800/60 text-[11px] text-slate-400">
-            Note: Aggregated daily totals across all active investment packages. For individual transactions, see the ROI Transactions tab.
-          </div>
-
-          {dailySummaryRecords.length === 0 ? (
-            <div className="p-6">
-              <EmptyState
-                icon={Calendar}
-                title="No Daily Summary Records"
-                description="Aggregated daily metrics will appear after automated scheduled runs."
-                className="border-0 bg-transparent py-4"
-              />
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-800/80">
-              {dailySummaryRecords.map((item, idx) => (
-                <div
-                  key={`summary-${item.businessDate || idx}`}
-                  className="px-5 sm:px-6 py-3.5 flex items-center justify-between hover:bg-slate-800/30 transition-colors text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400">
-                      <Layers className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white">Daily Aggregate Yield</p>
-                      <p className="text-[11px] text-slate-400">
-                        {formatBusinessDate(item.businessDate)} • {item.count || 1} active {item.count === 1 ? 'cycle' : 'cycles'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-bold text-emerald-400 text-sm">
-                      {formatPaiseToINR(item.amountPaise)}
-                    </p>
-                    <span className="text-[10px] text-slate-500 font-medium">
-                      Daily Total
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              <div className="px-6 py-3 bg-slate-950/50 text-right">
-                <Link
-                  to="/roi-history"
-                  className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold"
-                >
-                  View historical ledger
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          )}
+        <div className="font-mono text-slate-400">
+          Integer Paise Precision Ledger Active
         </div>
-      )}
+      </div>
     </div>
   );
 };

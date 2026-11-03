@@ -15,11 +15,11 @@ import {
 /**
  * AuthLayout Component
  * 
- * Implements the premium dark fintech split layout:
- * - Left Column: Brand showcase, institutional quote, value proposition,
- *   and Multi-Tier Reward Matrix.
- * - Right Column: Authenticated card container with segmented tab switcher
- *   (Sign In / Create Account) and 256-bit security badge.
+ * Provides rock-solid stability and zero layout shift between Sign In and Create Account:
+ * - Left Column: Fixed viewport height (`lg:h-screen lg:sticky lg:top-0`) so the branding,
+ *   quote, and Multi-Tier Reward Matrix remain stationary without bouncing up or down.
+ * - Right Column: Consistent top-aligned container (`justify-start pt-8 sm:pt-12 lg:pt-14 xl:pt-16`)
+ *   so the card, segmented tab switcher, and header text maintain identical vertical positioning.
  */
 export const AuthLayout = () => {
   const location = useLocation();
@@ -37,10 +37,10 @@ export const AuthLayout = () => {
         aria-hidden="true"
       />
 
-      {/* LEFT COLUMN: Brand Ecosystem & Value Proposition Showcase */}
-      <div className="w-full lg:w-1/2 xl:w-5/12 flex flex-col justify-between p-6 sm:p-10 lg:p-14 border-b lg:border-b-0 lg:border-r border-slate-900/80 bg-slate-950/60 backdrop-blur-md z-10">
+      {/* LEFT COLUMN: Fixed Viewport Height & Sticky on Desktop */}
+      <div className="w-full lg:w-1/2 xl:w-5/12 lg:h-screen lg:sticky lg:top-0 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-14 border-b lg:border-b-0 lg:border-r border-slate-900/80 bg-slate-950/60 backdrop-blur-md z-10 lg:overflow-y-auto">
         {/* Top Header Row: Logo & Referral Boost Pill */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 shrink-0">
           <Link
             to="/login"
             className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-2xl"
@@ -66,12 +66,12 @@ export const AuthLayout = () => {
         </div>
 
         {/* Middle Hero Showcase: Headline, Quote, and Reward Matrix */}
-        <div className="my-10 lg:my-auto space-y-6 max-w-xl">
+        <div className="my-8 lg:my-auto space-y-5 lg:space-y-6 max-w-xl shrink-0">
           {/* Ecosystem Tag */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/70 border border-emerald-800/60 text-emerald-400 text-[11px] font-bold tracking-widest uppercase">
+          {/* <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/70 border border-emerald-800/60 text-emerald-400 text-[11px] font-bold tracking-widest uppercase">
             <Share2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>5-Tier Partner Ecosystem</span>
-          </div>
+          </div> */}
 
           {/* Bold Headline */}
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
@@ -151,7 +151,7 @@ export const AuthLayout = () => {
         </div>
 
         {/* Bottom Trust Indicators */}
-        <div className="pt-6 border-t border-slate-900/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="pt-6 border-t border-slate-900/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 shrink-0">
           <div className="flex items-center gap-4">
             <span className="inline-flex items-center gap-1.5 text-slate-300">
               <Lock className="w-3.5 h-3.5 text-emerald-400" />
@@ -169,31 +169,29 @@ export const AuthLayout = () => {
         </div>
       </div>
 
-      {/* RIGHT COLUMN: The Auth Card Container */}
-      <div className="w-full lg:w-1/2 xl:w-7/12 flex flex-col justify-center items-center p-4 sm:p-8 lg:p-12 z-10">
-        <div className="w-full max-w-xl space-y-5">
+      {/* RIGHT COLUMN: Consistent Top-Aligned Auth Card Container */}
+      <div className="w-full lg:w-1/2 xl:w-7/12 min-h-screen flex flex-col justify-start items-center p-4 sm:p-8 lg:p-12 pt-8 sm:pt-12 lg:pt-14 xl:pt-16 z-10 overflow-y-auto">
+        <div className="w-full max-w-xl space-y-4">
           {/* Main Card with Backdrop Glow */}
           <div className="bg-slate-900/80 backdrop-blur-2xl border border-slate-800/90 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl shadow-emerald-950/30 relative">
             {/* Top Segmented Tab Switcher */}
             <div className="grid grid-cols-2 p-1 bg-slate-950/90 border border-slate-800/80 rounded-xl mb-6">
               <Link
                 to="/login"
-                className={`py-2.5 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-                  isLogin
-                    ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                className={`py-2.5 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${isLogin
+                  ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
+                  : 'text-slate-400 hover:text-slate-200'
+                  }`}
               >
                 <LogIn className="w-4 h-4" />
                 <span>Sign In</span>
               </Link>
               <Link
                 to="/register"
-                className={`py-2.5 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-                  !isLogin
-                    ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                className={`py-2.5 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!isLogin
+                  ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
+                  : 'text-slate-400 hover:text-slate-200'
+                  }`}
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Create Account</span>
