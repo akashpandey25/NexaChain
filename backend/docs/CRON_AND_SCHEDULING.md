@@ -174,3 +174,4 @@ Every scheduled or manual run outputs structured execution logs:
   ```
 - **In Multi-Instance Kubernetes Deployments**:
   All pods can safely leave `CRON_ENABLED=true` because the distributed lock guarantees that only one pod executes the job at midnight.
+
