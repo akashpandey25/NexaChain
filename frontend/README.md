@@ -46,7 +46,15 @@ frontend/src/
 │   │       ├── ReferralTreeView.jsx           # Multi-tier recursive tree view with cycle safety & depth controls
 │   │       └── ReferralIncomeHistory.jsx      # Audited commission disbursement log with status filters
 │   ├── roi/
-│   │   └── roiApi.js             # Endpoints: /roi/history, /roi/summary
+│   │   ├── roiApi.js             # Endpoints: /roi/history, /roi/summary
+│   │   └── components/
+│   │       ├── RoiOverviewCards.jsx           # Payout KPI cards & latest distribution summary
+│   │       ├── RoiAnalyticsChart.jsx          # Daily yield AreaChart with custom INR tooltip
+│   │       ├── RoiFilterBar.jsx               # Status & date range filters with page-size selector
+│   │       ├── RoiHistoryTable.jsx            # Desktop transaction history table
+│   │       ├── RoiHistoryCardList.jsx         # Mobile touch-friendly card list view
+│   │       ├── RoiPagination.jsx              # Server-driven accessible pagination bar
+│   │       └── RoiSkeleton.jsx                # Pulse loading skeleton for analytics & table
 │   └── wallet/
 │       └── walletApi.js          # Reusable wallet overview query hooks
 ├── components/
@@ -104,15 +112,6 @@ The Investments section is built directly on the server-authoritative contracts 
 3. `GET /api/dashboard`:
    - Supplies the aggregated overview metrics (`totalCount`, `activeCount`, `totalInvestmentPaise`, `activeInvestmentPaise`, and status breakdowns) to guarantee absolute consistency with the main dashboard.
 
-### B. UI Components
-- **`InvestmentsOverview.jsx`**: Displays 4 high-level metric cards: Total Invested Principal, Active Capital, Total Packages, and Active Contracts, accompanied by an interactive status chip breakdown.
-- **`InvestmentsFilterBar.jsx`**: Server-side status filters (`All`, `Active`, `Pending`, `Completed`, `Cancelled`) with live badge counts, page-size selector, and clear filter button.
-- **`InvestmentsTable.jsx`**: Clean desktop table displaying Reference ID (copyable monospace), Plan Name badge, Principal Amount in INR, ROI Rate, Start Date, End Date, Status badge, and View Details action.
-- **`InvestmentsCardList.jsx`**: Touch-optimized card list for mobile viewport (< 768px), preventing horizontal overflow.
-- **`InvestmentsPagination.jsx`**: Accessible pagination bar with record range information ("Showing 1 to 10 of 25 investments"), previous/next buttons, and windowed page numbers.
-- **`InvestmentsSkeleton.jsx` & `InvestmentDetailSkeleton.jsx`**: Responsive pulse skeletons for smooth layout transitions during network fetches.
-- **`InvestmentDetailPage.jsx`**: Dedicated `/investments/:id` view presenting contract specifications, accumulated ROI yield, daily rate, verified calendar dates, and security governance notices.
-
 ---
 
 ## 4. Referral Management Feature (`ReferralsPage.jsx`)
@@ -133,22 +132,49 @@ The Referral Management section provides an interactive affiliate portal display
 4. `GET /api/dashboard`:
    - Supplies authoritative overview metrics (`totalDirectReferrals`, `activeDirectReferrals`, `processedReferralIncomePaise`).
 
-### B. UI Components
-- **`ReferralOverview.jsx`**: High-level KPI cards for Direct Referrals, Active Affiliates, Processed Referral Income in INR, and Downline Network size.
-- **`ReferralCodeShareCard.jsx`**: Prominently highlights the user's `referralCode`, generates the standard registration URL (`/register?ref=CODE`), and provides one-click copy buttons with instant visual feedback. Handles unavailable referral code gracefully.
-- **`DirectReferralsList.jsx`**: Paginated Level 1 direct downlines in a desktop table and touch-friendly mobile cards with status badges and copyable codes.
-- **`ReferralTreeView.jsx`**: Interactive multi-tier tree rendering with expand/collapse branch controls, color-coded level badges (`Root`, `Level 1`, `Level 2`, `Level 3+`), traversal depth selector (3, 5, 8, 10 levels), and a notice banner when `hasMoreLevels` indicates deeper downline activity.
-- **`ReferralIncomeHistory.jsx`**: Commission disbursement audit log with a 3-metric summary strip (Processed, Pending, Total), server-side status filters, desktop table & mobile cards, and accessible pagination.
+---
 
-### C. Financial & Security Governance Rules
-- **No Commission Rate Fabrication**: Commission percentages and rates are strictly dictated by server models; the client never calculates commission rates or fabricates levels.
-- **Pending Commission Semantics**: Pending commissions are explicitly labeled as *"Pending Validation"* and are strictly separated from *"Processed Commissions"* credited to wallet balances.
-- **Cycle Safety & Bounded Traversal**: The tree viewer respects the server's breadth-first cycle detection and caps depth to prevent unbounded memory growth.
-- **Commission Engine Status**: The multi-level referral commission engine remains intentionally disabled on the backend until company business rules are approved.
+## 5. Daily ROI History & Earnings Analytics (`RoiHistoryPage.jsx`)
+
+The ROI History and Analytics section provides an audited financial ledger of all daily return distributions along with interactive historical performance visualizations.
+
+### A. Endpoints Used
+1. `GET /api/roi/history`:
+   - Query Parameters:
+     - `page`: integer >= 1 (default: 1)
+     - `limit`: integer 1..100 (default: 10)
+     - `status`: `'pending' | 'processed' | 'failed'`
+     - `startDate`: ISO 8601 date string
+     - `endDate`: ISO 8601 date string
+     - `investmentId`: MongoDB 24-character hex ObjectId
+   - Returns populated records:
+     `{ roiRecords: [{ _id, user, investment: { _id, planName, principalAmountPaise, status, startDate, endDate }, amountPaise, roiPercentageApplied, businessDate, status, transactionKey, createdAt }], pagination }`.
+2. `GET /api/roi/summary`:
+   - Returns user summary totals:
+     `{ summary: { totalProcessedRoiPaise, processedCount, pendingCount, failedCount, totalRecords, latestPayout: { businessDate, amountPaise } } }`.
+3. `GET /api/dashboard`:
+   - Supplies `data.roi.chartData`: array of daily aggregated returns `{ businessDate, amountPaise, count }` sorted chronologically.
+
+### B. UI Components
+- **`RoiOverviewCards.jsx`**: Renders 4 KPI cards: Total Processed ROI (INR), Pending Executions, Total Distribution Events, and Latest Distribution payout with date.
+- **`RoiAnalyticsChart.jsx`**: Responsive Recharts `AreaChart` plotting daily yield totals by calendar business date with custom INR tooltips and package count indicators.
+- **`RoiFilterBar.jsx`**: Status filter pills (`All`, `Processed`, `Pending`, `Failed`), date range picker inputs (`startDate` & `endDate`), page-size dropdown selector (`10`, `20`, `50`), and reset action.
+- **`RoiHistoryTable.jsx`**: Responsive desktop transaction table displaying Reference ID (copyable monospace), Business Date, Investment Plan badge (with link to `/investments/:id`), Principal Amount, Applied Daily Rate, ROI Yield in INR, and Processing Status badge.
+- **`RoiHistoryCardList.jsx`**: Mobile-optimized card layout for screens `< 768px`.
+- **`RoiPagination.jsx`**: Accessible pagination bar with record range information and windowed page numbers.
+- **`RoiSkeleton.jsx`**: Pulse loading skeleton for cards, chart, and transaction list.
+
+### C. Financial & Status Semantics
+- **`processed`**: Confirmed batch distribution where wallet transactions were recorded and wallet balances credited.
+- **`pending`**: Registered in queue awaiting the daily 12:00 AM IST cron execution. Strictly labeled as pending and excluded from available wallet credits.
+- **`failed`**: Execution failed validation or transactional atomic constraints; documented and flagged for audit.
+- **Backend Limitations**:
+  - `GET /api/roi/summary` aggregates across all user contracts and does not return an investment-by-investment grouped array; individual investment earnings are inspected via `/api/investments/:id` or queried via `/api/roi/history?investmentId=...`.
+  - Frontend never calculates, predicts, or estimates future daily ROI. All figures are strictly historical and server-authoritative.
 
 ---
 
-## 5. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
+## 6. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
 
 The dashboard directly consumes the actual payload returned by `GET /api/dashboard`.
 
@@ -164,21 +190,9 @@ The dashboard directly consumes the actual payload returned by `GET /api/dashboa
 | **ROI Chart Series** | `data.roi.chartData` | Array | `[{ businessDate, amountPaise, count }]` |
 | **Portfolio Allocation**| `data.investments.amountByStatus` | Array | `[{ status, count, amountPaise }]` |
 
-### B. Visualizations with Recharts
-1. **ROI Yield History (`RoiHistoryChart.jsx`)**:
-   - Responsive `AreaChart` with emerald gradient fill and stroke.
-   - X-Axis displays business dates formatted as `DD MMM` (e.g. `03 Nov`).
-   - Y-Axis dynamically scales values converted from paise to Rupees.
-   - Accessible hover tooltip displays exact formatted date, INR amount, and package count.
-   - Renders a clean empty state when no distributions have been processed yet.
-2. **Portfolio Allocation Donut Chart (`InvestmentDistributionChart.jsx`)**:
-   - Responsive `PieChart` donut with status color coding (`active`, `pending`, `completed`, `cancelled`).
-   - Filters out zero-value statuses to avoid empty slices.
-   - Hover tooltip displays status label, formatted amount in INR, and package count.
-
 ---
 
-## 6. Verification & Testing
+## 7. Verification & Testing
 
 ```powershell
 # Build frontend for production
