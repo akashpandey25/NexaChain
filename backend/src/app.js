@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const investmentRoutes = require('./routes/investmentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const referralRoutes = require('./routes/referralRoutes');
+const roiRoutes = require('./routes/roiRoutes');
 
 const app = express();
 
@@ -91,6 +92,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/roi', roiRoutes);
 
 // 404 handler for unknown routes
 app.use(notFound);

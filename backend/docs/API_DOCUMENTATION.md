@@ -533,3 +533,151 @@ curl -X GET "http://localhost:5000/api/referrals/income?status=processed&page=1&
 - `summary.failedIncomePaise`: Total commission that failed transaction execution.
 - `summary.totalIncomePaise`: Aggregate sum across all three commission statuses.
 - `amountPaise`: Commission amounts strictly in integer paise (₹1.00 = 100 paise).
+
+---
+
+## 5. Return on Investment (ROI) Endpoints
+
+### 5.1 List Personal ROI History
+- **Method:** `GET`
+- **Route:** `/api/roi/history`
+- **Access:** Private (Bearer Token required)
+- **Description:** Returns paginated daily ROI distribution records belonging to the authenticated user. Excludes records of other users and populates safe investment contract summaries.
+
+#### Headers
+| Header | Value | Required |
+|---|---|---|
+| `Authorization` | `Bearer <JWT_TOKEN>` | Yes |
+
+#### Query Parameters
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `page` | Integer | No | `1` | Page number (min: 1) |
+| `limit` | Integer | No | `10` | Records per page (min: 1, max: 100) |
+| `status` | String | No | None | Filter by payout status (`pending`, `processed`, `failed`) |
+| `investmentId` | String | No | None | Filter payouts originating from a specific 24-char ObjectId |
+| `startDate` | ISO Date String | No | None | Filter business dates starting on or after this timestamp |
+| `endDate` | ISO Date String | No | None | Filter business dates up to this timestamp |
+
+#### Example Request
+```bash
+curl -X GET "http://localhost:5000/api/roi/history?page=1&limit=10&status=processed" \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "ROI history retrieved successfully",
+  "data": {
+    "roiRecords": [
+      {
+        "_id": "67273934338947fbb3000002",
+        "user": "660d1b2f4f1a2b001a111111",
+        "investment": {
+          "_id": "67273934338947fbb3000001",
+          "planName": "Growth Plan",
+          "principalAmountPaise": 100000,
+          "status": "active",
+          "startDate": "2026-11-01T00:00:00.000Z",
+          "endDate": "2027-01-01T00:00:00.000Z"
+        },
+        "amountPaise": 1500,
+        "roiPercentageApplied": 1.5,
+        "businessDate": "2026-11-03T00:00:00.000Z",
+        "status": "processed",
+        "transactionKey": "roi_67273934338947fbb3000001_2026-11-03",
+        "createdAt": "2026-11-03T00:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "totalRecords": 1,
+      "currentPage": 1,
+      "totalPages": 1,
+      "limit": 10,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  }
+}
+```
+
+---
+
+### 5.2 Get Personal ROI Summary
+- **Method:** `GET`
+- **Route:** `/api/roi/summary`
+- **Access:** Private (Bearer Token required)
+- **Description:** Returns aggregated ROI earnings statistics for the authenticated user, counting processed payouts only and displaying the latest payout timestamp and amount.
+
+#### Headers
+| Header | Value | Required |
+|---|---|---|
+| `Authorization` | `Bearer <JWT_TOKEN>` | Yes |
+
+#### Example Request
+```bash
+curl -X GET "http://localhost:5000/api/roi/summary" \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "ROI summary retrieved successfully",
+  "data": {
+    "summary": {
+      "totalProcessedRoiPaise": 4500,
+      "processedCount": 3,
+      "pendingCount": 0,
+      "failedCount": 0,
+      "totalRecords": 3,
+      "latestPayout": {
+        "businessDate": "2026-11-03T00:00:00.000Z",
+        "amountPaise": 1500
+      }
+    }
+  }
+}
+```
+
+---
+
+### 5.3 Administrative Daily ROI Processing Trigger
+- **Method:** `POST`
+- **Route:** `/api/roi/process`
+- **Access:** Private (Admin Role required)
+- **Description:** Triggers the daily ROI batch processing engine for the specified business date. Executes transactional financial accruals, cumulative investment updates, and wallet crediting.
+
+#### Headers
+| Header | Value | Required |
+|---|---|---|
+| `Authorization` | `Bearer <ADMIN_JWT_TOKEN>` | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+#### Request Body
+```json
+{
+  "businessDate": "2026-11-03"
+}
+```
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "Daily ROI processing completed",
+  "data": {
+    "businessDate": "2026-11-03",
+    "normalizedBusinessDate": "2026-11-03T00:00:00.000Z",
+    "eligibleInvestments": 10,
+    "processedInvestments": 10,
+    "skippedInvestments": 0,
+    "failedInvestments": 0,
+    "totalRoiGeneratedPaise": 15000,
+    "failures": []
+  }
+}
+```

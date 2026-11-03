@@ -6,7 +6,8 @@
  * @param {...string} allowedRoles Roles authorized to access the route (e.g. 'admin')
  * @returns {Function} Express middleware
  */
-const authorizeRoles = (...allowedRoles) => {
+const authorizeRoles = (...roles) => {
+  const allowedRoles = roles.flat();
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
