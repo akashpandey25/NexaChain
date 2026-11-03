@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-The NexaChain frontend is built with React 18, Vite 6, Tailwind CSS 3, and Redux Toolkit with RTK Query. It provides a responsive financial dashboard interface with a clean fintech aesthetic, featuring neutral dark surfaces (`slate-950`/`slate-900`) and restrained emerald accents (`emerald-500`/`emerald-600`).
+The NexaChain frontend is built with React 18, Vite 6, Tailwind CSS 3, and Redux Toolkit with RTK Query and Recharts. It provides a responsive financial dashboard interface with a clean fintech aesthetic, featuring neutral dark surfaces (`slate-950`/`slate-900`) and restrained emerald accents (`emerald-500`/`emerald-600`).
 
 ---
 
@@ -20,7 +20,13 @@ frontend/src/
 │   │   ├── authSlice.js          # Authentication state and credential management
 │   │   └── authApi.js            # Endpoints: /auth/register, /auth/login, /auth/me
 │   ├── dashboard/
-│   │   └── dashboardApi.js       # Endpoints: /dashboard with cache tags
+│   │   ├── dashboardApi.js       # Endpoints: /dashboard with cache tags and transformed response
+│   │   └── components/
+│   │       ├── StatCard.jsx                   # Reusable financial KPI card
+│   │       ├── RoiHistoryChart.jsx            # Recharts AreaChart for daily ROI history
+│   │       ├── InvestmentDistributionChart.jsx# Recharts Donut PieChart for status allocation
+│   │       ├── RecentActivitySection.jsx      # Activity tabs for ROI payouts & investments
+│   │       └── DashboardSkeleton.jsx          # Pulse skeleton for loading states
 │   ├── investments/
 │   │   └── investmentApi.js      # Endpoints: /investments (create, list, getById)
 │   ├── referrals/
@@ -48,7 +54,7 @@ frontend/src/
 │   │   ├── LoginPage.jsx         # Email/password login with show/hide control and client validation
 │   │   └── RegisterPage.jsx      # Registration form with password match check and show/hide controls
 │   ├── dashboard/
-│   │   └── DashboardPage.jsx     # KPI metric cards, quick-action navigation, and summary cards
+│   │   └── DashboardPage.jsx     # Full data-driven dashboard integrating all metrics & Recharts
 │   ├── investments/
 │   │   ├── InvestmentsPage.jsx   # Investment package listings with modal creation form
 │   │   └── InvestmentDetailPage.jsx # Single investment contract inspection and yield details
@@ -60,6 +66,7 @@ frontend/src/
 │   │   └── ProfilePage.jsx       # Account credentials, referral code, and role status
 │   └── NotFoundPage.jsx          # 404 handler with redirection back to /dashboard
 ├── utils/
+│   ├── formatters.js             # Currency (paise -> INR), dates, and status styling utilities
 │   └── tokenStorage.js           # Safe token getter/setter with documented security trade-offs
 ├── App.jsx                       # Root app component handling session hydration and RouterProvider
 ├── main.jsx                      # React DOM root entry wrapping <Provider store={store}>
@@ -68,76 +75,51 @@ frontend/src/
 
 ---
 
-## 3. Responsive App Shell (`AppLayout.jsx`)
+## 3. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
 
-The application layout provides a responsive structure across mobile, tablet, and desktop viewports:
+The dashboard directly consumes the actual payload returned by `GET /api/dashboard`.
 
-- **Desktop Sidebar Navigation (`md:flex md:w-64 md:fixed`)**:
-  - Persistent left sidebar with brand identity, active link states with emerald borders/accents (`bg-emerald-500/10 text-emerald-400`), live wallet balance, and user summary badge.
-  - Links: `Dashboard`, `Investments`, `Referrals`, `ROI History`, `Profile`.
-- **Mobile Navigation Drawer (`md:hidden`)**:
-  - Sliding drawer triggered by a top hamburger toggle with smooth transition and dark backdrop overlay.
-  - Automatically closes upon navigation link selection or backdrop click.
-- **Top Navigation Bar (`sticky top-0 z-20`)**:
-  - Dynamic page title derived from the current route path.
-  - Real-time wallet balance indicator (`₹...` formatted in Indian Rupees from persisted integer paise).
-  - User avatar initial and quick Sign Out button.
-- **Sign Out Action**:
-  - Dispatches `logout()` to wipe authentication credentials from Redux state and `localStorage`.
-  - Dispatches `baseApi.util.resetApiState()` to flush all user-specific RTK Query caches, preventing cross-user data leakage.
-  - Redirects to `/login`.
+### A. API Data Mapping
+| UI Section | Backend Response Path | Field Type | Formatting / Display |
+| :--- | :--- | :--- | :--- |
+| **Total Invested** | `data.summary.totalInvestmentPaise` | Integer Paise | Formatted in INR (`₹...`) |
+| **Active Principal** | `data.summary.activeInvestmentPaise` | Integer Paise | Formatted in INR (`₹...`) |
+| **Total ROI Yield** | `data.summary.totalRoiPaise` | Integer Paise | Formatted in INR (`₹...`) |
+| **Available Wallet** | `data.summary.walletBalancePaise` | Integer Paise | Formatted in INR (`₹...`) |
+| **Referral Income** | `data.summary.processedReferralIncomePaise` | Integer Paise | Formatted in INR (`₹...`) |
+| **Direct Affiliates** | `data.summary.totalDirectReferrals` | Integer | Total count + active affiliates count |
+| **ROI Chart Series** | `data.roi.chartData` | Array | `[{ businessDate, amountPaise, count }]` |
+| **Portfolio Allocation**| `data.investments.amountByStatus` | Array | `[{ status, count, amountPaise }]` |
 
----
+### B. Visualizations with Recharts
+1. **ROI Yield History (`RoiHistoryChart.jsx`)**:
+   - Responsive `AreaChart` with emerald gradient fill and stroke.
+   - X-Axis displays business dates formatted as `DD MMM` (e.g. `03 Nov`).
+   - Y-Axis dynamically scales values converted from paise to Rupees.
+   - Accessible hover tooltip displays exact formatted date, INR amount, and package count.
+   - Renders a clean empty state when no distributions have been processed yet.
+2. **Portfolio Allocation Donut Chart (`InvestmentDistributionChart.jsx`)**:
+   - Responsive `PieChart` donut with status color coding:
+     - `active`: `#10b981` (Emerald)
+     - `pending`: `#f59e0b` (Amber)
+     - `completed`: `#3b82f6` (Blue)
+     - `cancelled`: `#f43f5e` (Rose)
+   - Filters out zero-value statuses to avoid empty slices.
+   - Hover tooltip displays status label, formatted amount in INR, and package count.
 
-## 4. Authentication Flow
+### C. Recent Activity Section (`RecentActivitySection.jsx`)
+- **ROI Distributions Tab**: Lists recent daily payout records extracted directly from `roi.chartData` (sorted newest first, with date, amount, package count, and `CREDITED` badge).
+- **Investments Tab**: Lists recent investments fetched via `useGetInvestmentsQuery({ limit: 5 })` with plan name, created date, amount in INR, and lifecycle status badge.
 
-### Login (`LoginPage.jsx`)
-- **Inputs**: Email and Password.
-- **Show/Hide Password**: Accessible toggle button with `Eye` / `EyeOff` icons.
-- **Client-Side Validation**:
-  - Required check for email and password.
-  - Regex validation for email format.
-- **State Integration**:
-  - Calls `useLoginMutation()` from `authApi`.
-  - On 200 OK: Redux `authSlice` updates with JWT `token` and user object; persists token in `localStorage`.
-  - Redirects to the attempted route (`location.state.from`) or default `/dashboard`.
-  - On error: displays server message and specific field errors via `<ErrorMessage />`.
-
-### Registration (`RegisterPage.jsx`)
-- **Inputs**: Full Name, Email, Password, Confirm Password, and optional Referral Code.
-- **Show/Hide Password**: Independent visibility toggles for Password and Confirm Password.
-- **Client-Side Validation**:
-  - Name: required, min 2, max 100 characters.
-  - Email: required, valid email format regex.
-  - Password: required, min 8 characters, at least 1 letter and 1 digit (strictly aligned with backend regex `/^(?=.*[a-zA-Z])(?=.*\d)/`).
-  - Confirm Password: required, must strictly match password.
-  - Referral Code: optional, uppercase, min 3 characters if provided.
-- **Backend Contract**:
-  - Only sends `{ name, email, password, referralCode }` to `POST /api/auth/register`.
-  - The backend returns HTTP 201 with `{ success: true, message: ..., data: { user, token } }`.
-  - On 201 Created: automatically authenticates the user, hydrates Redux state, and redirects to `/dashboard`.
-
-### Session Hydration & Route Protection
-- On initial page load, `App.jsx` checks for an existing token in storage:
-  - If a token exists: triggers `useGetMeQuery()` to verify session authenticity against `GET /api/auth/me`.
-  - If token is valid: updates user profile and marks session initialized.
-  - If token returns HTTP 401 (expired/invalid): automatically calls `logout()`, clears storage, and redirects to `/login`.
-  - While verification is in flight, `<LoadingSpinner fullScreen />` prevents protected content flash.
-- `<ProtectedRoute>` prevents unauthorized access to app pages.
-- `<PublicRoute>` prevents already authenticated users from accessing `/login` and `/register`.
+### D. Currency and Number Formatting (`formatters.js`)
+All monetary values in the database are stored in **integer paise**. The frontend uses strict precision math:
+- `amountRupees = amountPaise / 100`
+- Regional Indian number grouping (`en-IN`) formatting: `formatPaiseToINR(paise)` produces `₹1,50,000.00`.
+- Dates formatted via `Intl.DateTimeFormat('en-IN')`.
 
 ---
 
-## 5. Security Architecture & Token Storage
-
-| Storage Mechanism | Pros | Security Considerations & Mitigations |
-| :--- | :--- | :--- |
-| **`localStorage` (Current)** | Simple integration for single-page applications without custom backend cookie sessions. | Vulnerable to cross-site scripting (XSS). Mitigated by strict React input escaping, Zod schema sanitization, and avoiding `dangerouslySetInnerHTML`. |
-| **`HttpOnly` Cookie (Enterprise Recommended)** | JavaScript cannot access tokens, providing protection against XSS token exfiltration. | Requires backend cookie configuration (`SameSite=Strict`, `Secure=true`) and CSRF protection headers (`X-CSRF-Token`). |
-
----
-
-## 6. Build & Verification Commands
+## 4. Verification & Testing
 
 ```powershell
 # Build frontend for production
