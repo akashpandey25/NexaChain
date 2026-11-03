@@ -24,7 +24,7 @@ export const LoadingSpinner = ({
       className={`flex flex-col items-center justify-center gap-3 p-4 text-slate-400 ${className}`}
     >
       <Loader2
-        className={`animate-spin text-indigo-500 ${sizeClasses[size] || sizeClasses.md}`}
+        className={`animate-spin text-emerald-500 ${sizeClasses[size] || sizeClasses.md}`}
         aria-hidden="true"
       />
       {message && <span className="text-sm font-medium text-slate-400">{message}</span>}
@@ -44,3 +44,4 @@ export const LoadingSpinner = ({
 };
 
 export default LoadingSpinner;
+

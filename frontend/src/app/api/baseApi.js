@@ -46,6 +46,7 @@ const dynamicBaseQuery = async (args, api, extraOptions) => {
       error: {
         status: result.error.status,
         message: backendMessage,
+        errors: result.error.data?.errors || null,
         data: result.error.data || null
       }
     };
@@ -60,3 +61,4 @@ export const baseApi = createApi({
   tagTypes: ['Auth', 'Dashboard', 'Investment', 'Referral', 'ROI', 'Wallet'],
   endpoints: () => ({})
 });
+

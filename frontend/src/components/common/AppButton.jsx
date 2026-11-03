@@ -22,13 +22,13 @@ export const AppButton = ({
 
   const variantClasses = {
     primary:
-      'bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 focus:ring-indigo-500 border border-transparent',
+      'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white shadow-sm shadow-emerald-950 focus:ring-emerald-500 border border-emerald-500/30',
     secondary:
       'bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-200 border border-slate-700 focus:ring-slate-500',
     outline:
       'bg-transparent hover:bg-slate-800/60 active:bg-slate-800 text-slate-300 border border-slate-700 hover:text-white focus:ring-slate-500',
     danger:
-      'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white shadow-lg shadow-rose-600/20 focus:ring-rose-500 border border-transparent',
+      'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white shadow-sm shadow-rose-950 focus:ring-rose-500 border border-rose-500/30',
     ghost:
       'bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 focus:ring-slate-500 border border-transparent'
   };
@@ -63,3 +63,4 @@ export const AppButton = ({
 };
 
 export default AppButton;
+

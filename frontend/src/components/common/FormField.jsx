@@ -9,10 +9,12 @@ export const FormField = ({
   label,
   error,
   helperText,
+  hint,
   required = false,
   children,
   className = ''
 }) => {
+  const effectiveHint = helperText || hint;
   return (
     <div className={`space-y-1.5 ${className}`}>
       {label && (
@@ -30,9 +32,9 @@ export const FormField = ({
         </p>
       )}
 
-      {!error && helperText && (
+      {!error && effectiveHint && (
         <p id={`${id}-helper`} className="text-xs text-slate-500 mt-1">
-          {helperText}
+          {effectiveHint}
         </p>
       )}
     </div>
@@ -40,3 +42,4 @@ export const FormField = ({
 };
 
 export default FormField;
+

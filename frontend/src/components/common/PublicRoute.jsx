@@ -9,7 +9,7 @@ import { LoadingSpinner } from '../feedback/LoadingSpinner';
  * Wraps unauthenticated pages (e.g. /login, /register).
  * Redirects already-authenticated users to /dashboard.
  */
-export const PublicRoute = () => {
+export const PublicRoute = ({ children }) => {
   const location = useLocation();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isInitialized = useAppSelector(selectAuthInitialized);
@@ -23,7 +23,8 @@ export const PublicRoute = () => {
     return <Navigate to={destination} replace />;
   }
 
-  return <Outlet />;
+  return children ? children : <Outlet />;
 };
 
 export default PublicRoute;
+

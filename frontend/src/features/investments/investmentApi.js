@@ -48,3 +48,4 @@ export const {
   useLazyGetInvestmentsQuery,
   useGetInvestmentByIdQuery
 } = investmentApi;
+

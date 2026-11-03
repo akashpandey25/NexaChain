@@ -1,5 +1,5 @@
 import { baseApi } from '../../app/api/baseApi';
-import { setCredentials, logout } from './authSlice';
+import { setCredentials, logout, setInitialized } from './authSlice';
 
 /**
  * Authentication RTK Query API Module
@@ -61,6 +61,8 @@ export const authApi = baseApi.injectEndpoints({
           // If session verification fails (e.g. token expired/invalid), trigger logout
           if (err?.error?.status === 401) {
             dispatch(logout());
+          } else {
+            dispatch(setInitialized());
           }
         }
       }
@@ -74,3 +76,4 @@ export const {
   useGetMeQuery,
   useLazyGetMeQuery
 } = authApi;
+

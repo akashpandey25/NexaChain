@@ -19,3 +19,4 @@ export const walletApi = baseApi.injectEndpoints({
 });
 
 export const { useGetWalletOverviewQuery } = walletApi;
+

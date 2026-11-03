@@ -54,3 +54,4 @@ export const {
   useGetReferralIncomeQuery,
   useLazyGetReferralIncomeQuery
 } = referralApi;
+

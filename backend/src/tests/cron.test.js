@@ -50,6 +50,7 @@ describe('Automated Daily ROI Scheduler & Distributed Locking', () => {
       WalletTransaction.init(),
       JobLock.init()
     ]);
+    await JobLock.syncIndexes();
 
     // Create test user
     testUser = await User.create({

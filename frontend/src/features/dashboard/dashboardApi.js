@@ -19,3 +19,4 @@ export const dashboardApi = baseApi.injectEndpoints({
 });
 
 export const { useGetDashboardDataQuery, useLazyGetDashboardDataQuery } = dashboardApi;
+

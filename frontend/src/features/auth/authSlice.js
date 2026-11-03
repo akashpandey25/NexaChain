@@ -59,3 +59,4 @@ export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAuthInitialized = (state) => state.auth.isInitialized;
 
 export default authSlice.reducer;
+

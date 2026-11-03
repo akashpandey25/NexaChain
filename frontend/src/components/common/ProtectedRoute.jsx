@@ -9,7 +9,7 @@ import { LoadingSpinner } from '../feedback/LoadingSpinner';
  * Guards private routes against unauthenticated access.
  * Shows session loading spinner while verifying JWT credentials.
  */
-export const ProtectedRoute = () => {
+export const ProtectedRoute = ({ children }) => {
   const location = useLocation();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isInitialized = useAppSelector(selectAuthInitialized);
@@ -23,7 +23,8 @@ export const ProtectedRoute = () => {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  return <Outlet />;
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;
+
