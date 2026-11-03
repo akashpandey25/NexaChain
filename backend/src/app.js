@@ -6,6 +6,10 @@ const env = require('./config/env');
 const { getDBStatus } = require('./config/db');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
+const authRoutes = require('./routes/authRoutes');
+const investmentRoutes = require('./routes/investmentRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const referralRoutes = require('./routes/referralRoutes');
 
 const app = express();
 
@@ -81,6 +85,12 @@ app.get('/api/health', (req, res) => {
     ]
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/investments', investmentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/referrals', referralRoutes);
 
 // 404 handler for unknown routes
 app.use(notFound);

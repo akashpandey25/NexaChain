@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 /**
  * User Schema
@@ -83,6 +84,55 @@ const userSchema = new mongoose.Schema(
     collection: 'users'
   }
 );
+
+/**
+ * Pre-save hook: Hash password securely using bcryptjs with a cost factor of 10.
+ * Automatically runs only when the password field is created or modified.
+ */
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * Compare plain text password candidate with hashed password stored in DB.
+ * @param {string} candidatePassword
+ * @returns {Promise<boolean>}
+ */
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) {
+    throw new Error('Password hash not loaded on user instance. Ensure .select("+password") was invoked.');
+  }
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+/**
+ * Return safe user object omitting password and internal properties.
+ * @returns {object}
+ */
+userSchema.methods.toSafeObject = function () {
+  return {
+    id: this._id,
+    name: this.name,
+    email: this.email,
+    referralCode: this.referralCode,
+    referredBy: this.referredBy,
+    role: this.role,
+    walletBalancePaise: this.walletBalancePaise,
+    isActive: this.isActive,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt
+  };
+};
 
 // Prevent OverwriteModelError in test/dev environments with hot reloads
 const User = mongoose.models.User || mongoose.model('User', userSchema);
