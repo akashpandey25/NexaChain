@@ -171,3 +171,4 @@ export const InvestmentsTable = ({ investments = [] }) => {
 };
 
 export default InvestmentsTable;
+

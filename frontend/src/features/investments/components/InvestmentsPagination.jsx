@@ -146,3 +146,4 @@ export const InvestmentsPagination = ({
 };
 
 export default InvestmentsPagination;
+

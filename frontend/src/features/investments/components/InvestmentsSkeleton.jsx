@@ -49,3 +49,4 @@ export const InvestmentsSkeleton = () => {
 };
 
 export default InvestmentsSkeleton;
+

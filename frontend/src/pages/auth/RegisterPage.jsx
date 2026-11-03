@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, User, Mail, Lock, Key, ArrowRight } from 'lucide-react';
 import { useRegisterMutation } from '../../features/auth/authApi';
 import { FormField } from '../../components/common/FormField';
@@ -16,6 +16,7 @@ const PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*\d)/;
  */
 export const RegisterPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [registerUser, { isLoading, error: apiError }] = useRegisterMutation();
 
   const [formData, setFormData] = useState({
@@ -23,8 +24,16 @@ export const RegisterPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    referralCode: ''
+    referralCode: searchParams.get('ref') || searchParams.get('referralCode') || ''
   });
+
+  // Keep referral code updated if query param arrives after initial render
+  useEffect(() => {
+    const refFromUrl = searchParams.get('ref') || searchParams.get('referralCode');
+    if (refFromUrl && !formData.referralCode) {
+      setFormData((prev) => ({ ...prev, referralCode: refFromUrl.trim().toUpperCase() }));
+    }
+  }, [searchParams]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

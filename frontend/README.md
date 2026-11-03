@@ -38,7 +38,13 @@ frontend/src/
 │   │       ├── InvestmentsSkeleton.jsx        # Loading skeleton for listing views
 │   │       └── InvestmentDetailSkeleton.jsx   # Loading skeleton for /investments/:id
 │   ├── referrals/
-│   │   └── referralApi.js        # Endpoints: /referrals/direct, /referrals/tree, /referrals/income
+│   │   ├── referralApi.js        # Endpoints: /referrals/direct, /referrals/tree, /referrals/income
+│   │   └── components/
+│   │       ├── ReferralOverview.jsx           # High-level affiliate KPI summary cards
+│   │       ├── ReferralCodeShareCard.jsx      # Referral code display, link generator & copy actions
+│   │       ├── DirectReferralsList.jsx        # Level 1 downlines table, cards & pagination
+│   │       ├── ReferralTreeView.jsx           # Multi-tier recursive tree view with cycle safety & depth controls
+│   │       └── ReferralIncomeHistory.jsx      # Audited commission disbursement log with status filters
 │   ├── roi/
 │   │   └── roiApi.js             # Endpoints: /roi/history, /roi/summary
 │   └── wallet/
@@ -60,14 +66,14 @@ frontend/src/
 ├── pages/
 │   ├── auth/
 │   │   ├── LoginPage.jsx         # Email/password login with show/hide control and client validation
-│   │   └── RegisterPage.jsx      # Registration form with password match check and show/hide controls
+│   │   └── RegisterPage.jsx      # Registration form with ?ref=CODE auto-population and password validation
 │   ├── dashboard/
 │   │   └── DashboardPage.jsx     # Full data-driven dashboard integrating all metrics & Recharts
 │   ├── investments/
 │   │   ├── InvestmentsPage.jsx   # Investments portfolio: KPI overview, filters, table, cards & pagination
 │   │   └── InvestmentDetailPage.jsx # Dedicated /investments/:id contract inspector & lifecycle breakdown
 │   ├── referrals/
-│   │   └── ReferralsPage.jsx     # Referral code share card, direct affiliates, tree view, commission log
+│   │   └── ReferralsPage.jsx     # Referral hub: overview, share cards, direct downlines, tree & income log
 │   ├── roi/
 │   │   └── RoiHistoryPage.jsx    # Daily automated ROI distribution ledger and summary metrics
 │   ├── profile/
@@ -107,13 +113,42 @@ The Investments section is built directly on the server-authoritative contracts 
 - **`InvestmentsSkeleton.jsx` & `InvestmentDetailSkeleton.jsx`**: Responsive pulse skeletons for smooth layout transitions during network fetches.
 - **`InvestmentDetailPage.jsx`**: Dedicated `/investments/:id` view presenting contract specifications, accumulated ROI yield, daily rate, verified calendar dates, and security governance notices.
 
-### C. Backend Limitations & Unsupported Features
-- **Full-Text / ID Search**: The backend Zod schema (`listInvestmentsQuerySchema`) strictly validates query parameters and only accepts `page`, `limit`, and `status`. Arbitrary client query parameters are filtered out by Zod. Client-side search over a partial page was intentionally omitted to prevent misleading users into believing their search covers their entire historical portfolio.
-- **Client-Side Creation & Modification**: Modification of investment status, ownership, or ROI yields is strictly forbidden by the server; all lifecycle transitions are driven by server cron batch processes.
+---
+
+## 4. Referral Management Feature (`ReferralsPage.jsx`)
+
+The Referral Management section provides an interactive affiliate portal displaying verified downlines, multi-tier network hierarchies, and commission audit logs.
+
+### A. Endpoints Used
+1. `GET /api/referrals/direct`:
+   - Query Parameters: `page`, `limit`.
+   - Returns paginated Level 1 direct affiliates with fields: `id`, `name`, `referralCode`, `isActive`, `createdAt`.
+2. `GET /api/referrals/tree`:
+   - Query Parameters: `maxDepth` (bounded between 1 and 10; default 5).
+   - Traverses the referral tree level-by-level using breadth-first batch queries with cycle detection.
+   - Returns `{ tree, metadata: { traversalDepth, maxTraversalDepth, totalMembers, hasMoreLevels } }`.
+3. `GET /api/referrals/income`:
+   - Query Parameters: `page`, `limit`, `status` (`pending`, `processed`, `failed`), `startDate`, `endDate`.
+   - Returns `{ incomeRecords, summary: { processedIncomePaise, pendingIncomePaise, failedIncomePaise, totalIncomePaise }, pagination }`.
+4. `GET /api/dashboard`:
+   - Supplies authoritative overview metrics (`totalDirectReferrals`, `activeDirectReferrals`, `processedReferralIncomePaise`).
+
+### B. UI Components
+- **`ReferralOverview.jsx`**: High-level KPI cards for Direct Referrals, Active Affiliates, Processed Referral Income in INR, and Downline Network size.
+- **`ReferralCodeShareCard.jsx`**: Prominently highlights the user's `referralCode`, generates the standard registration URL (`/register?ref=CODE`), and provides one-click copy buttons with instant visual feedback. Handles unavailable referral code gracefully.
+- **`DirectReferralsList.jsx`**: Paginated Level 1 direct downlines in a desktop table and touch-friendly mobile cards with status badges and copyable codes.
+- **`ReferralTreeView.jsx`**: Interactive multi-tier tree rendering with expand/collapse branch controls, color-coded level badges (`Root`, `Level 1`, `Level 2`, `Level 3+`), traversal depth selector (3, 5, 8, 10 levels), and a notice banner when `hasMoreLevels` indicates deeper downline activity.
+- **`ReferralIncomeHistory.jsx`**: Commission disbursement audit log with a 3-metric summary strip (Processed, Pending, Total), server-side status filters, desktop table & mobile cards, and accessible pagination.
+
+### C. Financial & Security Governance Rules
+- **No Commission Rate Fabrication**: Commission percentages and rates are strictly dictated by server models; the client never calculates commission rates or fabricates levels.
+- **Pending Commission Semantics**: Pending commissions are explicitly labeled as *"Pending Validation"* and are strictly separated from *"Processed Commissions"* credited to wallet balances.
+- **Cycle Safety & Bounded Traversal**: The tree viewer respects the server's breadth-first cycle detection and caps depth to prevent unbounded memory growth.
+- **Commission Engine Status**: The multi-level referral commission engine remains intentionally disabled on the backend until company business rules are approved.
 
 ---
 
-## 4. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
+## 5. Dashboard Implementation & Data Mapping (`DashboardPage.jsx`)
 
 The dashboard directly consumes the actual payload returned by `GET /api/dashboard`.
 
@@ -141,20 +176,9 @@ The dashboard directly consumes the actual payload returned by `GET /api/dashboa
    - Filters out zero-value statuses to avoid empty slices.
    - Hover tooltip displays status label, formatted amount in INR, and package count.
 
-### C. Activity Semantics
-- **ROI Transactions Tab**: Queries `GET /api/roi/history` (`limit: 5`) for genuine individual distribution records with confirmed status (`PROCESSED`, `PENDING`, `FAILED`).
-- **Investments Tab**: Queries `GET /api/investments` (`limit: 5`) for recent plan contracts.
-- **Daily ROI Summary Tab**: Displays daily aggregated yield totals from `roi.chartData` with an explicit notice that entries represent aggregated daily earnings.
-
-### D. Currency and Number Formatting (`formatters.js`)
-All monetary values in the database are stored in **integer paise**. The frontend uses strict precision math:
-- `amountRupees = amountPaise / 100`
-- Regional Indian number grouping (`en-IN`) formatting: `formatPaiseToINR(paise)` produces `₹1,50,000.00`.
-- Timezone-safe calendar dates formatted via `formatBusinessDate(date)` avoiding day-shifts in Western timezones.
-
 ---
 
-## 5. Verification & Testing
+## 6. Verification & Testing
 
 ```powershell
 # Build frontend for production

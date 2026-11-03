@@ -1,267 +1,127 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
-import { AppButton } from '../../components/common/AppButton';
-import { LoadingSpinner } from '../../components/feedback/LoadingSpinner';
-import { ErrorMessage } from '../../components/feedback/ErrorMessage';
-import { EmptyState } from '../../components/feedback/EmptyState';
-import {
-  useGetDirectReferralsQuery,
-  useGetReferralTreeQuery,
-  useGetReferralIncomeQuery
-} from '../../features/referrals/referralApi';
 import { useAppSelector } from '../../app/store';
 import { selectCurrentUser } from '../../features/auth/authSlice';
-import { Users, GitFork, DollarSign, Copy, Check, Shield } from 'lucide-react';
+import { useGetDashboardDataQuery } from '../../features/dashboard/dashboardApi';
+import { useGetReferralTreeQuery, useGetReferralIncomeQuery } from '../../features/referrals/referralApi';
+import { ReferralOverview } from '../../features/referrals/components/ReferralOverview';
+import { ReferralCodeShareCard } from '../../features/referrals/components/ReferralCodeShareCard';
+import { DirectReferralsList } from '../../features/referrals/components/DirectReferralsList';
+import { ReferralTreeView } from '../../features/referrals/components/ReferralTreeView';
+import { ReferralIncomeHistory } from '../../features/referrals/components/ReferralIncomeHistory';
+import { Users, GitFork, Wallet, RefreshCw, ShieldCheck } from 'lucide-react';
 
-const formatPaise = (paise = 0) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 2
-  }).format(paise / 100);
-};
+const TABS = [
+  { id: 'direct', label: 'Direct Referrals', icon: Users, description: 'Level 1 directly sponsored affiliates' },
+  { id: 'tree', label: 'Referral Tree', icon: GitFork, description: 'Multi-level downline hierarchical network' },
+  { id: 'income', label: 'Commission Income', icon: Wallet, description: 'Audited commission disbursement records' }
+];
 
+/**
+ * Referral Management Page
+ * Orchestrates referral overview metrics, code sharing, direct downlines,
+ * multi-tier tree visualization, and commission payout histories.
+ */
 export const ReferralsPage = () => {
   const user = useAppSelector(selectCurrentUser);
-  const [activeTab, setActiveTab] = useState('direct'); // 'direct' | 'tree' | 'income'
-  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('direct');
 
-  // Queries
+  // Authoritative overview metrics
   const {
-    data: directData,
-    isLoading: isDirectLoading,
-    error: directError
-  } = useGetDirectReferralsQuery(undefined, { skip: activeTab !== 'direct' });
+    data: dashboardData,
+    isLoading: isDashboardLoading,
+    refetch: refetchDashboard
+  } = useGetDashboardDataQuery();
 
   const {
     data: treeData,
-    isLoading: isTreeLoading,
-    error: treeError
-  } = useGetReferralTreeQuery({ maxDepth: 5 }, { skip: activeTab !== 'tree' });
+    refetch: refetchTree
+  } = useGetReferralTreeQuery({ maxDepth: 5 });
 
   const {
     data: incomeData,
-    isLoading: isIncomeLoading,
-    error: incomeError
-  } = useGetReferralIncomeQuery(undefined, { skip: activeTab !== 'income' });
+    refetch: refetchIncome
+  } = useGetReferralIncomeQuery({ page: 1, limit: 1 });
 
-  const handleCopyCode = () => {
-    if (user?.referralCode) {
-      navigator.clipboard.writeText(user.referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleRefresh = () => {
+    refetchDashboard();
+    refetchTree();
+    refetchIncome();
   };
 
-  const directList = directData?.data?.referrals || (Array.isArray(directData?.data) ? directData.data : []);
-  const treeRoot = treeData?.data || null;
-  const incomeList = incomeData?.data?.incomes || (Array.isArray(incomeData?.data) ? incomeData.data : []);
+  const networkSize = treeData?.metadata?.totalMembers ?? 0;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <PageHeader
-        title="Referral Program"
-        subtitle="Grow your multi-level affiliate network and earn automated commissions"
+        title="Referral Management"
+        subtitle="Grow your multi-level affiliate network, inspect downline trees, and track commission earnings"
+        actions={
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+            title="Refresh referral metrics"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
+        }
       />
 
-      {/* Referral Code Banner */}
-      <div className="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-indigo-700/50 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <span className="text-xs uppercase font-bold tracking-wider text-indigo-300">Your Exclusive Referral Code</span>
-          <div className="text-2xl font-black text-white tracking-widest mt-1 font-mono">
-            {user?.referralCode || 'N/A'}
-          </div>
-          <p className="text-xs text-indigo-200/80 mt-1">
-            Share this code with your contacts. When they register, they will be mapped directly to your referral tree.
-          </p>
-        </div>
+      {/* KPI Overview Cards */}
+      <ReferralOverview
+        referralsMeta={dashboardData?.referrals}
+        incomeSummary={incomeData?.summary}
+        networkSize={networkSize}
+        isLoading={isDashboardLoading && !dashboardData}
+      />
 
-        <AppButton
-          variant="primary"
-          onClick={handleCopyCode}
-          className="whitespace-nowrap bg-indigo-600 hover:bg-indigo-500"
-        >
-          {copied ? (
-            <>
-              <Check className="w-4 h-4 mr-1.5 text-emerald-400" />
-              Copied to Clipboard
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4 mr-1.5" />
-              Copy Referral Code
-            </>
-          )}
-        </AppButton>
+      {/* Referral Code & Share Link Banner */}
+      <ReferralCodeShareCard referralCode={user?.referralCode} />
+
+      {/* Navigation Tabs */}
+      <div className="border-b border-slate-800">
+        <div className="flex flex-wrap gap-2 sm:gap-6">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3.5 pt-1 inline-flex items-center gap-2 border-b-2 text-xs sm:text-sm font-medium transition-all ${
+                  isActive
+                    ? 'border-emerald-500 text-emerald-400 font-semibold'
+                    : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-800 space-x-6 text-sm font-medium">
-        <button
-          onClick={() => setActiveTab('direct')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'direct'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-white'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          Direct Referrals
-        </button>
-        <button
-          onClick={() => setActiveTab('tree')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'tree'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-white'
-          }`}
-        >
-          <GitFork className="w-4 h-4" />
-          Referral Tree
-        </button>
-        <button
-          onClick={() => setActiveTab('income')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'income'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-white'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          Commission Income
-        </button>
+      {/* Tab Panels */}
+      <div>
+        {activeTab === 'direct' && <DirectReferralsList />}
+        {activeTab === 'tree' && <ReferralTreeView />}
+        {activeTab === 'income' && <ReferralIncomeHistory />}
       </div>
 
-      {/* Tab Content */}
-      {activeTab === 'direct' && (
-        <div>
-          {isDirectLoading ? (
-            <div className="py-16 flex justify-center">
-              <LoadingSpinner message="Loading direct referrals..." />
-            </div>
-          ) : directError ? (
-            <ErrorMessage title="Failed to load direct referrals" message={directError.message} />
-          ) : directList.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No Direct Referrals Yet"
-              description="Share your referral code to invite partners and build your downline team."
-            />
-          ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                    <tr>
-                      <th className="px-6 py-3">User Name</th>
-                      <th className="px-6 py-3">Referral Code</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3">Joined Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-slate-300">
-                    {directList.map((ref) => (
-                      <tr key={ref._id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="px-6 py-4 font-medium text-white">{ref.name}</td>
-                        <td className="px-6 py-4 font-mono text-indigo-300">{ref.referralCode}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
-                            {ref.status || 'ACTIVE'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-400">
-                          {new Date(ref.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'tree' && (
-        <div>
-          {isTreeLoading ? (
-            <div className="py-16 flex justify-center">
-              <LoadingSpinner message="Calculating referral tree..." />
-            </div>
-          ) : treeError ? (
-            <ErrorMessage title="Failed to load referral tree" message={treeError.message} />
-          ) : !treeRoot ? (
-            <EmptyState
-              icon={GitFork}
-              title="Tree Empty"
-              description="No downline nodes found for your account."
-            />
-          ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-              <h4 className="text-sm font-semibold text-white mb-4">Hierarchical Downline (Up to 5 Levels)</h4>
-              <div className="font-mono text-xs text-slate-300 bg-slate-950 p-4 rounded-lg overflow-x-auto border border-slate-800">
-                <pre>{JSON.stringify(treeRoot, null, 2)}</pre>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'income' && (
-        <div>
-          {isIncomeLoading ? (
-            <div className="py-16 flex justify-center">
-              <LoadingSpinner message="Loading referral income records..." />
-            </div>
-          ) : incomeError ? (
-            <ErrorMessage title="Failed to load referral income" message={incomeError.message} />
-          ) : incomeList.length === 0 ? (
-            <EmptyState
-              icon={DollarSign}
-              title="No Commission Income Yet"
-              description="Referral commissions will appear here once downline members invest or generate ROI."
-            />
-          ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                    <tr>
-                      <th className="px-6 py-3">Level</th>
-                      <th className="px-6 py-3">Commission Amount</th>
-                      <th className="px-6 py-3">Basis Amount</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-slate-300">
-                    {incomeList.map((inc) => (
-                      <tr key={inc._id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="px-6 py-4 font-bold text-indigo-400">Level {inc.level}</td>
-                        <td className="px-6 py-4 font-semibold text-emerald-400">
-                          {formatPaise(inc.commissionAmountPaise)}
-                        </td>
-                        <td className="px-6 py-4 text-slate-400">
-                          {formatPaise(inc.basisAmountPaise)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
-                            {inc.status || 'CREDITED'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-400">
-                          {new Date(inc.createdAt).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Governance & Compliance Footer Note */}
+      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4 flex items-start gap-3 text-xs text-slate-400">
+        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <p className="leading-relaxed">
+          <strong className="text-slate-300">Affiliate Governance Notice:</strong> Referral commissions are triggered and calculated strictly by server batch jobs upon validated downline investment activations or daily ROI payouts. Commission percentages and eligible depths follow the system's approved financial rules.
+        </p>
+      </div>
     </div>
   );
 };
 
+export default ReferralsPage;

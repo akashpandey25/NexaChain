@@ -123,3 +123,4 @@ export const InvestmentsFilterBar = ({
 };
 
 export default InvestmentsFilterBar;
+

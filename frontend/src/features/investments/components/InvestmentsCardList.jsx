@@ -130,3 +130,4 @@ export const InvestmentsCardList = ({ investments = [] }) => {
 };
 
 export default InvestmentsCardList;
+

@@ -54,3 +54,4 @@ export const InvestmentDetailSkeleton = () => {
 };
 
 export default InvestmentDetailSkeleton;
+
