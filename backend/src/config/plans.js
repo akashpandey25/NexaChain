@@ -1,9 +1,16 @@
 /**
  * Server-Side Investment Plan Configuration Registry
  * 
- * NOTE: As required by the technical architecture, ROI percentages and plan configurations
- * must NEVER be determined by client inputs. This registry serves as the authoritative
- * server-side source of truth for authorized investment plans.
+ * IMPORTANT COMPLIANCE NOTICE:
+ * The investment packages defined below (Starter, Growth, Premium) with illustrative
+ * rates (1.0%, 1.5%, 2.0%) and durations (30, 60, 90 days) represent technical seed
+ * defaults for architectural verification and automated regression testing.
+ * The original technical assessment did NOT establish or approve specific company
+ * rates, durations, minimum investment amounts, or tiers.
+ * 
+ * Commercial production deployment requires formal stakeholder approval of authorized
+ * business plans prior to opening user contracts. Under no circumstances should these
+ * seed values be treated as finalized corporate business rules.
  */
 const INVESTMENT_PLANS = {
   STARTER: {

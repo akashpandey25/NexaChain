@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Investment = require('../models/Investment');
 const ROIHistory = require('../models/ROIHistory');
 const ReferralIncome = require('../models/ReferralIncome');
+const { normalizeBusinessDate } = require('./roiService');
 
 /**
  * Dashboard Service Layer
@@ -13,12 +14,18 @@ const ReferralIncome = require('../models/ReferralIncome');
  * Retrieve aggregated dashboard statistics for an authenticated user.
  * 
  * @param {string|mongoose.Types.ObjectId} userId Authenticated user ObjectId
- * @param {object} [queryOptions={}] Filter options (startDate, endDate, limit)
+ * @param {object} [queryOptions={}] Filter options (startDate, endDate, limit, businessDate)
  * @returns {Promise<object>} Standardized dashboard payload
  */
 const getDashboardData = async (userId, queryOptions = {}) => {
   const userObjectId = new mongoose.Types.ObjectId(userId);
   const limit = queryOptions.limit || 30;
+
+  // Resolve current Asia/Kolkata business date boundaries for the daily ROI card
+  const todayContext = normalizeBusinessDate(
+    queryOptions.businessDate || new Date(),
+    'Asia/Kolkata'
+  );
 
   // Build businessDate filter for ROI chart series if provided
   const roiChartMatch = {
@@ -44,7 +51,8 @@ const getDashboardData = async (userId, queryOptions = {}) => {
     investmentStats,
     roiSummaryStats,
     roiChartStats,
-    referralIncomeStats
+    referralIncomeStats,
+    todayRoiStats
   ] = await Promise.all([
     // 1. Fetch current wallet balance
     User.findById(userObjectId).select('walletBalancePaise').lean(),
@@ -67,7 +75,7 @@ const getDashboardData = async (userId, queryOptions = {}) => {
       }
     ]),
 
-    // 5. Aggregate processed ROI totals
+    // 5. Aggregate processed ROI totals (lifetime)
     ROIHistory.aggregate([
       {
         $match: {
@@ -104,6 +112,27 @@ const getDashboardData = async (userId, queryOptions = {}) => {
         $match: {
           beneficiary: userObjectId,
           status: 'processed' // Exclude pending and failed
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmountPaise: { $sum: '$amountPaise' },
+          count: { $sum: 1 }
+        }
+      }
+    ]),
+
+    // 8. Aggregate processed ROI specifically for current Asia/Kolkata business date
+    ROIHistory.aggregate([
+      {
+        $match: {
+          user: userObjectId,
+          status: 'processed', // Strictly exclude pending and failed records
+          businessDate: {
+            $gte: todayContext.startOfBusinessDay,
+            $lte: todayContext.endOfBusinessDay
+          }
         }
       },
       {
@@ -155,6 +184,12 @@ const getDashboardData = async (userId, queryOptions = {}) => {
   const processedRoiRecordCount =
     roiSummaryStats.length > 0 ? roiSummaryStats[0].count : 0;
 
+  // Process Current-Day Daily ROI Metrics (Asia/Kolkata Business Date)
+  const dailyRoiPaise =
+    todayRoiStats.length > 0 ? todayRoiStats[0].totalAmountPaise : 0;
+  const dailyRoiRecordCount =
+    todayRoiStats.length > 0 ? todayRoiStats[0].count : 0;
+
   const roiChartData = roiChartStats.map((point) => ({
     businessDate: point._id,
     amountPaise: point.amountPaise,
@@ -174,6 +209,7 @@ const getDashboardData = async (userId, queryOptions = {}) => {
     summary: {
       totalInvestmentPaise,
       activeInvestmentPaise: statusAmounts.active,
+      dailyRoiPaise,
       totalRoiPaise,
       walletBalancePaise,
       totalDirectReferrals: directReferralsTotal,
@@ -189,6 +225,9 @@ const getDashboardData = async (userId, queryOptions = {}) => {
       amountByStatus
     },
     roi: {
+      dailyRoiPaise,
+      dailyRoiRecordCount,
+      currentBusinessDate: todayContext.dateKey,
       totalProcessedRoiPaise: totalRoiPaise,
       processedRecordCount: processedRoiRecordCount,
       chartData: roiChartData

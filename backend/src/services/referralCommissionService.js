@@ -382,7 +382,12 @@ const processReferralCommissions = async (sourceEventInput, options = {}) => {
       if (config.CREDIT_WALLET_IMMEDIATELY) {
         await User.findByIdAndUpdate(
           beneficiary._id,
-          { $inc: { walletBalancePaise: commissionPaise } },
+          {
+            $inc: {
+              walletBalancePaise: commissionPaise,
+              totalLevelIncomeEarnedPaise: commissionPaise
+            }
+          },
           { session }
         );
 
@@ -511,7 +516,12 @@ const processRoiReferralCommissionsInSession = async ({
     if (config.CREDIT_WALLET_IMMEDIATELY) {
       await User.findByIdAndUpdate(
         ancestor.user._id,
-        { $inc: { walletBalancePaise: commissionPaise } },
+        {
+          $inc: {
+            walletBalancePaise: commissionPaise,
+            totalLevelIncomeEarnedPaise: commissionPaise
+          }
+        },
         { session }
       );
 

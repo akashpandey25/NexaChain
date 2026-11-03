@@ -110,12 +110,12 @@ export const DashboardPage = () => {
           badgeText={investments.activeCount ? `${investments.activeCount} active` : undefined}
         />
 
-        {/* 2. Daily ROI */}
+        {/* 2. Daily ROI (Current Business Date) */}
         <StatCard
           title="Daily ROI"
-          amountPaise={summary.totalRoiPaise}
-          count={roi.processedRecordCount}
-          countLabel="distributions"
+          amountPaise={summary.dailyRoiPaise ?? 0}
+          count={roi.dailyRoiRecordCount ?? 0}
+          countLabel="today"
           icon={Coins}
           variant="emerald"
         />

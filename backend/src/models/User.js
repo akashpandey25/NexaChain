@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema(
         'Please provide a valid email address'
       ]
     },
+    mobileNumber: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: [20, 'Mobile number cannot exceed 20 characters']
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -72,6 +78,26 @@ const userSchema = new mongoose.Schema(
           return Number.isInteger(value) && value >= 0;
         },
         message: 'Wallet balance must be a non-negative integer representing paise'
+      }
+    },
+    totalRoiEarnedPaise: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: function (value) {
+          return Number.isInteger(value) && value >= 0;
+        },
+        message: 'Total ROI earned must be a non-negative integer representing paise'
+      }
+    },
+    totalLevelIncomeEarnedPaise: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: function (value) {
+          return Number.isInteger(value) && value >= 0;
+        },
+        message: 'Total level income earned must be a non-negative integer representing paise'
       }
     },
     isActive: {
@@ -124,10 +150,13 @@ userSchema.methods.toSafeObject = function () {
     id: this._id,
     name: this.name,
     email: this.email,
+    mobileNumber: this.mobileNumber || null,
     referralCode: this.referralCode,
     referredBy: this.referredBy,
     role: this.role,
     walletBalancePaise: this.walletBalancePaise,
+    totalRoiEarnedPaise: this.totalRoiEarnedPaise || 0,
+    totalLevelIncomeEarnedPaise: this.totalLevelIncomeEarnedPaise || 0,
     isActive: this.isActive,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt

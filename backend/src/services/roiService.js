@@ -340,10 +340,15 @@ const processDailyROI = async (businessDateInput, options = {}) => {
 
         // 3. Atomically credit User wallet and create ledger entry (if configured)
         if (config.CREDIT_WALLET_IMMEDIATELY && roiAmountPaise > 0) {
-          // Increment user's wallet balance
+          // Increment user's wallet balance and persisted total ROI earned
           await User.findByIdAndUpdate(
             investment.user,
-            { $inc: { walletBalancePaise: roiAmountPaise } },
+            {
+              $inc: {
+                walletBalancePaise: roiAmountPaise,
+                totalRoiEarnedPaise: roiAmountPaise
+              }
+            },
             { session }
           );
 

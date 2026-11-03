@@ -55,9 +55,12 @@ describe('Mongoose Models Verification & Validation Tests', () => {
       expect(user._id).toBeDefined();
       expect(user.name).toBe('Alice Johnson');
       expect(user.email).toBe('alice@example.com');
+      expect(user.mobileNumber).toBeNull();
       expect(user.referralCode).toBe('ALICE100');
       expect(user.role).toBe('user');
       expect(user.walletBalancePaise).toBe(0);
+      expect(user.totalRoiEarnedPaise).toBe(0);
+      expect(user.totalLevelIncomeEarnedPaise).toBe(0);
       expect(user.isActive).toBe(true);
       expect(user.referredBy).toBeNull();
       expect(user.createdAt).toBeDefined();
@@ -147,6 +150,27 @@ describe('Mongoose Models Verification & Validation Tests', () => {
           walletBalancePaise: -500
         })
       ).rejects.toThrow(/non-negative integer/i);
+    });
+
+    test('1.7 Successfully stores optional mobileNumber and verifies earnings totals schema', async () => {
+      const user = await User.create({
+        name: 'Mobile User',
+        email: 'mobile@example.com',
+        mobileNumber: '+919876543210',
+        password: 'pass',
+        referralCode: 'MOB100',
+        totalRoiEarnedPaise: 25000,
+        totalLevelIncomeEarnedPaise: 15000
+      });
+
+      expect(user.mobileNumber).toBe('+919876543210');
+      expect(user.totalRoiEarnedPaise).toBe(25000);
+      expect(user.totalLevelIncomeEarnedPaise).toBe(15000);
+
+      const safe = user.toSafeObject();
+      expect(safe.mobileNumber).toBe('+919876543210');
+      expect(safe.totalRoiEarnedPaise).toBe(25000);
+      expect(safe.totalLevelIncomeEarnedPaise).toBe(15000);
     });
   });
 

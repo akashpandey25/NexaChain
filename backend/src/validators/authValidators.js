@@ -14,6 +14,12 @@ const registerSchema = z.object({
     .trim()
     .toLowerCase()
     .email('Please provide a valid email address'),
+  mobileNumber: z
+    .string()
+    .trim()
+    .max(20, 'Mobile number cannot exceed 20 characters')
+    .optional()
+    .or(z.literal('')),
   password: z
     .string({ required_error: 'Password is required' })
     .min(8, 'Password must be at least 8 characters long')

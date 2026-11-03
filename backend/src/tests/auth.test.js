@@ -57,6 +57,28 @@ describe('Authentication & Authorization Integration Tests', () => {
       expect(dbUser.password).toMatch(/^\$2[aby]\$/); // bcrypt hash format
     });
 
+    test('1b. Registers a new user with optional mobileNumber', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Mobile User',
+          email: 'mobile.user@example.com',
+          mobileNumber: '+919876543210',
+          password: 'Password123'
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.mobileNumber).toBe('+919876543210');
+      expect(res.body.data.user.totalRoiEarnedPaise).toBe(0);
+      expect(res.body.data.user.totalLevelIncomeEarnedPaise).toBe(0);
+
+      const dbUser = await User.findOne({ email: 'mobile.user@example.com' });
+      expect(dbUser.mobileNumber).toBe('+919876543210');
+      expect(dbUser.totalRoiEarnedPaise).toBe(0);
+      expect(dbUser.totalLevelIncomeEarnedPaise).toBe(0);
+    });
+
     test('2. Rejects duplicate email registration with HTTP 409', async () => {
       await request(app)
         .post('/api/auth/register')

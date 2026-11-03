@@ -71,11 +71,14 @@ const register = async (req, res, next) => {
     const newUser = await User.create({
       name,
       email,
+      mobileNumber: req.body.mobileNumber?.trim() || null,
       password,
       referralCode: newReferralCode,
       referredBy,
       role: 'user', // Security: Prevent role escalation during public registration
       walletBalancePaise: 0,
+      totalRoiEarnedPaise: 0,
+      totalLevelIncomeEarnedPaise: 0,
       isActive: true
     });
 

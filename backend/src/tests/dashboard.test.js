@@ -7,6 +7,7 @@ const Investment = require('../models/Investment');
 const ROIHistory = require('../models/ROIHistory');
 const ReferralIncome = require('../models/ReferralIncome');
 const { generateToken } = require('../utils/jwt');
+const { normalizeBusinessDate } = require('../services/roiService');
 
 jest.setTimeout(60000);
 
@@ -396,6 +397,111 @@ describe('Dashboard API & Statistics Integration Tests', () => {
     expect(resInverted.status).toBe(400);
     expect(resInverted.body.success).toBe(false);
     expect(resInverted.body.message).toContain('startDate cannot be later than endDate');
+  });
+
+  describe('Daily ROI current-day metrics', () => {
+    test('10. Accurately calculates daily ROI for current business date and strictly excludes previous dates, zero states, and non-processed records', async () => {
+      const today = normalizeBusinessDate(new Date(), 'Asia/Kolkata');
+      const yesterday = normalizeBusinessDate(new Date(Date.now() - 86400000), 'Asia/Kolkata');
+
+      // 1. Zero ROI when no records exist
+      const resEmpty = await request(app)
+        .get('/api/dashboard')
+        .set('Authorization', `Bearer ${userAToken}`);
+      expect(resEmpty.status).toBe(200);
+      expect(resEmpty.body.data.summary.dailyRoiPaise).toBe(0);
+      expect(resEmpty.body.data.roi.dailyRoiPaise).toBe(0);
+      expect(resEmpty.body.data.roi.dailyRoiRecordCount).toBe(0);
+
+      const [inv1, inv2, inv3, inv4] = await Promise.all([
+        Investment.create({
+          user: userA._id,
+          principalAmountPaise: 300000,
+          planName: 'Growth Plan',
+          roiPercentage: 1.5,
+          status: 'active'
+        }),
+        Investment.create({
+          user: userA._id,
+          principalAmountPaise: 250000,
+          planName: 'Growth Plan',
+          roiPercentage: 1.5,
+          status: 'active'
+        }),
+        Investment.create({
+          user: userA._id,
+          principalAmountPaise: 100000,
+          planName: 'Starter Plan',
+          roiPercentage: 1.0,
+          status: 'active'
+        }),
+        Investment.create({
+          user: userA._id,
+          principalAmountPaise: 150000,
+          planName: 'Starter Plan',
+          roiPercentage: 1.0,
+          status: 'active'
+        })
+      ]);
+
+      await ROIHistory.create([
+        // 2. Current business date - processed (MUST BE INCLUDED in daily ROI)
+        {
+          user: userA._id,
+          investment: inv1._id,
+          amountPaise: 4500,
+          roiPercentageApplied: 1.5,
+          businessDate: today.normalizedUtcMidnight,
+          status: 'processed',
+          transactionKey: 'roi_today_processed'
+        },
+        // 3. Previous business date - processed (MUST BE EXCLUDED from daily ROI)
+        {
+          user: userA._id,
+          investment: inv2._id,
+          amountPaise: 3500,
+          roiPercentageApplied: 1.5,
+          businessDate: yesterday.normalizedUtcMidnight,
+          status: 'processed',
+          transactionKey: 'roi_yesterday_processed'
+        },
+        // 4. Current business date - pending (MUST BE EXCLUDED from daily ROI)
+        {
+          user: userA._id,
+          investment: inv3._id,
+          amountPaise: 1500,
+          roiPercentageApplied: 1.5,
+          businessDate: today.normalizedUtcMidnight,
+          status: 'pending',
+          transactionKey: 'roi_today_pending'
+        },
+        // 5. Current business date - failed (MUST BE EXCLUDED from daily ROI)
+        {
+          user: userA._id,
+          investment: inv4._id,
+          amountPaise: 2000,
+          roiPercentageApplied: 1.5,
+          businessDate: today.normalizedUtcMidnight,
+          status: 'failed',
+          transactionKey: 'roi_today_failed'
+        }
+      ]);
+
+      const res = await request(app)
+        .get('/api/dashboard')
+        .set('Authorization', `Bearer ${userAToken}`);
+
+      expect(res.status).toBe(200);
+      // Daily ROI strictly equals 4500 paise (today's processed record only)
+      expect(res.body.data.summary.dailyRoiPaise).toBe(4500);
+      expect(res.body.data.roi.dailyRoiPaise).toBe(4500);
+      expect(res.body.data.roi.dailyRoiRecordCount).toBe(1);
+
+      // Lifetime total ROI still includes yesterday's processed: 4500 + 3500 = 8000
+      expect(res.body.data.summary.totalRoiPaise).toBe(8000);
+      expect(res.body.data.roi.totalProcessedRoiPaise).toBe(8000);
+      expect(res.body.data.roi.processedRecordCount).toBe(2);
+    });
   });
 });
 
