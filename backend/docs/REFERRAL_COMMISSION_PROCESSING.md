@@ -176,3 +176,4 @@ try {
 | **Generational Commission Tiers** | Configurable via basis points per tier | Confirm the exact commission percentages and eligible depth (e.g. 3 tiers: 5%, 3%, 1% vs 5 tiers). |
 | **Minimum Personal Investment Rule** | Currently checks `isActive: true` only | Confirm whether an upline sponsor must hold an active investment themselves to qualify for downline commissions. |
 | **Immediate vs Held Wallet Crediting** | Configurable boolean | Confirm whether referral commissions should be immediately spendable or placed in escrow for withdrawal clearance. |
+

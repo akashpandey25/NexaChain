@@ -748,8 +748,13 @@ curl -X GET "http://localhost:5000/api/roi/summary" \
   "success": true,
   "message": "Daily ROI processing completed",
   "data": {
+    "jobName": "DAILY_ROI_PROCESSING",
     "businessDate": "2026-11-03",
-    "normalizedBusinessDate": "2026-11-03T00:00:00.000Z",
+    "instanceId": "server-node-1-8492-4f3b1a2c",
+    "startTimestamp": "2026-11-03T18:30:00.000Z",
+    "completionTimestamp": "2026-11-03T18:30:01.240Z",
+    "durationMs": 1240,
+    "jobStatus": "SUCCESS",
     "eligibleInvestments": 10,
     "processedInvestments": 10,
     "skippedInvestments": 0,
@@ -757,5 +762,21 @@ curl -X GET "http://localhost:5000/api/roi/summary" \
     "totalRoiGeneratedPaise": 15000,
     "failures": []
   }
+}
+```
+
+#### Conflict Response (`HTTP 409 Conflict`)
+Returned when another cluster node or background scheduler job is actively holding the distributed lock or executing ROI processing:
+```json
+{
+  "success": false,
+  "message": "Daily ROI processing job is currently running or locked by another instance. Please wait for completion.",
+  "errors": [
+    {
+      "field": "jobStatus",
+      "message": "SKIPPED_LOCK_HELD_BY_ANOTHER_INSTANCE",
+      "instanceId": "server-node-2-1204-8b1e4a11"
+    }
+  ]
 }
 ```

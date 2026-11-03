@@ -3,12 +3,14 @@ const Investment = require('./Investment');
 const ROIHistory = require('./ROIHistory');
 const ReferralIncome = require('./ReferralIncome');
 const WalletTransaction = require('./WalletTransaction');
+const JobLock = require('./JobLock');
 
 module.exports = {
   User,
   Investment,
   ROIHistory,
   ReferralIncome,
-  WalletTransaction
+  WalletTransaction,
+  JobLock
 };
 

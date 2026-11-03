@@ -3,6 +3,7 @@ const {
   getUserRoiSummary,
   processDailyROI
 } = require('../services/roiService');
+const { executeDailyRoiJob } = require('../cron/dailyRoiJob');
 
 /**
  * ROI Controller
@@ -48,16 +49,43 @@ const getRoiSummary = async (req, res, next) => {
 /**
  * POST /api/roi/process
  * Admin-only endpoint to trigger the daily ROI engine for a specified business date.
+ * Coordinates with the distributed lock to prevent overlapping runs.
  */
 const triggerDailyRoi = async (req, res, next) => {
   try {
     const businessDate = req.body?.businessDate || req.query?.businessDate;
-    const summary = await processDailyROI(businessDate);
+    const result = await executeDailyRoiJob(businessDate);
+
+    // If job was skipped due to lock contention or running locally, return HTTP 409 Conflict
+    if (
+      result.jobStatus === 'SKIPPED_LOCK_HELD_BY_ANOTHER_INSTANCE' ||
+      result.jobStatus === 'SKIPPED_ALREADY_RUNNING_LOCALLY'
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: 'Daily ROI processing job is currently running or locked by another instance. Please wait for completion.',
+        errors: [
+          {
+            field: 'jobStatus',
+            message: result.jobStatus,
+            instanceId: result.instanceId
+          }
+        ]
+      });
+    }
+
+    if (result.jobStatus === 'FAILED') {
+      return res.status(500).json({
+        success: false,
+        message: 'Daily ROI processing failed',
+        errors: result.failures
+      });
+    }
 
     return res.status(200).json({
       success: true,
       message: 'Daily ROI processing completed',
-      data: summary
+      data: result
     });
   } catch (error) {
     next(error);
