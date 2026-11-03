@@ -1,0 +1,68 @@
+# ==============================================================================
+# NexaChain - Production & Local Compose Orchestration
+# ==============================================================================
+# IMPORTANT NOTICE ON MONGODB:
+# NexaChain financial transactions (Daily ROI accrual, referral distributions)
+# require a MongoDB Replica Set (or MongoDB Atlas cluster) to support ACID transactions.
+#
+# Before running `docker compose up`, provide your MongoDB Replica Set URI in a root
+# `.env` file or export MONGO_URI in your shell:
+#   export MONGO_URI="mongodb+srv://<user>:<password>@cluster.mongodb.net/nexachain?retryWrites=true&w=majority"
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # Backend API & Daily ROI Scheduler
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexachain-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=${MONGO_URI:-mongodb://host.docker.internal:27017/nexachain?replicaSet=rs0}
+      - JWT_SECRET=${JWT_SECRET:-replace_with_a_secure_random_production_secret_32chars}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
+      - CLIENT_URL=${CLIENT_URL:-http://localhost:3000}
+      - CRON_ENABLED=${CRON_ENABLED:-true}
+      - CRON_SCHEDULE=${CRON_SCHEDULE:-0 0 * * *}
+      - CRON_TIMEZONE=${CRON_TIMEZONE:-Asia/Kolkata}
+      - CRON_LOCK_LEASE_MS=${CRON_LOCK_LEASE_MS:-600000}
+      - CRON_HEARTBEAT_MS=${CRON_HEARTBEAT_MS:-30000}
+      - CRON_SHUTDOWN_TIMEOUT_MS=${CRON_SHUTDOWN_TIMEOUT_MS:-8000}
+      - ROI_BATCH_SIZE=${ROI_BATCH_SIZE:-100}
+      - ROI_ROUNDING_MODE=${ROI_ROUNDING_MODE:-FLOOR}
+      - ROI_CREDIT_WALLET_IMMEDIATELY=${ROI_CREDIT_WALLET_IMMEDIATELY:-true}
+      - REFERRAL_COMMISSION_ENABLED=${REFERRAL_COMMISSION_ENABLED:-false}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Frontend Web UI (Nginx Alpine)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+    container_name: nexachain-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
