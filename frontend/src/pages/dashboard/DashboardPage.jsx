@@ -97,31 +97,22 @@ export const DashboardPage = () => {
         }
       />
 
-      {/* 2. Primary Financial KPI Cards Grid */}
+      {/* 2. Primary Financial KPI Cards Grid (Assessment Specified Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Total Invested */}
+        {/* 1. Total Investments */}
         <StatCard
-          title="Total Invested"
+          title="Total Investments"
           amountPaise={summary.totalInvestmentPaise}
           count={investments.totalCount}
-          countLabel="total packages"
+          countLabel="packages"
           icon={PiggyBank}
           variant="default"
+          badgeText={investments.activeCount ? `${investments.activeCount} active` : undefined}
         />
 
-        {/* Active Principal */}
+        {/* 2. Daily ROI */}
         <StatCard
-          title="Active Principal"
-          amountPaise={summary.activeInvestmentPaise}
-          count={investments.activeCount}
-          countLabel="active packages"
-          icon={TrendingUp}
-          variant="emerald"
-        />
-
-        {/* Total ROI Yield */}
-        <StatCard
-          title="Total ROI Yield"
+          title="Daily ROI"
           amountPaise={summary.totalRoiPaise}
           count={roi.processedRecordCount}
           countLabel="distributions"
@@ -129,43 +120,54 @@ export const DashboardPage = () => {
           variant="emerald"
         />
 
-        {/* Available Wallet Balance */}
+        {/* 3. Total Level Income */}
         <StatCard
-          title="Available Balance"
+          title="Total Level Income"
+          amountPaise={summary.processedReferralIncomePaise}
+          count={summary.totalDirectReferrals}
+          countLabel="referrals"
+          icon={Users}
+          variant="purple"
+          badgeText={`${summary.activeDirectReferrals || 0} active`}
+        />
+
+        {/* 4. Wallet Balance */}
+        <StatCard
+          title="Wallet Balance"
           amountPaise={summary.walletBalancePaise}
-          subtitle="Ready for reinvestment"
+          subtitle="Available for reinvestment"
           icon={Wallet}
           variant="cyan"
           badgeText="Active"
         />
       </div>
 
-      {/* 3. Secondary Referral Metrics Banner */}
+      {/* 3. Secondary Portfolio & Network Summary Banner */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-950/80 border border-purple-800/40 flex items-center justify-center text-purple-400 shrink-0">
-            <Users className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-emerald-400 shrink-0">
+            <TrendingUp className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-bold tracking-wider text-purple-300">
-                Multi-Level Referral Earnings
+              <span className="text-xs uppercase font-bold tracking-wider text-slate-300">
+                Active Capital Allocation
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-950 text-purple-400 border border-purple-800/60">
-                Tier Network
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/60">
+                {investments.activeCount || 0} Active Plans
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Accumulated commissions earned from invited sponsor downlines
+              Live principal actively earning daily ROI distributions
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-6 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 border-slate-800 pt-3 md:pt-0">
           <div>
-            <span className="text-[11px] text-slate-400 block">Commission Earned</span>
-            <span className="text-base sm:text-lg font-bold text-purple-400">
-              {formatPaiseToINR(summary.processedReferralIncomePaise)}
+            <span className="text-[11px] text-slate-400 block">Active Principal</span>
+            <span className="text-base sm:text-lg font-bold text-emerald-400">
+              {formatPaiseToINR(summary.activeInvestmentPaise)}
             </span>
           </div>
 
@@ -180,9 +182,9 @@ export const DashboardPage = () => {
           </div>
 
           <Link
-            to="/referrals"
+            to="/investments"
             className="p-2 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors border border-slate-700/60"
-            title="View referral network"
+            title="View investments"
           >
             <ArrowRight className="w-4 h-4" />
           </Link>
