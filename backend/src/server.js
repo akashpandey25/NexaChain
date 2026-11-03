@@ -4,7 +4,9 @@ const { connectDB, disconnectDB } = require('./config/db');
 const {
   startDailyRoiScheduler,
   stopDailyRoiScheduler,
-  instanceIdentifier
+  instanceIdentifier,
+  waitForActiveJob,
+  getSchedulerStatus
 } = require('./cron/dailyRoiJob');
 const { releaseLock } = require('./services/jobLockService');
 
@@ -53,9 +55,22 @@ const gracefulShutdown = async (signal) => {
     console.warn(`[Shutdown] Warning stopping scheduler: ${schedErr.message}`);
   }
 
-  // 2. Release any distributed locks held by this instance
+  // 2. Await in-flight financial job before releasing locks and terminating database connection
   try {
-    await releaseLock('DAILY_ROI_PROCESSING', instanceIdentifier);
+    await waitForActiveJob(8000);
+  } catch (waitErr) {
+    console.warn(`[Shutdown] Warning awaiting in-flight financial job: ${waitErr.message}`);
+  }
+
+  // 3. Release any distributed locks held by this instance ONLY if no job is actively executing locally
+  // (If a job is still forced to terminate, retaining the lock to let its TTL expire safely prevents split-brain)
+  try {
+    const schedulerState = getSchedulerStatus();
+    if (!schedulerState.isJobRunningLocally) {
+      await releaseLock('DAILY_ROI_PROCESSING', instanceIdentifier);
+    } else {
+      console.warn('[Shutdown] ⚠️ ROI processing job still running at forced shutdown; lock retained until TTL expiration to prevent split-brain.');
+    }
   } catch (lockErr) {
     console.warn(`[Shutdown] Warning releasing distributed lock: ${lockErr.message}`);
   }

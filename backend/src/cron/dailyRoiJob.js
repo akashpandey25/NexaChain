@@ -18,6 +18,7 @@ const {
 
 let scheduledTask = null;
 let isJobRunningLocally = false;
+let activeJobPromise = null;
 const instanceIdentifier = generateLockOwnerId();
 
 /**
@@ -111,57 +112,63 @@ const executeDailyRoiJob = async (targetBusinessDate, options = {}) => {
     config.lockHeartbeatIntervalMs
   );
 
-  try {
-    // 4. Delegate to the authoritative ROI processing service
-    const summary = await processDailyROI(businessDate, options.roiServiceOptions || {});
-
-    const endTimestamp = new Date();
-    executionLog.completionTimestamp = endTimestamp.toISOString();
-    executionLog.durationMs = endTimestamp.getTime() - startTimestamp.getTime();
-    executionLog.eligibleInvestments = summary.eligibleInvestments;
-    executionLog.processedInvestments = summary.processedInvestments;
-    executionLog.skippedInvestments = summary.skippedInvestments;
-    executionLog.failedInvestments = summary.failedInvestments;
-    executionLog.totalRoiGeneratedPaise = summary.totalRoiGeneratedPaise;
-    executionLog.failures = summary.failures || [];
-
-    if (summary.failedInvestments > 0) {
-      executionLog.jobStatus = 'PARTIAL_FAILURE';
-      console.warn(
-        `[Scheduler] ⚠️ Job completed with partial failures: ${summary.failedInvestments} investments failed. ` +
-        `Processed: ${summary.processedInvestments}, Total: ${summary.totalRoiGeneratedPaise} paise (${executionLog.durationMs}ms)`
-      );
-    } else {
-      executionLog.jobStatus = 'SUCCESS';
-      console.log(
-        `[Scheduler] ✅ Daily ROI run completed successfully: ` +
-        `${summary.processedInvestments}/${summary.eligibleInvestments} processed, ` +
-        `${summary.skippedInvestments} skipped, ` +
-        `${summary.totalRoiGeneratedPaise} paise generated (${executionLog.durationMs}ms)`
-      );
-    }
-
-    return executionLog;
-  } catch (error) {
-    const endTimestamp = new Date();
-    executionLog.completionTimestamp = endTimestamp.toISOString();
-    executionLog.durationMs = endTimestamp.getTime() - startTimestamp.getTime();
-    executionLog.jobStatus = 'FAILED';
-    executionLog.failures.push({ reason: error.message });
-
-    console.error(`[Scheduler] ❌ Daily ROI processing failed: ${error.message} (${executionLog.durationMs}ms)`);
-    return executionLog;
-  } finally {
-    // 5. Clean up heartbeat, release process flag, and release distributed lock safely
-    heartbeat.stop();
-    isJobRunningLocally = false;
-
+  const runJob = async () => {
     try {
-      await releaseLock(jobName, lockOwner);
-    } catch (releaseErr) {
-      console.warn(`[Scheduler] Warning: Failed to release distributed lock for "${jobName}": ${releaseErr.message}`);
+      // 4. Delegate to the authoritative ROI processing service
+      const summary = await processDailyROI(businessDate, options.roiServiceOptions || {});
+
+      const endTimestamp = new Date();
+      executionLog.completionTimestamp = endTimestamp.toISOString();
+      executionLog.durationMs = endTimestamp.getTime() - startTimestamp.getTime();
+      executionLog.eligibleInvestments = summary.eligibleInvestments;
+      executionLog.processedInvestments = summary.processedInvestments;
+      executionLog.skippedInvestments = summary.skippedInvestments;
+      executionLog.failedInvestments = summary.failedInvestments;
+      executionLog.totalRoiGeneratedPaise = summary.totalRoiGeneratedPaise;
+      executionLog.failures = summary.failures || [];
+
+      if (summary.failedInvestments > 0) {
+        executionLog.jobStatus = 'PARTIAL_FAILURE';
+        console.warn(
+          `[Scheduler] ⚠️ Job completed with partial failures: ${summary.failedInvestments} investments failed. ` +
+          `Processed: ${summary.processedInvestments}, Total: ${summary.totalRoiGeneratedPaise} paise (${executionLog.durationMs}ms)`
+        );
+      } else {
+        executionLog.jobStatus = 'SUCCESS';
+        console.log(
+          `[Scheduler] ✅ Daily ROI run completed successfully: ` +
+          `${summary.processedInvestments}/${summary.eligibleInvestments} processed, ` +
+          `${summary.skippedInvestments} skipped, ` +
+          `${summary.totalRoiGeneratedPaise} paise generated (${executionLog.durationMs}ms)`
+        );
+      }
+
+      return executionLog;
+    } catch (error) {
+      const endTimestamp = new Date();
+      executionLog.completionTimestamp = endTimestamp.toISOString();
+      executionLog.durationMs = endTimestamp.getTime() - startTimestamp.getTime();
+      executionLog.jobStatus = 'FAILED';
+      executionLog.failures.push({ reason: error.message });
+
+      console.error(`[Scheduler] ❌ Daily ROI processing failed: ${error.message} (${executionLog.durationMs}ms)`);
+      return executionLog;
+    } finally {
+      // 5. Clean up heartbeat, release process flag, and release distributed lock safely
+      heartbeat.stop();
+      isJobRunningLocally = false;
+      activeJobPromise = null;
+
+      try {
+        await releaseLock(jobName, lockOwner);
+      } catch (releaseErr) {
+        console.warn(`[Scheduler] Warning: Failed to release distributed lock for "${jobName}": ${releaseErr.message}`);
+      }
     }
-  }
+  };
+
+  activeJobPromise = runJob();
+  return await activeJobPromise;
 };
 
 /**
@@ -207,6 +214,29 @@ const startDailyRoiScheduler = (customConfig = {}) => {
 };
 
 /**
+ * Awaits completion of an actively running in-flight job up to timeoutMs.
+ * 
+ * @param {number} [timeoutMs=8000] Graceful shutdown timeout in ms
+ * @returns {Promise<boolean>} True if completed or not running, false if timed out
+ */
+const waitForActiveJob = async (timeoutMs = 8000) => {
+  if (!isJobRunningLocally || !activeJobPromise) {
+    return true;
+  }
+  console.log(`[Scheduler] ⏳ In-flight ROI job detected. Awaiting completion (timeout: ${timeoutMs}ms)...`);
+  let timer;
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(false), timeoutMs);
+  });
+  const completed = await Promise.race([
+    activeJobPromise.then(() => true).catch(() => true),
+    timeoutPromise
+  ]);
+  clearTimeout(timer);
+  return completed;
+};
+
+/**
  * Stops the background scheduler cleanly.
  */
 const stopDailyRoiScheduler = () => {
@@ -237,6 +267,7 @@ module.exports = {
   executeDailyRoiJob,
   startDailyRoiScheduler,
   stopDailyRoiScheduler,
-  getSchedulerStatus
+  getSchedulerStatus,
+  waitForActiveJob
 };
 
