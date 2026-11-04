@@ -85,7 +85,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Title & Description */}
       <div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
