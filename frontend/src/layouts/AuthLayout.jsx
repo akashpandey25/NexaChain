@@ -182,8 +182,8 @@ export const AuthLayout = () => {
               <Link
                 to="/login"
                 className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${isLogin
-                    ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
-                    : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
+                  : 'text-slate-400 hover:text-slate-200'
                   }`}
               >
                 <LogIn className="w-4 h-4" />
@@ -192,8 +192,8 @@ export const AuthLayout = () => {
               <Link
                 to="/register"
                 className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!isLogin
-                    ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
-                    : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
+                  : 'text-slate-400 hover:text-slate-200'
                   }`}
               >
                 <UserPlus className="w-4 h-4" />
