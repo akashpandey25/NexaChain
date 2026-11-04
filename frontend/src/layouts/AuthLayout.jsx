@@ -181,22 +181,20 @@ export const AuthLayout = () => {
             <div className="grid grid-cols-2 p-1 bg-slate-950/90 border border-slate-800/80 rounded-xl mb-5">
               <Link
                 to="/login"
-                className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-                  isLogin
+                className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${isLogin
                     ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <LogIn className="w-4 h-4" />
                 <span>Sign In</span>
               </Link>
               <Link
                 to="/register"
-                className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-                  !isLogin
+                className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${!isLogin
                     ? 'bg-slate-800 text-white shadow-sm border border-slate-700/80'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Create Account</span>
@@ -208,12 +206,12 @@ export const AuthLayout = () => {
           </div>
 
           {/* Security Verification Badge Pill */}
-          <div className="flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/60 border border-slate-800 text-[10px] sm:text-[11px] text-slate-400 shadow-sm mx-auto">
+          {/* <div className="flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/60 border border-slate-800 text-[10px] sm:text-[11px] text-slate-400 shadow-sm mx-auto">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span>256-Bit Encrypted & JWT Verified Session</span>
             <span className="text-slate-600">•</span>
             <span className="text-emerald-400/90 font-medium">Instant Vault Provisioning</span>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
