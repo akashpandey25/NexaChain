@@ -38,6 +38,10 @@ export const AppLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const notificationRef = useRef(null);
+  const triggerButtonRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const drawerRef = useRef(null);
+  const prevMobileMenuOpenRef = useRef(false);
 
   // Close mobile drawer on route transition
   useEffect(() => {
@@ -45,12 +49,45 @@ export const AppLayout = () => {
     setNotificationOpen(false);
   }, [location.pathname]);
 
-  // Handle escape key and click outside for popovers and drawers
+  // Manage drawer focus transitions
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Focus enters drawer
+      setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 50);
+    } else if (prevMobileMenuOpenRef.current) {
+      // Focus returns to the trigger button when drawer is closed
+      triggerButtonRef.current?.focus();
+    }
+    prevMobileMenuOpenRef.current = mobileMenuOpen;
+  }, [mobileMenuOpen]);
+
+  // Handle escape key, click outside, and focus trapping inside mobile drawer
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         if (mobileMenuOpen) setMobileMenuOpen(false);
         if (notificationOpen) setNotificationOpen(false);
+      }
+
+      // Trap focus in drawer when open
+      if (mobileMenuOpen && e.key === 'Tab' && drawerRef.current) {
+        const focusableElements = drawerRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
@@ -181,6 +218,7 @@ export const AppLayout = () => {
 
       {/* 2. Mobile Drawer Navigation */}
       <div
+        ref={drawerRef}
         className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-surface-sidebar border-r border-border-subtle flex flex-col justify-between p-5 transform transition-all duration-200 ease-out md:hidden ${
           mobileMenuOpen
             ? 'translate-x-0 opacity-100 visible'
@@ -207,6 +245,7 @@ export const AppLayout = () => {
               </div>
             </Link>
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={() => setMobileMenuOpen(false)}
               className="p-1.5 rounded-button text-text-muted hover:text-text-primary hover:bg-surface-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
@@ -357,6 +396,7 @@ export const AppLayout = () => {
           <div className="flex items-center gap-3">
             {/* Mobile menu toggle button */}
             <button
+              ref={triggerButtonRef}
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               className="p-2 -ml-2 rounded-button text-text-secondary hover:text-text-primary hover:bg-surface-card-hover md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
@@ -366,18 +406,18 @@ export const AppLayout = () => {
             </button>
 
             {/* Route-Aware Dynamic Breadcrumbs */}
-            <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
-              <span className="text-text-muted select-none">Platform</span>
-              <ChevronRight className="w-3 h-3 text-text-muted select-none" aria-hidden="true" />
-              {getBreadcrumbLabel(location.pathname)}
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-text-secondary min-w-0">
+              <span className="hidden sm:inline text-text-muted select-none">Platform</span>
+              <ChevronRight className="hidden sm:inline w-3 h-3 text-text-muted select-none shrink-0" aria-hidden="true" />
+              <div className="truncate">{getBreadcrumbLabel(location.pathname)}</div>
             </div>
           </div>
 
           {/* Right Header Status Badges & Controls */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Wallet Balance Display Pill */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-medium bg-surface-card border border-border-subtle text-text-primary">
-              <span className="text-text-muted text-[11px]">Wallet:</span>
+            <div className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-sans font-medium bg-surface-card border border-border-subtle text-text-primary">
+              <span className="text-text-muted text-[11px] hidden xs:inline">Wallet:</span>
               <span className="font-tabular tabular-nums font-semibold">{formattedBalance}</span>
             </div>
 
@@ -407,9 +447,9 @@ export const AppLayout = () => {
                     <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border-subtle text-text-muted flex items-center justify-center mx-auto mb-2">
                       <Bell className="w-4 h-4" />
                     </div>
-                    <p className="text-xs font-medium text-text-primary">No unread notifications</p>
+                    <p className="text-xs font-medium text-text-primary">No Notifications</p>
                     <p className="text-[11px] text-text-secondary leading-relaxed">
-                      Settlement disbursements, security notices, and administrative updates will appear here.
+                      In-app alerts are not currently active. Live settlement records and investment status updates are tracked directly on your dashboard and ledger history.
                     </p>
                   </div>
                 </div>

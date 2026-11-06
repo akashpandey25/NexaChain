@@ -63,7 +63,7 @@ test.describe('Phase 3 Application Shell & Responsive Navigation Verification', 
 
     const notifDialog = page.getByRole('dialog', { name: 'Notifications' });
     await expect(notifDialog).toBeVisible();
-    await expect(notifDialog.getByText('No unread notifications')).toBeVisible();
+    await expect(notifDialog.getByText(/no notifications/i)).toBeVisible();
 
     // Press Escape to close popover
     await page.keyboard.press('Escape');
