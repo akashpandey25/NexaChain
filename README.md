@@ -1,6 +1,6 @@
 # NexaChain – Investment & Referral Management Platform
 
-[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-151%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
+[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-165%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
 [![Frontend Build](https://img.shields.io/badge/Frontend%20Build-Vite%20Passing-success?style=flat-square)](frontend/)
 [![Node Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-blue?style=flat-square)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20Replica%20Set-emerald?style=flat-square)](docs/MONGODB_PRODUCTION_SETUP.md)
@@ -271,6 +271,7 @@ npm run dev:frontend
 | `ROI_ROUNDING_MODE` | String | `FLOOR` | Rounding policy for fractional paise (`FLOOR`, `ROUND`, `CEIL`) |
 | `ROI_CREDIT_WALLET_IMMEDIATELY`| Boolean | `true` | Atomically credit user wallet balance during daily ROI accrual |
 | `REFERRAL_COMMISSION_ENABLED` | Boolean | `false` | Master toggle for multi-tier referral commissions (disabled by default) |
+| `INVESTMENT_ACTIVATION_ENABLED`| Boolean | `false` | Production fail-safe gate: controls administrative activation of illustrative investment packages |
 
 ### Frontend Environment Variables (`frontend/.env`)
 
@@ -293,9 +294,13 @@ All API responses follow the standard JSON envelope:
 | `POST` | `/api/auth/login` | Public | Authenticate user credentials and issue JWT token |
 | `GET` | `/api/auth/me` | Authenticated | Retrieve authenticated user profile and wallet balance |
 | `GET` | `/api/auth/admin-check` | Admin | Verify administrative privileges (HTTP 403 for non-admins) |
-| `POST` | `/api/investments` | Authenticated | Create investment contract with server-validated plan rate |
+| `POST` | `/api/investments` | Authenticated | Create investment contract with server-validated plan rate (strictly pending) |
 | `GET` | `/api/investments` | Authenticated | List paginated user investments with status filtering |
+| `GET` | `/api/investments/plans` | Authenticated | Retrieve available investment packages with demonstration markers |
+| `GET` | `/api/investments/admin/pending` | Admin | Retrieve pending investment contracts across all users for administrative review |
 | `GET` | `/api/investments/:id` | Authenticated | Retrieve single investment details (ownership strictly enforced) |
+| `PATCH` | `/api/investments/:id/activate` | Admin | Administratively activate pending contract (gated by `INVESTMENT_ACTIVATION_ENABLED`) |
+| `PATCH` | `/api/investments/:id/reject` | Admin | Administratively reject pending contract with an auditable reason |
 | `GET` | `/api/dashboard` | Authenticated | Aggregated financial statistics, portfolio metrics, ROI chart series |
 | `GET` | `/api/referrals/direct` | Authenticated | Paginated Level-1 direct referrals with active status breakdown |
 | `GET` | `/api/referrals/tree` | Authenticated | Hierarchical downline network tree with cycle protection |
@@ -419,8 +424,10 @@ Ensure Docker and Docker Compose are installed:
    - As mandated by the assessment specifications, the engine remains safely disabled (`REFERRAL_COMMISSION_ENABLED: false`) until company stakeholders formally approve commission percentages, trigger events (`INVESTMENT_ACTIVATION` vs. `ROI_PAYOUT`), and calculation bases (`INVESTMENT_PRINCIPAL` vs. `ROI_AMOUNT`).
 2. **Wallet Deposit & Withdrawal Workflows:**
    - The platform operates with simulated/pre-funded wallet balances and administrative ledger adjustments. Third-party payment gateways (e.g. Razorpay, Stripe) and automated banking payout rails are intentionally omitted in Milestone 1 to avoid unbacked mock transactions.
-3. **Investment Lifecycle & Activation:**
-   - Packages submitted via `POST /api/investments` are registered strictly in `'pending'` status with server-validated rates, and transitioned to active status administratively.
+3. **Investment Lifecycle & Production Activation Gate:**
+   - Packages submitted via `POST /api/investments` are registered strictly in `'pending'` status with server-authoritative rates.
+   - Administrative activation (`PATCH /api/investments/:id/activate`) transitions contracts to `'active'`, starting the daily ROI lifecycle.
+   - **Production Safety Gate:** Administrative activation is guarded by `INVESTMENT_ACTIVATION_ENABLED` (default `false`). Illustrative technical rates (Starter 1.0%, Growth 1.5%, Premium 2.0%) require formal executive ratification prior to production enablement.
 4. **Profile Immutability Policy:**
    - Personal profile attributes (legal name, email, sponsor linkage) are read-only (`GET /api/auth/me`). In accordance with financial audit integrity rules, client-side profile mutation endpoints are restricted.
 5. **MongoDB Replica Set Mandatory:**
@@ -430,6 +437,9 @@ Ensure Docker and Docker Compose are installed:
 
 ## 15. Documentation Index & Submission Checklist
 
+- [Investment Lifecycle Architecture & Security Audit](docs/INVESTMENT_LIFECYCLE_AUDIT.md)
+- [Product Functionality Audit & Inventory Matrix](docs/PRODUCT_FUNCTIONALITY_AUDIT.md)
+- [Financial Balance Reconciliation Report](docs/FINANCIAL_RECONCILIATION_REPORT.md)
 - [Assessment Submission Traceability Matrix](docs/ASSESSMENT_SUBMISSION_CHECKLIST.md)
 - [MongoDB Production Readiness & Setup Guide](docs/MONGODB_PRODUCTION_SETUP.md)
 - [REST API Reference & Endpoint Specifications](docs/API_DOCUMENTATION.md)

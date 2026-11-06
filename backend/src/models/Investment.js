@@ -60,6 +60,22 @@ const investmentSchema = new mongoose.Schema(
         },
         message: 'Total ROI earned must be a non-negative integer representing paise'
       }
+    },
+    actionedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true
+    },
+    actionedAt: {
+      type: Date,
+      default: null
+    },
+    rejectionReason: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: [500, 'Rejection reason cannot exceed 500 characters']
     }
   },
   {

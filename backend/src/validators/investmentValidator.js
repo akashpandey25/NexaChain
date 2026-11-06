@@ -93,9 +93,45 @@ const investmentIdParamSchema = z.object({
     .regex(objectIdRegex, 'Invalid investment ID format. Must be a 24-character hexadecimal ID')
 });
 
+/**
+ * Validator schema for administrative pending investments query.
+ */
+const adminPendingInvestmentsQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return 1;
+      const parsed = parseInt(val, 10);
+      return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+    }),
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return 10;
+      const parsed = parseInt(val, 10);
+      if (isNaN(parsed) || parsed < 1) return 10;
+      return parsed > 100 ? 100 : parsed;
+    })
+});
+
+/**
+ * Validator schema for administrative investment rejection.
+ */
+const rejectInvestmentSchema = z.object({
+  reason: z
+    .string({ required_error: 'Rejection reason is required' })
+    .trim()
+    .min(3, 'Rejection reason must be at least 3 characters long')
+    .max(500, 'Rejection reason cannot exceed 500 characters')
+});
+
 module.exports = {
   createInvestmentSchema,
   listInvestmentsQuerySchema,
-  investmentIdParamSchema
+  investmentIdParamSchema,
+  adminPendingInvestmentsQuerySchema,
+  rejectInvestmentSchema
 };
 

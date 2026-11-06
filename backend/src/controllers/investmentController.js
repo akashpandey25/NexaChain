@@ -79,9 +79,98 @@ const getInvestmentById = async (req, res, next) => {
   }
 };
 
+/**
+ * Retrieve public investment plans for dynamic client form loading.
+ * Route: GET /api/investments/plans
+ */
+const getPlans = async (req, res, next) => {
+  try {
+    const plans = investmentService.getPlans();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Available investment plans retrieved successfully',
+      data: {
+        plans
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * List pending investment requests across all users for administrative review.
+ * Route: GET /api/investments/admin/pending
+ */
+const getAdminPendingInvestments = async (req, res, next) => {
+  try {
+    const result = await investmentService.getAdminPendingInvestments(req.query);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Pending investment requests retrieved successfully',
+      data: {
+        investments: result.investments,
+        pagination: result.pagination
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Administratively activate a pending investment contract.
+ * Route: PATCH /api/investments/:id/activate
+ */
+const activateInvestment = async (req, res, next) => {
+  try {
+    const investment = await investmentService.activateInvestment(req.user._id, req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Investment activated successfully',
+      data: {
+        investment
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Administratively reject a pending investment contract.
+ * Route: PATCH /api/investments/:id/reject
+ */
+const rejectInvestment = async (req, res, next) => {
+  try {
+    const investment = await investmentService.rejectInvestment(
+      req.user._id,
+      req.params.id,
+      req.body.reason
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Investment rejected successfully',
+      data: {
+        investment
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createInvestment,
   getInvestments,
-  getInvestmentById
+  getInvestmentById,
+  getPlans,
+  getAdminPendingInvestments,
+  activateInvestment,
+  rejectInvestment
 };
 

@@ -228,10 +228,52 @@ export const InvestmentDetailPage = () => {
             {investment.status}
           </div>
           <p className="mt-1 text-xs text-slate-400">
-            Automated processing active
+            {investment.status === 'active'
+              ? 'Accruing daily dividends'
+              : investment.status === 'pending'
+              ? 'Awaiting administrative review'
+              : investment.status === 'completed'
+              ? 'Matured contract'
+              : 'Cancelled / rejected request'}
           </p>
         </div>
       </div>
+
+      {/* Lifecycle Status Banner */}
+      {investment.status === 'pending' && (
+        <div className="bg-amber-950/30 border border-amber-800/40 rounded-xl p-4.5 flex items-start gap-3 text-xs text-amber-300">
+          <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-amber-200">
+              Request Awaiting Administrative Review
+            </p>
+            <p className="text-amber-400/90 leading-relaxed">
+              This investment contract was logged on {formatDateTime(investment.createdAt)} and is queued for verification. In accordance with platform financial safety rules, daily ROI dividends do not accrue until the contract is administratively activated.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {investment.status === 'cancelled' && (
+        <div className="bg-rose-950/30 border border-rose-800/40 rounded-xl p-4.5 flex items-start gap-3 text-xs text-rose-300">
+          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-rose-200">
+              Contract Cancelled / Rejected
+            </p>
+            <p className="text-rose-400/90 leading-relaxed">
+              {investment.rejectionReason
+                ? `Administrative Decision: "${investment.rejectionReason}"`
+                : 'This investment request was rejected or cancelled prior to contract execution.'}
+              {investment.actionedAt && (
+                <span className="block mt-1 text-[11px] text-rose-400/80">
+                  Decision recorded on: {formatDateTime(investment.actionedAt)}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Contract & Lifecycle Details */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
@@ -291,6 +333,24 @@ export const InvestmentDetailPage = () => {
               {formatDateTime(investment.updatedAt)}
             </span>
           </div>
+
+          {investment.actionedAt && (
+            <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <span className="text-slate-400 font-medium">Administrative Decision Date</span>
+              <span className="text-slate-200 font-medium">
+                {formatDateTime(investment.actionedAt)}
+              </span>
+            </div>
+          )}
+
+          {investment.rejectionReason && (
+            <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <span className="text-slate-400 font-medium">Rejection Reason</span>
+              <span className="text-rose-400 font-medium max-w-md text-right">
+                {investment.rejectionReason}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

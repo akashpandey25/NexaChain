@@ -208,6 +208,96 @@ All investment endpoints require an authenticated user session via `Authorizatio
 
 ---
 
+### 2.4 Get Available Investment Plans
+- **Method:** `GET`
+- **Route:** `/api/investments/plans`
+- **Access:** Private (Bearer Token required)
+- **Description:** Returns server-authoritative investment packages with illustrative return rates, duration, and demonstration markers.
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "Available investment plans retrieved successfully",
+  "data": {
+    "plans": [
+      {
+        "id": "STARTER",
+        "name": "Starter Plan",
+        "roiPercentage": 1.0,
+        "durationDays": 30,
+        "description": "Entry-level investment plan with 1.0% daily return for 30 days",
+        "isDemonstration": true
+      },
+      {
+        "id": "GROWTH",
+        "name": "Growth Plan",
+        "roiPercentage": 1.5,
+        "durationDays": 60,
+        "description": "Mid-tier investment plan with 1.5% daily return for 60 days",
+        "isDemonstration": true
+      },
+      {
+        "id": "PREMIUM",
+        "name": "Premium Plan",
+        "roiPercentage": 2.0,
+        "durationDays": 90,
+        "description": "High-tier investment plan with 2.0% daily return for 90 days",
+        "isDemonstration": true
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 2.5 List Pending Investments (Administrative)
+- **Method:** `GET`
+- **Route:** `/api/investments/admin/pending`
+- **Access:** Admin Only (`role: 'admin'`)
+- **Query Parameters:** `page` (default: 1), `limit` (default: 10, max: 100)
+- **Description:** Returns pending investment packages across all platform users with populated applicant contact details for administrative review.
+
+---
+
+### 2.6 Activate Investment (Administrative)
+- **Method:** `PATCH`
+- **Route:** `/api/investments/:id/activate`
+- **Access:** Admin Only (`role: 'admin'`)
+- **Security Guard:** `INVESTMENT_ACTIVATION_ENABLED=true` required. Rejects self-activation by admin.
+- **Description:** Transitions a pending investment contract to `active`, calculating start and end dates and logging administrative audit metadata.
+
+#### Success Response (`HTTP 200 OK`)
+```json
+{
+  "success": true,
+  "message": "Investment activated successfully",
+  "data": {
+    "investment": {
+      "_id": "67273934338947fbb3000001",
+      "user": "660d1b2f4f1a2b001a111111",
+      "status": "active",
+      "startDate": "2026-11-06T15:00:00.000Z",
+      "endDate": "2026-12-06T15:00:00.000Z",
+      "actionedBy": "660d1b2f4f1a2b001a999999",
+      "actionedAt": "2026-11-06T15:00:00.000Z"
+    }
+  }
+}
+```
+
+---
+
+### 2.7 Reject Investment (Administrative)
+- **Method:** `PATCH`
+- **Route:** `/api/investments/:id/reject`
+- **Access:** Admin Only (`role: 'admin'`)
+- **Request Body:** `{ "reason": "KYC documentation mismatch" }`
+- **Description:** Rejects a pending investment contract, transitions status to `cancelled`, and records the rejection reason and administrative audit metadata.
+
+---
+
 ## 3. Dashboard & Statistics Endpoint
 
 ### 3.1 Get Dashboard Statistics

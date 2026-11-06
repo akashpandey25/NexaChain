@@ -5,6 +5,7 @@ const app = require('../app');
 const User = require('../models/User');
 const Investment = require('../models/Investment');
 const { generateToken } = require('../utils/jwt');
+const env = require('../config/env');
 
 jest.setTimeout(60000);
 
@@ -14,6 +15,8 @@ describe('Investment Management API Integration Tests', () => {
   let userAToken;
   let userB;
   let userBToken;
+  let adminUser;
+  let adminToken;
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -49,6 +52,16 @@ describe('Investment Management API Integration Tests', () => {
       referralCode: 'BOB100'
     });
     userBToken = generateToken(userB);
+
+    // Setup Admin User
+    adminUser = await User.create({
+      name: 'Admin Supervisor',
+      email: 'admin@nexachain.internal',
+      password: 'Password123',
+      referralCode: 'ADMIN100',
+      role: 'admin'
+    });
+    adminToken = generateToken(adminUser);
   });
 
   // 1. CREATE INVESTMENT (POST /api/investments)
@@ -387,6 +400,338 @@ describe('Investment Management API Integration Tests', () => {
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toBe('Investment not found');
+    });
+  });
+
+  // 4. GET INVESTMENT PLANS (GET /api/investments/plans)
+  describe('GET /api/investments/plans', () => {
+    test('17. Successfully returns public plan configurations with demonstration markers', async () => {
+      const res = await request(app)
+        .get('/api/investments/plans')
+        .set('Authorization', `Bearer ${userAToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.plans).toBeInstanceOf(Array);
+      expect(res.body.data.plans.length).toBe(3);
+
+      const planStarter = res.body.data.plans.find((p) => p.id === 'STARTER');
+      expect(planStarter).toBeDefined();
+      expect(planStarter.name).toBe('Starter Plan');
+      expect(planStarter.roiPercentage).toBe(1.0);
+      expect(planStarter.durationDays).toBe(30);
+      expect(planStarter.isDemonstration).toBe(true);
+
+      const planPremium = res.body.data.plans.find((p) => p.id === 'PREMIUM');
+      expect(planPremium).toBeDefined();
+      expect(planPremium.roiPercentage).toBe(2.0);
+      expect(planPremium.isDemonstration).toBe(true);
+    });
+
+    test('18. Rejects unauthenticated request to /plans with HTTP 401', async () => {
+      const res = await request(app).get('/api/investments/plans');
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
+  });
+
+  // 5. ADMIN PENDING INVESTMENTS (GET /api/investments/admin/pending)
+  describe('GET /api/investments/admin/pending', () => {
+    beforeEach(async () => {
+      // Pending investment for User A
+      await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'pending'
+      });
+
+      // Active investment for User A (should NOT be returned in pending list)
+      await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 1000000,
+        planName: 'Growth Plan',
+        roiPercentage: 1.5,
+        status: 'active'
+      });
+
+      // Pending investment for User B
+      await Investment.create({
+        user: userB._id,
+        principalAmountPaise: 2000000,
+        planName: 'Premium Plan',
+        roiPercentage: 2.0,
+        status: 'pending'
+      });
+    });
+
+    test('19. Rejects non-admin user with HTTP 403 Forbidden', async () => {
+      const res = await request(app)
+        .get('/api/investments/admin/pending')
+        .set('Authorization', `Bearer ${userAToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('Forbidden');
+    });
+
+    test('20. Admin successfully retrieves pending investments across all users with populated user info', async () => {
+      const res = await request(app)
+        .get('/api/investments/admin/pending')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.investments.length).toBe(2);
+      expect(res.body.data.pagination.totalRecords).toBe(2);
+
+      // Verify each investment is pending and populated
+      res.body.data.investments.forEach((inv) => {
+        expect(inv.status).toBe('pending');
+        expect(inv.user).toBeDefined();
+        expect(inv.user.name).toBeDefined();
+        expect(inv.user.email).toBeDefined();
+      });
+    });
+  });
+
+  // 6. ADMIN ACTIVATION (PATCH /api/investments/:id/activate)
+  describe('PATCH /api/investments/:id/activate', () => {
+    let pendingInv;
+    let originalActivationFlag;
+
+    beforeEach(async () => {
+      originalActivationFlag = env.investmentActivationEnabled;
+
+      pendingInv = await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Growth Plan',
+        roiPercentage: 1.5,
+        status: 'pending'
+      });
+    });
+
+    afterEach(() => {
+      env.investmentActivationEnabled = originalActivationFlag;
+    });
+
+    test('21. Rejects non-admin user with HTTP 403 Forbidden', async () => {
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/activate`)
+        .set('Authorization', `Bearer ${userAToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('Forbidden');
+    });
+
+    test('22. Rejects activation with HTTP 403 when INVESTMENT_ACTIVATION_ENABLED is false', async () => {
+      env.investmentActivationEnabled = false;
+
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('disabled by policy');
+      expect(res.body.message).toContain('INVESTMENT_ACTIVATION_ENABLED=false');
+
+      // Verify status in DB remains pending
+      const dbInv = await Investment.findById(pendingInv._id);
+      expect(dbInv.status).toBe('pending');
+    });
+
+    test('23. Rejects admin attempting to activate their own investment (self-approval forbidden)', async () => {
+      env.investmentActivationEnabled = true;
+
+      // Create pending investment owned by adminUser
+      const adminInv = await Investment.create({
+        user: adminUser._id,
+        principalAmountPaise: 100000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'pending'
+      });
+
+      const res = await request(app)
+        .patch(`/api/investments/${adminInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('Administrators are not permitted to activate or approve their own investment requests');
+
+      // Verify DB remains pending
+      const checkDb = await Investment.findById(adminInv._id);
+      expect(checkDb.status).toBe('pending');
+    });
+
+    test('24. Successfully activates pending investment when flag is enabled', async () => {
+      env.investmentActivationEnabled = true;
+
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe('Investment activated successfully');
+
+      const inv = res.body.data.investment;
+      expect(inv.status).toBe('active');
+      expect(inv.actionedBy).toBe(adminUser._id.toString());
+      expect(inv.actionedAt).toBeDefined();
+      expect(new Date(inv.endDate) > new Date(inv.startDate)).toBe(true);
+
+      // Verify in DB
+      const dbInv = await Investment.findById(pendingInv._id);
+      expect(dbInv.status).toBe('active');
+      expect(dbInv.actionedBy.toString()).toBe(adminUser._id.toString());
+      expect(dbInv.actionedAt).toBeDefined();
+    });
+
+    test('25. Rejects duplicate activation of an already active investment with HTTP 400', async () => {
+      env.investmentActivationEnabled = true;
+
+      // Activate first time
+      await request(app)
+        .patch(`/api/investments/${pendingInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      // Attempt second activation
+      const resDuplicate = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(resDuplicate.status).toBe(400);
+      expect(resDuplicate.body.success).toBe(false);
+      expect(resDuplicate.body.message).toContain('current status is "active"');
+    });
+  });
+
+  // 7. ADMIN REJECTION (PATCH /api/investments/:id/reject)
+  describe('PATCH /api/investments/:id/reject', () => {
+    let pendingInv;
+
+    beforeEach(async () => {
+      pendingInv = await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'pending'
+      });
+    });
+
+    test('26. Rejects non-admin user with HTTP 403 Forbidden', async () => {
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${userAToken}`)
+        .send({ reason: 'Non-compliant documentation' });
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+    });
+
+    test('27. Rejects missing or invalid rejection reason with HTTP 400', async () => {
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: 'no' }); // Too short (< 3 chars)
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('at least 3 characters');
+    });
+
+    test('28. Successfully rejects pending investment and records audit metadata', async () => {
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: 'Verification failed: KYC identity mismatch.' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe('Investment rejected successfully');
+
+      const inv = res.body.data.investment;
+      expect(inv.status).toBe('cancelled');
+      expect(inv.rejectionReason).toBe('Verification failed: KYC identity mismatch.');
+      expect(inv.actionedBy).toBe(adminUser._id.toString());
+      expect(inv.actionedAt).toBeDefined();
+
+      // Verify in DB
+      const dbInv = await Investment.findById(pendingInv._id);
+      expect(dbInv.status).toBe('cancelled');
+      expect(dbInv.rejectionReason).toBe('Verification failed: KYC identity mismatch.');
+    });
+
+    test('29. Rejects rejecting an already cancelled or active investment with HTTP 400', async () => {
+      // First reject
+      await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: 'Initial rejection reason' });
+
+      // Second reject attempt
+      const resSecond = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: 'Secondary rejection attempt' });
+
+      expect(resSecond.status).toBe(400);
+      expect(resSecond.body.success).toBe(false);
+      expect(resSecond.body.message).toContain('current status is "cancelled"');
+    });
+  });
+
+  // 8. ROI ENGINE EXCLUSION VERIFICATION
+  describe('ROI Eligibility Exclusion for Pending / Cancelled Investments', () => {
+    test('30. Pending and cancelled investments are excluded from ROI eligible query', async () => {
+      const { BUSINESS_RULES } = require('../config/roiConfig');
+
+      // Create pending, cancelled, and active investments
+      await Investment.create([
+        {
+          user: userA._id,
+          principalAmountPaise: 1000000,
+          planName: 'Starter Plan',
+          roiPercentage: 1.0,
+          status: 'pending'
+        },
+        {
+          user: userB._id,
+          principalAmountPaise: 2000000,
+          planName: 'Growth Plan',
+          roiPercentage: 1.5,
+          status: 'cancelled',
+          rejectionReason: 'Test cancellation'
+        },
+        {
+          user: userA._id,
+          principalAmountPaise: 3000000,
+          planName: 'Premium Plan',
+          roiPercentage: 2.0,
+          status: 'active'
+        }
+      ]);
+
+      // Query using the exact ROI eligibility status filter
+      const eligibleInvestments = await Investment.find({
+        status: { $in: BUSINESS_RULES.ALLOWED_INVESTMENT_STATUSES }
+      });
+
+      expect(eligibleInvestments.length).toBe(1);
+      expect(eligibleInvestments[0].status).toBe('active');
+      expect(eligibleInvestments[0].principalAmountPaise).toBe(3000000);
+
+      // Verify that neither pending nor cancelled are returned
+      const nonActive = eligibleInvestments.filter((inv) => inv.status !== 'active');
+      expect(nonActive.length).toBe(0);
     });
   });
 });

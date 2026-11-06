@@ -39,7 +39,12 @@ const envSchema = z.object({
     .default('http://localhost:5173'),
   CRON_TIMEZONE: z
     .string()
-    .default('Asia/Kolkata')
+    .default('Asia/Kolkata'),
+  INVESTMENT_ACTIVATION_ENABLED: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((val) => val === 'true' || val === '1')
 });
 
 let validatedEnv;
@@ -66,6 +71,7 @@ const env = {
   jwtExpiresIn: validatedEnv.JWT_EXPIRES_IN,
   clientUrl: validatedEnv.CLIENT_URL,
   cronTimezone: validatedEnv.CRON_TIMEZONE,
+  investmentActivationEnabled: validatedEnv.INVESTMENT_ACTIVATION_ENABLED ?? false,
   isProduction: validatedEnv.NODE_ENV === 'production',
   isDevelopment: validatedEnv.NODE_ENV === 'development',
   isTest: validatedEnv.NODE_ENV === 'test'

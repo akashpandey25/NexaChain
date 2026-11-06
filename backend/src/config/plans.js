@@ -69,9 +69,26 @@ const getAvailablePlanNames = () => {
   return Object.values(INVESTMENT_PLANS).map((p) => `"${p.name}" (${p.id})`);
 };
 
+/**
+ * Return list of all available plans for client consumption.
+ * Explicitly labels each plan with illustrative demonstration metadata.
+ * @returns {Array<object>}
+ */
+const getPublicPlans = () => {
+  return Object.values(INVESTMENT_PLANS).map((p) => ({
+    id: p.id,
+    name: p.name,
+    roiPercentage: p.roiPercentage,
+    durationDays: p.durationDays,
+    description: p.description,
+    isDemonstration: true
+  }));
+};
+
 module.exports = {
   INVESTMENT_PLANS,
   findPlan,
-  getAvailablePlanNames
+  getAvailablePlanNames,
+  getPublicPlans
 };
 
