@@ -101,7 +101,7 @@ export const AppLayout = () => {
   const userRole = user?.role === 'admin' ? 'Administrator' : 'Verified Investor';
 
   return (
-    <div className="min-h-screen bg-[#070b13] text-slate-100 flex font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-surface-canvas text-slate-100 flex font-sans selection:bg-emerald-500 selection:text-slate-950">
       {/* 1. Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
         <div

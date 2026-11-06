@@ -28,7 +28,7 @@ export const AuthLayout = () => {
   const isLogin = location.pathname === '/login';
 
   return (
-    <div className="min-h-screen lg:h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row font-sans selection:bg-emerald-500 selection:text-slate-950 relative overflow-x-hidden lg:overflow-hidden">
+    <div className="min-h-screen lg:h-screen bg-surface-canvas text-slate-100 flex flex-col lg:flex-row font-sans selection:bg-emerald-500 selection:text-slate-950 relative overflow-x-hidden lg:overflow-hidden">
       {/* Background Ambient Glows */}
       <div
         className="absolute top-0 left-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none"
