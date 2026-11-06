@@ -14,6 +14,7 @@ import {
 import {
   User,
   Mail,
+  Phone,
   Shield,
   Key,
   Calendar,
@@ -148,9 +149,17 @@ export const ProfilePage = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Mail className="w-3.5 h-3.5 text-slate-500" />
-                <span>{user?.email || '—'}</span>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-slate-500" />
+                  <span>{user?.email || '—'}</span>
+                </div>
+                {user?.mobileNumber && (
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-400">
+                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{user.mobileNumber}</span>
+                  </div>
+                )}
               </div>
 
               {user?.createdAt && (
@@ -228,6 +237,14 @@ export const ProfilePage = () => {
           <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <span className="text-slate-400 font-medium">Email Address</span>
             <span className="text-slate-200 font-mono">{user?.email || '—'}</span>
+          </div>
+
+          {/* Registered Mobile Number */}
+          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-slate-400 font-medium">Registered Mobile</span>
+            <span className={user?.mobileNumber ? 'text-slate-200 font-mono' : 'text-slate-500 italic'}>
+              {user?.mobileNumber || 'Not provided'}
+            </span>
           </div>
 
           {/* User Account ID */}

@@ -22,6 +22,10 @@ logs/
 dist/
 build/
 
+# Backups
+backend/backups/
+backups/
+
 # Coverage / Testing
 coverage/
 

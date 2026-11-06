@@ -3,7 +3,7 @@ const router = express.Router();
 const roiController = require('../controllers/roiController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
-const validate = require('../middleware/validate');
+const { validateQuery, validateBody } = require('../middleware/validate');
 const { roiHistoryQuerySchema, processRoiSchema } = require('../validators/roiValidator');
 
 // All ROI endpoints require valid JWT authentication
@@ -12,7 +12,7 @@ router.use(authMiddleware);
 // Retrieve personal ROI ledger records
 router.get(
   '/history',
-  validate(roiHistoryQuerySchema, 'query'),
+  validateQuery(roiHistoryQuerySchema),
   roiController.getRoiHistory
 );
 
@@ -23,7 +23,7 @@ router.get('/summary', roiController.getRoiSummary);
 router.post(
   '/process',
   roleMiddleware('admin'),
-  validate(processRoiSchema, 'body'),
+  validateBody(processRoiSchema),
   roiController.triggerDailyRoi
 );
 

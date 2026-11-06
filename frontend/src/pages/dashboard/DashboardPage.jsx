@@ -10,8 +10,6 @@ import {
   Share2,
   Copy,
   Check,
-  PlusCircle,
-  ArrowUpRight,
   RefreshCw,
   FolderKanban,
   FileSpreadsheet,
@@ -99,7 +97,7 @@ export const DashboardPage = () => {
               CRON ENGINE: ACTIVE (00:00 IST)
             </span>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-900 text-slate-400 border border-slate-800">
-              Paise Precision v2.4
+              Integer Paise Precision
             </span>
           </div>
 
@@ -111,31 +109,24 @@ export const DashboardPage = () => {
           </p>
         </div>
 
-        {/* 3 Action Buttons */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-          <Link
-            to="/investments"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-800 transition-all shadow-sm"
-          >
-            <PlusCircle className="w-4 h-4 text-slate-400" />
-            <span>Deposit Funds</span>
-          </Link>
-
-          <Link
-            to="/investments"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-800 transition-all shadow-sm"
-          >
-            <ArrowUpRight className="w-4 h-4 text-slate-400" />
-            <span>Withdrawal</span>
-          </Link>
-
-          <Link
-            to="/investments"
+          <button
+            type="button"
             onClick={() => refetch()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+            disabled={isFetching}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-800 transition-all shadow-sm disabled:opacity-50"
+            title="Refresh Portfolio Data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-            <span>Reinvest ROI</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-emerald-400' : ''}`} />
+            <span>Refresh Data</span>
+          </button>
+
+          <Link
+            to="/investments"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-sm"
+          >
+            <span>View Investments</span>
           </Link>
         </div>
       </div>
@@ -189,13 +180,8 @@ export const DashboardPage = () => {
           amountPaise={summary.walletBalancePaise ?? 0}
           icon={Wallet}
           variant="default"
-          subBadges={
-            summary.walletBalancePaise > 0
-              ? [{ text: '• Ready for Reinvest', variant: 'emerald' }]
-              : []
-          }
-          footerLeft="Unallocated capital"
-          footerRight="Instant Liquidity"
+          footerLeft="Unallocated balance"
+          footerRight="Verified Ledger"
         />
       </div>
 

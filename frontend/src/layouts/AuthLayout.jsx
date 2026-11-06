@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   Layers,
-  Gift,
   Share2,
   Zap,
   Lock,
@@ -42,7 +41,7 @@ export const AuthLayout = () => {
 
       {/* LEFT COLUMN: Fixed Viewport Height, Non-Scrolling Brand Showcase */}
       <div className="w-full lg:w-1/2 xl:w-5/12 lg:h-full flex flex-col justify-between p-6 sm:p-8 lg:p-8 xl:p-10 border-b lg:border-b-0 lg:border-r border-slate-900/80 bg-slate-950/60 backdrop-blur-md z-10 select-none overflow-hidden">
-        {/* Top Header Row: Logo & Referral Boost Pill */}
+        {/* Top Header Row: Logo */}
         <div className="flex items-center justify-between gap-4 shrink-0">
           <Link
             to="/login"
@@ -56,50 +55,43 @@ export const AuthLayout = () => {
                 NexaChain
               </span>
               <span className="text-[9px] uppercase font-mono tracking-widest text-emerald-400 font-semibold block -mt-0.5">
-                Partner Network
+                Capital Platform
               </span>
             </div>
           </Link>
-
-          {/* Top-Right Badge: +2.5% Referral Boost */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold shadow-sm">
-            <Gift className="w-3.5 h-3.5 text-emerald-400" />
-            <span>+2.5% Referral Boost</span>
-          </div>
         </div>
 
-        {/* Middle Hero Showcase: Headline, Quote, and Reward Matrix */}
+        {/* Middle Hero Showcase: Headline, Description, and Tier Matrix */}
         <div className="my-auto py-3 space-y-3.5 max-w-xl shrink-0">
-          {/* Ecosystem Tag */}
+          {/* Tag */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/60 text-emerald-400 text-[10px] font-bold tracking-widest uppercase">
             <Share2 className="w-3 h-3 text-emerald-400" />
-            <span>5-Tier Partner Ecosystem</span>
+            <span>Multi-Level Affiliate Network</span>
           </div>
 
-          {/* Bold Headline */}
+          {/* Headline */}
           <h1 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-extrabold text-white tracking-tight leading-[1.2]">
-            Start Earning Daily{' '}
+            Automated Daily{' '}
             <span className="block">ROI & Multi-Tier</span>
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-              Partner Rewards.
+              Affiliate Network.
             </span>
           </h1>
 
-          {/* Quote / Value Proposition */}
+          {/* Description */}
           <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg">
-            Create your institutional vault in under 60 seconds. Earn automated daily yield
-            plus instant on-chain referral rebates across 5 network levels.
+            Monitor investment packages with automated daily compounding yields and inspect multi-generational affiliate networks with integer precision.
           </p>
 
-          {/* Multi-Tier Reward Matrix Card */}
+          {/* Multi-Tier Affiliate Hierarchy Card */}
           <div className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-xl space-y-2.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-mono uppercase font-bold tracking-wider text-slate-400 text-[10px]">
-                Multi-Tier Reward Matrix
+                Multi-Tier Affiliate Hierarchy
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-800/60 text-emerald-400 text-[10px] font-semibold">
                 <Zap className="w-3 h-3 text-emerald-400" />
-                Instant Settlement
+                Audited Calculations
               </span>
             </div>
 
@@ -112,11 +104,11 @@ export const AuthLayout = () => {
                     Tier 1
                   </span>
                   <span className="text-xs font-medium text-slate-200">
-                    Direct Partner Invite
+                    Direct Sponsor Downline
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-emerald-400">
-                  8.0% Commission
+                <span className="text-xs font-mono font-medium text-emerald-400">
+                  Level 1 Direct
                 </span>
               </div>
 
@@ -130,8 +122,8 @@ export const AuthLayout = () => {
                     Secondary Network
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-slate-300">
-                  4.0% Commission
+                <span className="text-xs font-mono font-medium text-slate-300">
+                  Level 2 Network
                 </span>
               </div>
 
@@ -142,11 +134,11 @@ export const AuthLayout = () => {
                     Tier 3-5
                   </span>
                   <span className="text-xs font-medium text-slate-300">
-                    Extended Syndicate
+                    Generational Downline
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-slate-400">
-                  3.0% Combined
+                <span className="text-xs font-mono font-medium text-slate-400">
+                  Levels 3 to 5
                 </span>
               </div>
             </div>
@@ -158,12 +150,12 @@ export const AuthLayout = () => {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 text-slate-300 text-[11px]">
               <Lock className="w-3.5 h-3.5 text-emerald-400" />
-              Zero-Fee Onboarding
+              Integer Paise Precision
             </span>
             <span className="text-slate-700">•</span>
             <span className="inline-flex items-center gap-1.5 text-slate-300 text-[11px]">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              KYC-Free Up to $50K
+              Audited Daily Settlements
             </span>
           </div>
           <span className="text-slate-500 font-mono text-[10px]">

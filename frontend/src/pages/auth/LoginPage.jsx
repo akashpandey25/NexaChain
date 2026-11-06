@@ -34,7 +34,6 @@ export const LoginPage = () => {
     email: '',
     password: ''
   });
-  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
@@ -167,22 +166,6 @@ export const LoginPage = () => {
             </button>
           </div>
         </FormField>
-
-        {/* Remember Me & Recovery */}
-        <div className="flex items-center justify-between text-xs pt-1">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-950 accent-emerald-500 cursor-pointer"
-            />
-            <span className="text-slate-300">Remember this session</span>
-          </label>
-          <span className="text-slate-500 hover:text-emerald-400 cursor-pointer transition-colors">
-            Forgot password?
-          </span>
-        </div>
 
         {/* Primary CTA Submit Button */}
         <button

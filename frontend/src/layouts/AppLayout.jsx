@@ -9,10 +9,7 @@ import {
   LogOut,
   Layers,
   Menu,
-  X,
-  Bell,
-  Plus,
-  ArrowUp
+  X
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/store';
 import { logout, selectCurrentUser } from '../features/auth/authSlice';
@@ -23,9 +20,9 @@ import { baseApi } from '../app/api/baseApi';
  * 
  * High-end dark fintech application layout matching the reference dashboard design:
  * - Desktop Sidebar with vibrant emerald active state for Dashboard
- * - Balance widget with deposit (+) and withdrawal (↑) shortcuts
+ * - Balance widget with real-time wallet tracking
  * - Verified investor profile card with quick logout
- * - Header with live breadcrumb, Cron Engine status pill, and wallet overview
+ * - Header with dynamic route-aware breadcrumbs, Cron Engine status pill, and wallet overview
  * - Standardized footer bar
  */
 export const AppLayout = () => {
@@ -53,6 +50,33 @@ export const AppLayout = () => {
     { to: '/roi-history', label: 'ROI History', icon: Coins },
     { to: '/profile', label: 'Profile', icon: User }
   ];
+
+  const getBreadcrumbLabel = (pathname) => {
+    if (pathname.startsWith('/investments/') && pathname !== '/investments') {
+      return (
+        <>
+          <Link to="/investments" className="text-slate-400 hover:text-slate-200 transition-colors">
+            Investments
+          </Link>
+          <span className="text-slate-600">&gt;</span>
+          <span className="text-white font-semibold">Contract Details</span>
+        </>
+      );
+    }
+    switch (pathname) {
+      case '/investments':
+        return <span className="text-white font-semibold">Investments</span>;
+      case '/referrals':
+        return <span className="text-white font-semibold">Referrals</span>;
+      case '/roi-history':
+        return <span className="text-white font-semibold">ROI History</span>;
+      case '/profile':
+        return <span className="text-white font-semibold">Profile</span>;
+      case '/dashboard':
+      default:
+        return <span className="text-white font-semibold">Dashboard</span>;
+    }
+  };
 
   const formattedBalance = user?.walletBalancePaise
     ? new Intl.NumberFormat('en-IN', {
@@ -194,7 +218,7 @@ export const AppLayout = () => {
 
           {/* Bottom Sidebar: Balance Widget and Verified User Card */}
           <div className="p-3.5 border-t border-slate-800/80 space-y-3">
-            {/* Available Balance Card with Deposit (+) and Withdraw (↑) Buttons */}
+            {/* Available Balance Card */}
             <div className="p-3.5 bg-[#0b101b] rounded-2xl border border-slate-800 shadow-sm">
               <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -203,26 +227,9 @@ export const AppLayout = () => {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               </div>
 
-              <div className="flex items-center justify-between mt-1">
+              <div className="mt-1">
                 <div className="text-xl font-extrabold text-white tracking-tight">
                   {formattedBalance}
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <Link
-                    to="/investments"
-                    className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                    title="Deposit Funds"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </Link>
-                  <Link
-                    to="/investments"
-                    className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                    title="Withdrawal"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </Link>
                 </div>
               </div>
             </div>
@@ -272,12 +279,12 @@ export const AppLayout = () => {
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Breadcrumb matching design: • Platform > Dashboard */}
+            {/* Route-Aware Dynamic Breadcrumb */}
             <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-slate-300">Platform</span>
+              <span className="text-slate-400">Platform</span>
               <span className="text-slate-600">&gt;</span>
-              <span className="text-white font-semibold">Dashboard</span>
+              {getBreadcrumbLabel(location.pathname)}
             </div>
           </div>
 
@@ -294,15 +301,6 @@ export const AppLayout = () => {
               <span className="text-slate-400 mr-1.5 font-normal">WALLET</span>
               <span>{formattedBalance}</span>
             </div>
-
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="p-2 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-            </button>
 
             {/* Profile Avatar */}
             <Link
@@ -322,7 +320,7 @@ export const AppLayout = () => {
 
         {/* Footer Bar */}
         <footer className="border-t border-slate-800/80 px-6 py-4 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
-          <div>NexaChain Capital Platform &bull; Protocol Version 4.1.8-mainnet</div>
+          <div>NexaChain Capital Platform &bull; Version 1.0.0</div>
           <div>Daily Midnight IST Cron Engine Verified &bull; 2026</div>
         </footer>
       </div>

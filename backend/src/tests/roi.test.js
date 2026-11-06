@@ -511,6 +511,64 @@ describe('Daily ROI Processing Engine & APIs', () => {
       expect(resDate.body.data.roiRecords.length).toBe(2);
     });
 
+    test('GET /api/roi/history rejects invalid query parameters with HTTP 400', async () => {
+      // 1. Invalid non-integer page
+      const resPageAlpha = await request(app)
+        .get('/api/roi/history?page=abc')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resPageAlpha.status).toBe(400);
+      expect(resPageAlpha.body.success).toBe(false);
+
+      // 2. Negative page
+      const resPageNeg = await request(app)
+        .get('/api/roi/history?page=-1')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resPageNeg.status).toBe(400);
+      expect(resPageNeg.body.success).toBe(false);
+
+      // 3. Zero page
+      const resPageZero = await request(app)
+        .get('/api/roi/history?page=0')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resPageZero.status).toBe(400);
+      expect(resPageZero.body.success).toBe(false);
+
+      // 4. Invalid limit (exceeds max 100)
+      const resLimitOver = await request(app)
+        .get('/api/roi/history?limit=150')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resLimitOver.status).toBe(400);
+      expect(resLimitOver.body.success).toBe(false);
+
+      // 5. Zero limit
+      const resLimitZero = await request(app)
+        .get('/api/roi/history?limit=0')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resLimitZero.status).toBe(400);
+      expect(resLimitZero.body.success).toBe(false);
+
+      // 6. Invalid status
+      const resStatusInvalid = await request(app)
+        .get('/api/roi/history?status=unrecognized_status')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resStatusInvalid.status).toBe(400);
+      expect(resStatusInvalid.body.success).toBe(false);
+
+      // 7. Invalid date range (startDate > endDate)
+      const resDateInverted = await request(app)
+        .get('/api/roi/history?startDate=2026-12-01&endDate=2026-11-01')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resDateInverted.status).toBe(400);
+      expect(resDateInverted.body.success).toBe(false);
+
+      // 8. Malformed date string
+      const resDateMalformed = await request(app)
+        .get('/api/roi/history?startDate=not-a-date')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(resDateMalformed.status).toBe(400);
+      expect(resDateMalformed.body.success).toBe(false);
+    });
+
     test('GET /api/roi/summary returns aggregated processed ROI statistics and excludes pending/failed from total', async () => {
       const res = await request(app)
         .get('/api/roi/summary')

@@ -31,7 +31,7 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
         id: item._id,
         title: item.investment?.planName ? `${item.investment.planName} Plan Yield` : 'Daily ROI Distribution',
         timestamp: `${formatBusinessDate(item.businessDate)} • Midnight IST`,
-        txHash: `TX-${item._id?.slice(-8).toUpperCase() || 'LEDGER'}`,
+        txHash: item._id ? `REF-${item._id.slice(-8).toUpperCase()}` : 'RECORD',
         ledgerType: 'Daily ROI Yield',
         ledgerVariant: 'emerald',
         amount: `+${formatPaiseToINR(item.amountPaise)}`,
@@ -55,7 +55,7 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
         id: inv._id,
         title: `Package Activation: ${inv.planName || 'Investment'}`,
         timestamp: `${formatBusinessDate(inv.createdAt)} • IST`,
-        txHash: `TX-${inv._id?.slice(-8).toUpperCase() || 'CONTRACT'}`,
+        txHash: inv._id ? `REF-${inv._id.slice(-8).toUpperCase()}` : 'RECORD',
         ledgerType: 'Capital Principal',
         ledgerVariant: 'slate',
         amount: `-${formatPaiseToINR(inv.principalAmountPaise)}`,
@@ -133,7 +133,7 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
             <thead>
               <tr className="border-b border-slate-800/80 bg-slate-950/40 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 <th className="py-3 px-5 sm:px-6">Timestamp & Package</th>
-                <th className="py-3 px-5 sm:px-6">Transaction ID / Hash</th>
+                <th className="py-3 px-5 sm:px-6">Reference ID</th>
                 <th className="py-3 px-5 sm:px-6">Ledger Type</th>
                 <th className="py-3 px-5 sm:px-6 text-right">Amount</th>
                 <th className="py-3 px-5 sm:px-6 text-right">Status</th>

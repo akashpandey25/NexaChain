@@ -1,6 +1,6 @@
 # NexaChain – Investment & Referral Management Platform
 
-[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-134%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
+[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-151%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
 [![Frontend Build](https://img.shields.io/badge/Frontend%20Build-Vite%20Passing-success?style=flat-square)](frontend/)
 [![Node Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-blue?style=flat-square)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20Replica%20Set-emerald?style=flat-square)](docs/MONGODB_PRODUCTION_SETUP.md)
@@ -340,15 +340,15 @@ npm test
 npm --prefix backend test
 ```
 
-### Test Coverage Breakdown (134 Tests Passing across 9 Suites)
+### Test Coverage Breakdown (151 Tests Passing across 9 Suites)
 - `src/tests/foundation.test.js`: Health check, 503 degraded states, 404 handler, standard envelopes (10 tests).
 - `src/tests/models.test.js`: Schema validation, non-negative integer paise guards, compound unique indexes (29 tests).
-- `src/tests/auth.test.js`: Register, login, password hashing, JWT signing, RBAC role guard (14 tests).
+- `src/tests/auth.test.js`: Register, login, mobile number validation, duplicate checks, JWT signing, RBAC role guard (19 tests).
 - `src/tests/investment.test.js`: Investment creation, plan rate verification, pagination, ownership isolation (10 tests).
 - `src/tests/dashboard.test.js`: Aggregation pipelines, date filters, wallet synchronization (13 tests).
 - `src/tests/referral.test.js`: Direct referral pagination, tree downline traversal, cycle detection (14 tests).
-- `src/tests/roi.test.js`: Multi-document transactions, integer paise yield, 3-layer idempotency (15 tests).
-- `src/tests/referralCommission.test.js`: BigInt basis-point math, upline traversal, disabled safeguard (10 tests).
+- `src/tests/roi.test.js`: Multi-document transactions, integer paise yield, query validation, 3-layer idempotency (19 tests).
+- `src/tests/referralCommission.test.js`: BigInt basis-point math, upline traversal, disabled safeguard (18 tests).
 - `src/tests/cron.test.js`: Midnight scheduling, distributed locking, heartbeat renewal, graceful shutdown awaiter, and lock retention (19 tests).
 
 ### Frontend Production Build Verification
@@ -417,9 +417,13 @@ Ensure Docker and Docker Compose are installed:
 1. **Referral Commission Engine Disabled by Design:**
    - The underlying multi-tier downline calculation engine, BigInt basis-point math, and atomic transaction posting are fully implemented in `referralCommissionService.js`.
    - As mandated by the assessment specifications, the engine remains safely disabled (`REFERRAL_COMMISSION_ENABLED: false`) until company stakeholders formally approve commission percentages, trigger events (`INVESTMENT_ACTIVATION` vs. `ROI_PAYOUT`), and calculation bases (`INVESTMENT_PRINCIPAL` vs. `ROI_AMOUNT`).
-2. **Profile Immutability Policy:**
+2. **Wallet Deposit & Withdrawal Workflows:**
+   - The platform operates with simulated/pre-funded wallet balances and administrative ledger adjustments. Third-party payment gateways (e.g. Razorpay, Stripe) and automated banking payout rails are intentionally omitted in Milestone 1 to avoid unbacked mock transactions.
+3. **Investment Lifecycle & Activation:**
+   - Packages submitted via `POST /api/investments` are registered strictly in `'pending'` status with server-validated rates, and transitioned to active status administratively.
+4. **Profile Immutability Policy:**
    - Personal profile attributes (legal name, email, sponsor linkage) are read-only (`GET /api/auth/me`). In accordance with financial audit integrity rules, client-side profile mutation endpoints are restricted.
-3. **MongoDB Replica Set Mandatory:**
+5. **MongoDB Replica Set Mandatory:**
    - Standalone MongoDB instances without replica set capability are rejected at runtime to guarantee financial ACID rollback protection.
 
 ---
