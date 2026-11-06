@@ -605,4 +605,109 @@ describe('Daily ROI Processing Engine & APIs', () => {
       expect(resAdmin.body.data).toHaveProperty('eligibleInvestments');
     });
   });
+
+  describe('7. Contract Maturity Lifecycle & Ordering Tests', () => {
+    test('Final eligible business day receives ROI exactly once and contract transitions to completed', async () => {
+      // 2-day contract: starts Nov 1, ends Nov 2
+      const contract = await Investment.create({
+        user: testUser._id,
+        principalAmountPaise: 100000, // ₹1,000.00
+        planName: INVESTMENT_PLANS.GROWTH.name,
+        roiPercentage: 1.5, // 1500 paise per day
+        status: 'active',
+        startDate: new Date('2026-11-01T00:00:00.000Z'),
+        endDate: new Date('2026-11-02T23:59:59.999Z')
+      });
+
+      // Day 1 (2026-11-01): Not the final day yet
+      const summaryDay1 = await processDailyROI('2026-11-01');
+      expect(summaryDay1.processedInvestments).toBe(1);
+
+      const contractAfterDay1 = await Investment.findById(contract._id);
+      expect(contractAfterDay1.status).toBe('active'); // Must NOT be completed before final day
+      expect(contractAfterDay1.totalRoiEarnedPaise).toBe(1500);
+
+      // Day 2 (2026-11-02): Final eligible business day
+      const summaryDay2 = await processDailyROI('2026-11-02');
+      expect(summaryDay2.processedInvestments).toBe(1);
+
+      const contractAfterDay2 = await Investment.findById(contract._id);
+      expect(contractAfterDay2.status).toBe('completed'); // Transitioned to completed atomically
+      expect(contractAfterDay2.totalRoiEarnedPaise).toBe(3000); // 1500 + 1500 = 3000 paise
+
+      // Verify exact ROIHistory count for this contract is 2
+      const roiCount = await ROIHistory.countDocuments({ investment: contract._id });
+      expect(roiCount).toBe(2);
+    });
+
+    test('Completed investments cannot receive subsequent ROI on subsequent business days', async () => {
+      // Completed contract whose end date was yesterday
+      const completedContract = await Investment.create({
+        user: testUser._id,
+        principalAmountPaise: 100000,
+        planName: INVESTMENT_PLANS.GROWTH.name,
+        roiPercentage: 1.5,
+        status: 'completed',
+        startDate: new Date('2026-11-01T00:00:00.000Z'),
+        endDate: new Date('2026-11-02T23:59:59.999Z'),
+        totalRoiEarnedPaise: 3000
+      });
+
+      // Attempt to process for Nov 3
+      const summaryDay3 = await processDailyROI('2026-11-03');
+      expect(summaryDay3.eligibleInvestments).toBe(0);
+      expect(summaryDay3.processedInvestments).toBe(0);
+
+      const checkContract = await Investment.findById(completedContract._id);
+      expect(checkContract.status).toBe('completed');
+      expect(checkContract.totalRoiEarnedPaise).toBe(3000); // Unchanged
+
+      const roiRecords = await ROIHistory.find({ investment: completedContract._id });
+      expect(roiRecords.length).toBe(0);
+    });
+
+    test('A cron retry cannot duplicate ROI or completion effects (idempotency)', async () => {
+      // 1-day contract for Nov 4
+      const contract = await Investment.create({
+        user: testUser._id,
+        principalAmountPaise: 200000,
+        planName: INVESTMENT_PLANS.STARTER.name,
+        roiPercentage: 1.0, // 2000 paise
+        status: 'active',
+        startDate: new Date('2026-11-04T00:00:00.000Z'),
+        endDate: new Date('2026-11-04T23:59:59.999Z')
+      });
+
+      // First run for Nov 4
+      const firstRun = await processDailyROI('2026-11-04');
+      expect(firstRun.processedInvestments).toBe(1);
+
+      const contractAfterFirst = await Investment.findById(contract._id);
+      expect(contractAfterFirst.status).toBe('completed');
+      expect(contractAfterFirst.totalRoiEarnedPaise).toBe(2000);
+
+      // Re-run (retry) for same date Nov 4
+      const retryRun = await processDailyROI('2026-11-04');
+      expect(retryRun.processedInvestments).toBe(0);
+
+      const contractAfterRetry = await Investment.findById(contract._id);
+      expect(contractAfterRetry.status).toBe('completed');
+      expect(contractAfterRetry.totalRoiEarnedPaise).toBe(2000); // Must remain exactly 2000 paise
+
+      const totalRoiHistoryRows = await ROIHistory.countDocuments({ investment: contract._id });
+      expect(totalRoiHistoryRows).toBe(1);
+    });
+
+    test('Asia/Kolkata date boundaries normalize calendar day correctly', () => {
+      const { normalizeBusinessDate } = require('../services/roiService');
+
+      // Test IST Date normalizer
+      const dateContext = normalizeBusinessDate('2026-11-06T18:30:00.000Z', 'Asia/Kolkata');
+      // 18:30 UTC on Nov 6 is 00:00 IST on Nov 7
+      expect(dateContext.dateKey).toBe('2026-11-07');
+      expect(dateContext.normalizedUtcMidnight.toISOString()).toBe('2026-11-07T00:00:00.000Z');
+      expect(dateContext.startOfBusinessDay.toISOString()).toBe('2026-11-07T00:00:00.000Z');
+      expect(dateContext.endOfBusinessDay.toISOString()).toBe('2026-11-07T23:59:59.999Z');
+    });
+  });
 });

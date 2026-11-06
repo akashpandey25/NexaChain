@@ -248,7 +248,7 @@ export const InvestmentDetailPage = () => {
               Request Awaiting Administrative Review
             </p>
             <p className="text-amber-400/90 leading-relaxed">
-              This investment contract was logged on {formatDateTime(investment.createdAt)} and is queued for verification. In accordance with platform financial safety rules, daily ROI dividends do not accrue until the contract is administratively activated.
+              This investment request was logged on {formatDateTime(investment.createdAt)} and is queued for verification. This application is unfunded and no wallet balance was debited upon submission. In accordance with platform governance, daily returns do not accrue until the contract is administratively verified and activated.
             </p>
           </div>
         </div>

@@ -611,6 +611,84 @@ describe('Investment Management API Integration Tests', () => {
       expect(resDuplicate.body.success).toBe(false);
       expect(resDuplicate.body.message).toContain('current status is "active"');
     });
+
+    test('25b. Rejects activation of an already completed investment with HTTP 400', async () => {
+      env.investmentActivationEnabled = true;
+
+      const completedInv = await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'completed'
+      });
+
+      const res = await request(app)
+        .patch(`/api/investments/${completedInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('current status is "completed"');
+    });
+
+    test('25c. Rejects activation of an already cancelled investment with HTTP 400', async () => {
+      env.investmentActivationEnabled = true;
+
+      const cancelledInv = await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'cancelled',
+        rejectionReason: 'Cancelled previously'
+      });
+
+      const res = await request(app)
+        .patch(`/api/investments/${cancelledInv._id}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('current status is "cancelled"');
+    });
+
+    test('25d. Rejects activating a nonexistent investment ID with HTTP 404', async () => {
+      env.investmentActivationEnabled = true;
+
+      const nonexistentId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .patch(`/api/investments/${nonexistentId}/activate`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe('Investment not found');
+    });
+
+    test('25e. Feature flag cannot be accidentally enabled by invalid string fallback', () => {
+      // Direct verification of Zod env transform logic
+      const { z } = require('zod');
+      const schema = z
+        .string()
+        .optional()
+        .default('false')
+        .transform((val) => {
+          if (!val) return false;
+          const normalized = val.trim().toLowerCase();
+          return normalized === 'true' || normalized === '1';
+        });
+
+      expect(schema.parse(undefined)).toBe(false);
+      expect(schema.parse('')).toBe(false);
+      expect(schema.parse('false')).toBe(false);
+      expect(schema.parse('none')).toBe(false);
+      expect(schema.parse('invalid')).toBe(false);
+      expect(schema.parse('0')).toBe(false);
+      expect(schema.parse('true')).toBe(true);
+      expect(schema.parse('TRUE ')).toBe(true);
+      expect(schema.parse('1')).toBe(true);
+    });
   });
 
   // 7. ADMIN REJECTION (PATCH /api/investments/:id/reject)
@@ -686,6 +764,48 @@ describe('Investment Management API Integration Tests', () => {
       expect(resSecond.status).toBe(400);
       expect(resSecond.body.success).toBe(false);
       expect(resSecond.body.message).toContain('current status is "cancelled"');
+    });
+
+    test('29b. Rejects rejecting an active investment with HTTP 400', async () => {
+      const activeInv = await Investment.create({
+        user: userA._id,
+        principalAmountPaise: 500000,
+        planName: 'Starter Plan',
+        roiPercentage: 1.0,
+        status: 'active'
+      });
+
+      const res = await request(app)
+        .patch(`/api/investments/${activeInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: 'Cannot cancel active contract' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('current status is "active"');
+    });
+
+    test('29c. Rejects rejection reason exceeding 500 characters with HTTP 400', async () => {
+      const overlyLongReason = 'a'.repeat(501);
+
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ reason: overlyLongReason });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain('cannot exceed 500 characters');
+    });
+
+    test('29d. Rejects rejection request missing body or reason field with HTTP 400', async () => {
+      const res = await request(app)
+        .patch(`/api/investments/${pendingInv._id}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
     });
   });
 

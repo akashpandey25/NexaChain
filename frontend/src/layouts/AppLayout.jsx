@@ -9,7 +9,8 @@ import {
   LogOut,
   Layers,
   Menu,
-  X
+  X,
+  ShieldCheck
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/store';
 import { logout, selectCurrentUser } from '../features/auth/authSlice';
@@ -48,7 +49,10 @@ export const AppLayout = () => {
     { to: '/investments', label: 'Investments', icon: TrendingUp },
     { to: '/referrals', label: 'Referrals', icon: Share2 },
     { to: '/roi-history', label: 'ROI History', icon: Coins },
-    { to: '/profile', label: 'Profile', icon: User }
+    { to: '/profile', label: 'Profile', icon: User },
+    ...(user?.role === 'admin'
+      ? [{ to: '/admin/investments', label: 'Admin Approvals', icon: ShieldCheck }]
+      : [])
   ];
 
   const getBreadcrumbLabel = (pathname) => {
@@ -72,6 +76,8 @@ export const AppLayout = () => {
         return <span className="text-white font-semibold">ROI History</span>;
       case '/profile':
         return <span className="text-white font-semibold">Profile</span>;
+      case '/admin/investments':
+        return <span className="text-white font-semibold">Admin Approvals</span>;
       case '/dashboard':
       default:
         return <span className="text-white font-semibold">Dashboard</span>;

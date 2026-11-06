@@ -203,7 +203,7 @@ export const InvestmentsPage = () => {
               <span>Pending</span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Request submitted and recorded. Awaiting administrative review. Zero yield accrues while pending.
+              Unfunded application logged. Awaiting administrative review and verification. Zero yield accrues while pending.
             </p>
           </div>
 

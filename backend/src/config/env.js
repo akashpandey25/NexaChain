@@ -44,7 +44,11 @@ const envSchema = z.object({
     .string()
     .optional()
     .default('false')
-    .transform((val) => val === 'true' || val === '1')
+    .transform((val) => {
+      if (!val) return false;
+      const normalized = val.trim().toLowerCase();
+      return normalized === 'true' || normalized === '1';
+    })
 });
 
 let validatedEnv;

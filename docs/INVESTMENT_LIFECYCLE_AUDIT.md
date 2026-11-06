@@ -70,9 +70,25 @@ Functions provided: `findPlan(identifier)`, `getAvailablePlanNames()`.
 
 ### 2.4 Frontend Investment State & User Interface
 
-- **RTK Query (`investmentApi.js`):** Defines `createInvestment`, `getInvestments`, and `getInvestmentById`. Tag types: `Investment`, `Dashboard`.
-- **Investments Page (`InvestmentsPage.jsx`):** Renders overview cards, status filter tabs, desktop table, mobile cards, and pagination. **Missing: "Create Investment" button, modal, or plan selector.**
-- **Detail Page (`InvestmentDetailPage.jsx`):** Renders specifications, lifecycle status, and principal/ROI cards. Scoped to authenticated user.
+- **RTK Query (`investmentApi.js`):** Defines `createInvestment`, `getInvestments`, `getInvestmentById`, `getInvestmentPlans`, `getAdminPendingInvestments`, `activateInvestment`, and `rejectInvestment`.
+- **Investments Page (`InvestmentsPage.jsx`):** Renders overview cards, status filter tabs, desktop table, mobile cards, pagination, "Create Investment" modal action, and status guide.
+- **Admin Review Page (`AdminInvestmentsPage.jsx`):** Admin-only workspace for inspecting pending requests, reviewing applicant verification details, confirming activations, and rejecting requests with audit explanations.
+- **Detail Page (`InvestmentDetailPage.jsx`):** Renders specifications, lifecycle status, audit timestamps, and principal/ROI cards. Scoped to authenticated user.
+
+### 2.5 Investment Funding & Wallet Ledger Semantics (Authoritative Audit)
+
+A rigorous trace of `POST /api/investments` and `investmentService.createInvestment()` reveals the following authoritative financial behaviors:
+
+| Operational Dimension | System Reality | Architectural Justification |
+| :--- | :--- | :--- |
+| **Is the wallet debited?** | **NO** | `createInvestment` only inserts a row into the `investments` collection. It does not update `User.walletBalancePaise`. |
+| **Is an amount reserved?** | **NO** | The `User` data model does not contain an escrow or reserved balance field. |
+| **Is there a ledger entry?** | **NO** | No row is written to `WalletTransaction` upon request submission. `WalletTransaction` rows are strictly generated upon actual financial movements (such as daily ROI distributions). |
+| **Can a user submit without wallet funds?** | **YES** | The submission represents an **application of intent / capital allocation request** awaiting administrative verification and offline settlement or funding. |
+| **What happens upon administrative rejection?** | **Status $\rightarrow$ `cancelled`** | No wallet refund or ledger reversal is executed, because no funds were debited or locked at submission. The rejection explanation is logged to `rejectionReason`. |
+
+> [!IMPORTANT]
+> **Product Labeling Mandate:** The frontend user interface explicitly labels new investment submissions as **"Investment Requests (Unfunded / Awaiting Administrative Review & Verification)"**. Under no circumstances does the platform imply that funds have been transferred or deducted prior to formal administrative processing and contract activation.
 
 ---
 
@@ -113,10 +129,24 @@ stateDiagram-v2
 | `[None]` | `pending` | Authenticated User | Valid `principalAmountPaise > 0`, recognized server plan. | Creates record; `status: 'pending'`, `totalRoiEarnedPaise: 0`. |
 | `pending` | `active` | Admin Only (`role: 'admin'`) | 1. `INVESTMENT_ACTIVATION_ENABLED === true`<br>2. Admin `_id !== investment.user` (Self-approval forbidden)<br>3. Status must currently be `pending` | Sets `status: 'active'`, `startDate = now`, `endDate = now + durationDays`, `actionedBy = admin._id`, `actionedAt = now`. |
 | `pending` | `cancelled` | Admin Only (`role: 'admin'`) | 1. Admin `_id !== investment.user` (or authorized supervisor)<br>2. Status must currently be `pending`<br>3. `rejectionReason` provided | Sets `status: 'cancelled'`, `rejectionReason = reason`, `actionedBy = admin._id`, `actionedAt = now`. |
-| `active` | `completed` | ROI Cron Engine | `new Date(endDate) < startOfBusinessDay` | Contract lifecycle completed; no further daily dividends processed. |
+| `active` | `completed` | ROI Cron Engine | `investment.endDate <= endOfBusinessDay` | Final eligible business day dividend is credited atomically to `ROIHistory` and `WalletTransaction`; status transitions to `completed` within the exact same ACID transaction session. Excluded from all subsequent runs. |
 | `active` | `cancelled` | Super Admin | Restricted emergency override with ledger adjustment. | Voided contract. |
 | `completed` | Any | None | Forbidden. Terminal state. | Rejected with HTTP 400. |
 | `cancelled` | Any | None | Forbidden. Terminal state. | Rejected with HTTP 400. |
+
+### 3.3 Contract Maturity Ordering & Final-Day ROI Accrual Guarantee
+
+A common edge case in yield distribution systems is the lifecycle ordering between final-day dividend accrual and contract completion. In NexaChain, this is rigorously implemented with ACID transactional ordering in `roiService.processDailyROI()`:
+
+1. **Eligibility Evaluation:** Contracts with `status: 'active'`, `startDate <= endOfBusinessDay`, and `endDate >= startOfBusinessDay` are identified as eligible.
+2. **Final Eligible Day Processing:** When a contract is on its final eligible calendar day (`endDate <= endOfBusinessDay`):
+   - The daily ROI dividend is computed with integer paise precision using the active rounding mode (`FLOOR`).
+   - An `ROIHistory` record is generated with status `processed`.
+   - A `WalletTransaction` record (`CREDIT_ROI`) is created and the user's `walletBalancePaise` and `totalRoiEarnedPaise` are credited.
+   - The investment's `totalRoiEarnedPaise` is incremented.
+   - **Atomic State Completion:** In the exact same MongoDB transaction session, the investment's `status` is transitioned to `'completed'`.
+3. **Subsequent Day Exclusion:** On all future business days, because `status === 'completed'`, the contract is strictly excluded by `{ status: { $in: ['active'] } }` and will never receive duplicate dividends.
+4. **Idempotency on Retry:** If a cron job fails or is retried for the same business date, the unique transaction key (`ROI_<investmentId>_<businessDate>`) and compound index prevent duplicate processing or completion transitions.
 
 ---
 
@@ -228,3 +258,4 @@ INVESTMENT_ACTIVATION_ENABLED=false
    - Clean Vite production build (`npm --prefix frontend run build`) with 0 errors and 0 type warnings.
 3. **Git & Release Management:**
    - Documented changes committed to `main` and pushed to remote `origin/main`.
+

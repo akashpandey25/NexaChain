@@ -1,6 +1,6 @@
 # NexaChain – Investment & Referral Management Platform
 
-[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-165%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
+[![CI Backend Tests](https://img.shields.io/badge/Backend%20Tests-176%20Passing-brightgreen?style=flat-square)](backend/src/tests/)
 [![Frontend Build](https://img.shields.io/badge/Frontend%20Build-Vite%20Passing-success?style=flat-square)](frontend/)
 [![Node Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-blue?style=flat-square)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20Replica%20Set-emerald?style=flat-square)](docs/MONGODB_PRODUCTION_SETUP.md)
@@ -121,7 +121,7 @@ nexachain/
 │       ├── models/                  # User, Investment, ROIHistory, ReferralIncome, WalletTransaction, JobLock
 │       ├── routes/                  # Express route declarations
 │       ├── services/                # Core transactional business logic
-│       ├── tests/                   # Jest test suites (134 automated tests)
+│       ├── tests/                   # Jest test suites (176 automated tests)
 │       ├── utils/                   # JWT helpers, referral code generator
 │       └── validators/              # Zod validation schemas
 │
@@ -174,6 +174,15 @@ nexachain/
 - Authoritative server-side plan rate registry (`findPlan()`), strictly rejecting client-forged ROI percentages.
 - Filterable and paginated portfolio view with status indicators (`pending`, `active`, `completed`, `cancelled`).
 - Single investment inspection (`/investments/:id`) with strict ownership isolation (HTTP 404 for non-owners).
+- Clear user-facing copy clarifying that investment submissions are unfunded registrations of intent requiring off-chain verification (no wallet funds deducted at creation).
+
+### Administrative Review & Investment Approval Workflow
+- Dedicated Admin Approvals page (`/admin/investments`) guarded by `AdminRoute` (`role: 'admin'`).
+- Live KPI summary metrics for pending investment requests across all users.
+- In-depth request inspection modal displaying user identity, contact details, plan terms, and submission timestamp.
+- Activation modal with explicit double-confirmation, 4-eye policy enforcement (admin self-approval prohibition), and clear warning when `INVESTMENT_ACTIVATION_ENABLED=false`.
+- Rejection modal requiring mandatory audit reason (3–500 characters) and recording `actionedBy` and `actionedAt`.
+- Fail-safe policy protection preventing activation when disabled by environment configuration.
 
 ### Dashboard & Analytics
 - Data-driven statistic cards displaying Total Investment, Active Investment, Total ROI, and Wallet Balance in Indian Rupees (INR) with Indian numbering grouping (lakhs/crores).
@@ -345,16 +354,16 @@ npm test
 npm --prefix backend test
 ```
 
-### Test Coverage Breakdown (151 Tests Passing across 9 Suites)
-- `src/tests/foundation.test.js`: Health check, 503 degraded states, 404 handler, standard envelopes (10 tests).
-- `src/tests/models.test.js`: Schema validation, non-negative integer paise guards, compound unique indexes (29 tests).
-- `src/tests/auth.test.js`: Register, login, mobile number validation, duplicate checks, JWT signing, RBAC role guard (19 tests).
-- `src/tests/investment.test.js`: Investment creation, plan rate verification, pagination, ownership isolation (10 tests).
-- `src/tests/dashboard.test.js`: Aggregation pipelines, date filters, wallet synchronization (13 tests).
-- `src/tests/referral.test.js`: Direct referral pagination, tree downline traversal, cycle detection (14 tests).
-- `src/tests/roi.test.js`: Multi-document transactions, integer paise yield, query validation, 3-layer idempotency (19 tests).
-- `src/tests/referralCommission.test.js`: BigInt basis-point math, upline traversal, disabled safeguard (18 tests).
+### Test Coverage Breakdown (176 Tests Passing across 9 Suites)
+- `src/tests/investment.test.js`: Investment creation, plan rate verification, pagination, ownership isolation, admin pending list, activation lifecycle, rejection reasons, self-approval guards, policy lockouts, and ROI query exclusions (37 tests).
+- `src/tests/roi.test.js`: Multi-document ACID transactions, integer paise yield, query validation, 3-layer idempotency, contract maturity ordering, and Asia/Kolkata date boundaries (23 tests).
+- `src/tests/auth.test.js`: Register, login, mobile number validation, duplicate checks, JWT signing, and RBAC role guards (32 tests).
 - `src/tests/cron.test.js`: Midnight scheduling, distributed locking, heartbeat renewal, graceful shutdown awaiter, and lock retention (19 tests).
+- `src/tests/models.test.js`: Schema validation, non-negative integer paise guards, and compound unique indexes (18 tests).
+- `src/tests/referralCommission.test.js`: BigInt basis-point math, upline traversal, and disabled safeguard (16 tests).
+- `src/tests/referral.test.js`: Direct referral pagination, tree downline traversal, and cycle detection (14 tests).
+- `src/tests/dashboard.test.js`: Aggregation pipelines, date filters, and wallet synchronization (10 tests).
+- `src/tests/foundation.test.js`: Health check, 503 degraded states, 404 handler, and standard envelopes (7 tests).
 
 ### Frontend Production Build Verification
 ```bash

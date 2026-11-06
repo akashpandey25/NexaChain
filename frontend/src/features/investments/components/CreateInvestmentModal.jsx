@@ -123,10 +123,10 @@ export const CreateInvestmentModal = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h2 id="create-investment-title" className="text-sm font-semibold text-white">
-                Request New Investment
+                Request New Investment Contract
               </h2>
               <p className="text-[11px] text-slate-400">
-                Allocate capital under server-authoritative contract terms
+                Submit an intended capital allocation (unfunded, awaiting administrative review)
               </p>
             </div>
           </div>
@@ -159,13 +159,13 @@ export const CreateInvestmentModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Demonstration Notice */}
+          {/* Demonstration & Funding Notice */}
           <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/40 text-amber-300 text-xs flex items-start gap-2.5">
             <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-semibold text-amber-200">Demonstration Configuration Notice</p>
+              <p className="font-semibold text-amber-200">Unfunded Application & Testing Configuration Notice</p>
               <p className="text-amber-400/90 text-[11px] leading-relaxed">
-                Stated packages and daily yields reflect technical testing defaults. New requests are registered in <strong className="text-amber-300 font-semibold">pending</strong> status and do not accrue daily yield until formal administrative review.
+                Stated packages and daily yields reflect technical testing defaults. Submitting this request registers an intended contract in <strong className="text-amber-300 font-semibold">pending</strong> status. <strong className="text-amber-200 font-semibold">No wallet balance is debited or transferred at this time.</strong> Contract activation and yield accrual occur strictly upon administrative verification.
               </p>
             </div>
           </div>
@@ -255,7 +255,7 @@ export const CreateInvestmentModal = ({ isOpen, onClose }) => {
               />
             </div>
             <p className="text-[11px] text-slate-400">
-              Enter the amount in Indian Rupees. NexaChain records all transactions with exact integer paise precision.
+              Enter intended allocation in Indian Rupees (recorded with exact integer paise precision). No funds are debited from your wallet during request submission.
             </p>
           </div>
 
@@ -291,3 +291,4 @@ export const CreateInvestmentModal = ({ isOpen, onClose }) => {
 };
 
 export default CreateInvestmentModal;
+

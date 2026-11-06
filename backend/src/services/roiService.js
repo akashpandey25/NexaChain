@@ -331,10 +331,21 @@ const processDailyROI = async (businessDateInput, options = {}) => {
         });
         await roiDoc.save({ session });
 
-        // 2. Update Investment cumulative ROI total
+        // 2. Update Investment cumulative ROI total and transition to 'completed' if matured
+        const isMatured = Boolean(
+          investment.endDate && new Date(investment.endDate) <= endOfBusinessDay
+        );
+
+        const investmentUpdate = {
+          $inc: { totalRoiEarnedPaise: roiAmountPaise }
+        };
+        if (isMatured) {
+          investmentUpdate.$set = { status: 'completed' };
+        }
+
         await Investment.findByIdAndUpdate(
           investment._id,
-          { $inc: { totalRoiEarnedPaise: roiAmountPaise } },
+          investmentUpdate,
           { session }
         );
 

@@ -7,6 +7,7 @@ import { AuthLayout } from '../layouts/AuthLayout';
 
 // Guard components
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
+import { AdminRoute } from '../components/common/AdminRoute';
 import { PublicRoute } from '../components/common/PublicRoute';
 import { LoadingSpinner } from '../components/feedback/LoadingSpinner';
 
@@ -25,6 +26,9 @@ const InvestmentsPage = lazy(() =>
 );
 const InvestmentDetailPage = lazy(() =>
   import('../pages/investments/InvestmentDetailPage').then((m) => ({ default: m.InvestmentDetailPage || m.default }))
+);
+const AdminInvestmentsPage = lazy(() =>
+  import('../pages/admin/AdminInvestmentsPage').then((m) => ({ default: m.AdminInvestmentsPage || m.default }))
 );
 const ReferralsPage = lazy(() =>
   import('../pages/referrals/ReferralsPage').then((m) => ({ default: m.ReferralsPage || m.default }))
@@ -137,6 +141,16 @@ export const router = createBrowserRouter([
           <RouteSuspense>
             <ProfilePage />
           </RouteSuspense>
+        )
+      },
+      {
+        path: '/admin/investments',
+        element: (
+          <AdminRoute>
+            <RouteSuspense>
+              <AdminInvestmentsPage />
+            </RouteSuspense>
+          </AdminRoute>
         )
       }
     ]
