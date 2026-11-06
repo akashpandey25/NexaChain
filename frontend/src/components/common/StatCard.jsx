@@ -97,9 +97,9 @@ export const StatCard = ({
           )}
         </div>
 
-        {/* Big Tabular Numeric Amount */}
+        {/* Big Tabular Numeric Amount (Inter font stack with tabular numerals) */}
         <div
-          className={`text-2xl sm:text-3xl font-bold tracking-tight font-mono tabular-nums leading-tight ${valueColorClass}`}
+          className={`text-2xl sm:text-3xl font-bold tracking-tight font-sans tabular-nums leading-tight ${valueColorClass}`}
         >
           {displayValue}
         </div>
@@ -175,3 +175,4 @@ export const StatCard = ({
 };
 
 export default StatCard;
+

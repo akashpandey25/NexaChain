@@ -87,8 +87,12 @@
   }
 }
 
-/* Financial tabular numeral alignment (always available globally) */
+/* Financial tabular numeral alignment & Inter typography (always available globally) */
 .tabular-nums,
 .font-tabular {
   font-variant-numeric: tabular-nums !important;
+}
+
+.font-sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -10,21 +10,24 @@ import {
   Layers,
   Menu,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Bell,
+  ChevronRight
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../app/store';
 import { logout, selectCurrentUser } from '../features/auth/authSlice';
 import { baseApi } from '../app/api/baseApi';
+import { formatPaiseToINR } from '../utils/formatters';
 
 /**
  * AppLayout Component
  * 
- * High-end dark fintech application layout matching the reference dashboard design:
- * - Desktop Sidebar with vibrant emerald active state for Dashboard
- * - Balance widget with real-time wallet tracking
- * - Verified investor profile card with quick logout
- * - Header with dynamic route-aware breadcrumbs, Cron Engine status pill, and wallet overview
- * - Standardized footer bar
+ * Institutional fintech application shell with consistent visual hierarchy:
+ * - Desktop Sidebar (`surface-sidebar`) with clean grouped navigation and compact user identity.
+ * - Responsive Mobile Drawer with backdrop, Escape-key dismiss, and body scroll lock.
+ * - Top Header (`surface-canvas` with blur) with route breadcrumbs, honest notification popover,
+ *   and verified wallet balance.
+ * - Main viewport (`max-w-7xl`) with standardized padding and typography tokens.
  */
 export const AppLayout = () => {
   const dispatch = useAppDispatch();
@@ -33,10 +36,49 @@ export const AppLayout = () => {
   const user = useAppSelector(selectCurrentUser);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
 
+  // Close mobile drawer on route transition
   useEffect(() => {
     setMobileMenuOpen(false);
+    setNotificationOpen(false);
   }, [location.pathname]);
+
+  // Handle escape key and click outside for popovers and drawers
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) setMobileMenuOpen(false);
+        if (notificationOpen) setNotificationOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setNotificationOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileMenuOpen, notificationOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -44,52 +86,71 @@ export const AppLayout = () => {
     navigate('/login', { replace: true });
   };
 
-  const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/investments', label: 'Investments', icon: TrendingUp },
-    { to: '/referrals', label: 'Referrals', icon: Share2 },
-    { to: '/roi-history', label: 'ROI History', icon: Coins },
-    { to: '/profile', label: 'Profile', icon: User },
+  // Logically grouped navigation hierarchy
+  const navigationGroups = [
+    {
+      title: 'Portfolio',
+      items: [
+        { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/investments', label: 'Investments', icon: TrendingUp },
+        { to: '/roi-history', label: 'ROI History', icon: Coins }
+      ]
+    },
+    {
+      title: 'Affiliates',
+      items: [
+        { to: '/referrals', label: 'Referrals', icon: Share2 }
+      ]
+    },
     ...(user?.role === 'admin'
-      ? [{ to: '/admin/investments', label: 'Admin Approvals', icon: ShieldCheck }]
-      : [])
+      ? [
+          {
+            title: 'Administration',
+            items: [
+              { to: '/admin/investments', label: 'Admin Approvals', icon: ShieldCheck }
+            ]
+          }
+        ]
+      : []),
+    {
+      title: 'Preferences',
+      items: [
+        { to: '/profile', label: 'Profile', icon: User }
+      ]
+    }
   ];
 
   const getBreadcrumbLabel = (pathname) => {
     if (pathname.startsWith('/investments/') && pathname !== '/investments') {
       return (
-        <>
-          <Link to="/investments" className="text-slate-400 hover:text-slate-200 transition-colors">
+        <div className="flex items-center gap-1.5 text-xs">
+          <Link to="/investments" className="text-text-secondary hover:text-text-primary transition-colors">
             Investments
           </Link>
-          <span className="text-slate-600">&gt;</span>
-          <span className="text-white font-semibold">Contract Details</span>
-        </>
+          <ChevronRight className="w-3 h-3 text-text-muted" aria-hidden="true" />
+          <span className="text-text-primary font-medium">Contract Details</span>
+        </div>
       );
     }
     switch (pathname) {
       case '/investments':
-        return <span className="text-white font-semibold">Investments</span>;
+        return <span className="text-text-primary font-medium">Investments</span>;
       case '/referrals':
-        return <span className="text-white font-semibold">Referrals</span>;
+        return <span className="text-text-primary font-medium">Referrals</span>;
       case '/roi-history':
-        return <span className="text-white font-semibold">ROI History</span>;
+        return <span className="text-text-primary font-medium">ROI History</span>;
       case '/profile':
-        return <span className="text-white font-semibold">Profile</span>;
+        return <span className="text-text-primary font-medium">Profile</span>;
       case '/admin/investments':
-        return <span className="text-white font-semibold">Admin Approvals</span>;
+        return <span className="text-text-primary font-medium">Admin Approvals</span>;
       case '/dashboard':
       default:
-        return <span className="text-white font-semibold">Dashboard</span>;
+        return <span className="text-text-primary font-medium">Dashboard</span>;
     }
   };
 
-  const formattedBalance = user?.walletBalancePaise
-    ? new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        maximumFractionDigits: 2
-      }).format(user.walletBalancePaise / 100)
+  const formattedBalance = user?.walletBalancePaise !== undefined
+    ? formatPaiseToINR(user.walletBalancePaise)
     : '₹0.00';
 
   const userInitial = user?.name
@@ -98,14 +159,21 @@ export const AppLayout = () => {
     ? user.email.charAt(0).toUpperCase()
     : 'U';
   const userName = user?.name || user?.email?.split('@')[0] || 'Investor';
-  const userRole = user?.role === 'admin' ? 'Administrator' : 'Verified Investor';
+  const userRole = user?.role === 'admin' ? 'Administrator' : 'Investor';
+
+  const navLinkClass = ({ isActive }) =>
+    `group flex items-center gap-3 px-3 py-2 rounded-button text-xs sm:text-sm font-medium transition-colors select-none ${
+      isActive
+        ? 'bg-surface-elevated text-text-primary border border-border-subtle shadow-none'
+        : 'text-text-secondary hover:text-text-primary hover:bg-surface-card-hover border border-transparent'
+    }`;
 
   return (
-    <div className="min-h-screen bg-surface-canvas text-slate-100 flex font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-surface-canvas text-text-primary flex font-sans selection:bg-semantic-positive/20 selection:text-text-primary">
       {/* 1. Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm md:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -113,146 +181,158 @@ export const AppLayout = () => {
 
       {/* 2. Mobile Drawer Navigation */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#090d16] border-r border-slate-800/80 flex flex-col justify-between p-5 transform transition-transform duration-300 ease-in-out md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-surface-sidebar border-r border-border-subtle flex flex-col justify-between p-5 transform transition-all duration-200 ease-out md:hidden ${
+          mobileMenuOpen
+            ? 'translate-x-0 opacity-100 visible'
+            : '-translate-x-full opacity-0 invisible pointer-events-none'
         }`}
         role="dialog"
         aria-modal="true"
+        aria-label="Mobile Navigation"
       >
-        <div>
+        <div className="space-y-6">
           {/* Brand header */}
-          <div className="flex items-center justify-between pb-6 border-b border-slate-800/80">
-            <Link to="/dashboard" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-950">
-                <Layers className="w-5 h-5 stroke-[2.2]" />
+          <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
+            <Link
+              to="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus rounded-button"
+            >
+              <div className="w-8 h-8 rounded-button bg-surface-elevated border border-border-strong flex items-center justify-center text-semantic-positive">
+                <Layers className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="tracking-tight text-white font-extrabold text-base leading-none">NexaChain</span>
-                <span className="text-[9px] text-emerald-400 font-semibold tracking-wider mt-0.5">CAPITAL & ROI</span>
+                <span className="tracking-tight text-text-primary font-bold text-sm leading-none">NexaChain</span>
+                <span className="text-[9px] text-text-muted font-medium tracking-wider mt-0.5 uppercase">Capital Platform</span>
               </div>
             </Link>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-button text-text-muted hover:text-text-primary hover:bg-surface-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
+              aria-label="Close navigation menu"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="mt-6 space-y-1.5">
-            {navItems.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                    isActive
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{label}</span>
-              </NavLink>
+          {/* Grouped Navigation Links */}
+          <nav className="space-y-5">
+            {navigationGroups.map((group) => (
+              <div key={group.title} className="space-y-1">
+                <span className="px-3 text-[10px] font-semibold text-text-muted uppercase tracking-wider block mb-1">
+                  {group.title}
+                </span>
+                {group.items.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={navLinkClass}
+                  >
+                    <Icon className="w-4 h-4 shrink-0 text-text-muted group-hover:text-text-secondary" />
+                    <span>{label}</span>
+                  </NavLink>
+                ))}
+              </div>
             ))}
           </nav>
         </div>
 
-        {/* Mobile Sidebar Footer */}
-        <div className="pt-4 border-t border-slate-800/80 space-y-3">
-          <div className="p-3.5 bg-[#0b101b] rounded-xl border border-slate-800">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">AVAILABLE BALANCE</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        {/* Mobile User Identity Footer */}
+        <div className="pt-4 border-t border-border-subtle">
+          <div className="flex items-center justify-between p-2 rounded-card bg-surface-card border border-border-subtle">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border-subtle flex items-center justify-center text-xs font-semibold text-text-primary shrink-0">
+                {userInitial}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-text-primary truncate leading-tight">
+                  {userName}
+                </p>
+                <p className="text-[10px] text-text-muted truncate mt-0.5">
+                  {userRole}
+                </p>
+              </div>
             </div>
-            <div className="text-lg font-extrabold text-white">
-              {formattedBalance}
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="p-1.5 rounded-button text-text-muted hover:text-semantic-danger hover:bg-surface-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
+              aria-label="Log out"
+              title="Log out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 3. Desktop Fixed Sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-[#090d16] border-r border-slate-800/80 z-30">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-surface-sidebar border-r border-border-subtle z-30">
         <div className="flex flex-col flex-1 min-h-0 justify-between">
-          <div>
+          <div className="flex-1 overflow-y-auto">
             {/* Brand Header */}
-            <div className="flex items-center gap-3 px-6 h-18 py-5 border-b border-slate-800/80">
-              <Link to="/dashboard" className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/20">
-                  <Layers className="w-5 h-5 stroke-[2.2]" />
+            <div className="flex items-center gap-2.5 px-6 h-16 border-b border-border-subtle">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus rounded-button"
+              >
+                <div className="w-8 h-8 rounded-button bg-surface-elevated border border-border-strong flex items-center justify-center text-semantic-positive">
+                  <Layers className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="tracking-tight text-white font-black text-base leading-none">NexaChain</span>
-                  <span className="text-[9px] text-emerald-400 font-bold tracking-widest mt-0.5">CAPITAL & ROI</span>
+                  <span className="tracking-tight text-text-primary font-bold text-sm leading-none">NexaChain</span>
+                  <span className="text-[9px] text-text-muted font-medium tracking-wider mt-0.5 uppercase">Capital Platform</span>
                 </div>
               </Link>
             </div>
 
-            {/* Navigation Menu */}
-            <div className="px-3.5 py-6 space-y-1.5">
-              {navItems.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{label}</span>
-                </NavLink>
+            {/* Navigation Groups */}
+            <nav className="p-3.5 space-y-5">
+              {navigationGroups.map((group) => (
+                <div key={group.title} className="space-y-1">
+                  <span className="px-3 text-[10px] font-semibold text-text-muted uppercase tracking-wider block mb-1.5 select-none">
+                    {group.title}
+                  </span>
+                  {group.items.map(({ to, label, icon: Icon }) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      className={navLinkClass}
+                    >
+                      <Icon className="w-4 h-4 shrink-0 text-text-muted group-hover:text-text-secondary" />
+                      <span>{label}</span>
+                    </NavLink>
+                  ))}
+                </div>
               ))}
-            </div>
+            </nav>
           </div>
 
-          {/* Bottom Sidebar: Balance Widget and Verified User Card */}
-          <div className="p-3.5 border-t border-slate-800/80 space-y-3">
-            {/* Available Balance Card */}
-            <div className="p-3.5 bg-[#0b101b] rounded-2xl border border-slate-800 shadow-sm">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  AVAILABLE BALANCE
-                </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              </div>
-
-              <div className="mt-1">
-                <div className="text-xl font-extrabold text-white tracking-tight">
-                  {formattedBalance}
-                </div>
-              </div>
-            </div>
-
-            {/* User Card */}
-            <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/40 border border-slate-800/60">
+          {/* Bottom Sidebar: Compact User Identity Card (Replaced duplicate balance widget) */}
+          <div className="p-3.5 border-t border-border-subtle">
+            <div className="flex items-center justify-between p-2 rounded-card bg-surface-card border border-border-subtle">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-400 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border-subtle flex items-center justify-center text-xs font-semibold text-text-primary shrink-0">
                   {userInitial}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate leading-tight">
+                  <p className="text-xs font-semibold text-text-primary truncate leading-tight">
                     {userName}
                   </p>
-                  <p className="text-[10px] text-emerald-400 font-semibold truncate">
-                    {userRole}
-                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {user?.role === 'admin' ? (
+                      <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.2 rounded bg-semantic-pending/10 text-semantic-pending border border-semantic-pending/30">
+                        Admin
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-text-muted truncate">
+                        Investor
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -260,8 +340,8 @@ export const AppLayout = () => {
                 type="button"
                 onClick={handleLogout}
                 title="Log out"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
                 aria-label="Log out"
+                className="p-1.5 rounded-button text-text-muted hover:text-semantic-danger hover:bg-surface-card-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -273,46 +353,75 @@ export const AppLayout = () => {
       {/* 4. Main Body Wrapper (Shifted right by 256px on desktop) */}
       <div className="flex-1 flex flex-col md:pl-64 min-w-0">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-20 h-16 bg-[#070b13]/90 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-20 h-16 bg-surface-canvas/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            {/* Mobile menu toggle */}
+            {/* Mobile menu toggle button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 md:hidden"
+              className="p-2 -ml-2 rounded-button text-text-secondary hover:text-text-primary hover:bg-surface-card-hover md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
               aria-label="Open sidebar menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Route-Aware Dynamic Breadcrumb */}
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-slate-400">Platform</span>
-              <span className="text-slate-600">&gt;</span>
+            {/* Route-Aware Dynamic Breadcrumbs */}
+            <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
+              <span className="text-text-muted select-none">Platform</span>
+              <ChevronRight className="w-3 h-3 text-text-muted select-none" aria-hidden="true" />
               {getBreadcrumbLabel(location.pathname)}
             </div>
           </div>
 
           {/* Right Header Status Badges & Controls */}
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Cron Engine Status Pill */}
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Cron Engine: Active (Midnight IST)</span>
+            {/* Wallet Balance Display Pill */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-medium bg-surface-card border border-border-subtle text-text-primary">
+              <span className="text-text-muted text-[11px]">Wallet:</span>
+              <span className="font-tabular tabular-nums font-semibold">{formattedBalance}</span>
             </div>
 
-            {/* Wallet Balance Pill */}
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 border border-slate-800 text-white">
-              <span className="text-slate-400 mr-1.5 font-normal">WALLET</span>
-              <span>{formattedBalance}</span>
+            {/* Notification Bell with Honest Transparent Popover */}
+            <div className="relative" ref={notificationRef}>
+              <button
+                type="button"
+                onClick={() => setNotificationOpen((prev) => !prev)}
+                className="w-8 h-8 rounded-full bg-surface-card hover:bg-surface-elevated border border-border-subtle text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
+                aria-label="View notifications"
+                aria-expanded={notificationOpen}
+              >
+                <Bell className="w-4 h-4" />
+              </button>
+
+              {notificationOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Notifications"
+                  className="absolute right-0 mt-2 w-80 bg-surface-card border border-border-subtle rounded-card shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 duration-100"
+                >
+                  <div className="flex items-center justify-between pb-2 mb-3 border-b border-border-subtle">
+                    <span className="text-xs font-semibold text-text-primary">Notifications</span>
+                    <span className="text-[10px] text-text-muted">0 unread</span>
+                  </div>
+                  <div className="py-4 text-center space-y-1">
+                    <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border-subtle text-text-muted flex items-center justify-center mx-auto mb-2">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <p className="text-xs font-medium text-text-primary">No unread notifications</p>
+                    <p className="text-[11px] text-text-secondary leading-relaxed">
+                      Settlement disbursements, security notices, and administrative updates will appear here.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Profile Avatar */}
+            {/* User Profile Avatar Link */}
             <Link
               to="/profile"
-              className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-800/80 text-emerald-400 flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-full bg-surface-elevated border border-border-strong text-text-primary flex items-center justify-center text-xs font-semibold hover:border-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
               title="View Profile"
+              aria-label="User Profile"
             >
               {userInitial}
             </Link>
@@ -324,10 +433,10 @@ export const AppLayout = () => {
           <Outlet />
         </main>
 
-        {/* Footer Bar */}
-        <footer className="border-t border-slate-800/80 px-6 py-4 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
+        {/* Institutional Footer */}
+        <footer className="border-t border-border-subtle px-6 py-4 text-xs text-text-muted flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
           <div>NexaChain Capital Platform &bull; Version 1.0.0</div>
-          <div>Daily Midnight IST Cron Engine Verified &bull; 2026</div>
+          <div>Integer-Paise Verified Ledger &bull; 2026</div>
         </footer>
       </div>
     </div>
