@@ -172,44 +172,44 @@ export const getStatusStyle = (status = '') => {
   switch (normalized) {
     case 'active':
       return {
-        badge: 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60',
-        dot: 'bg-emerald-400',
+        badge: 'bg-semantic-positive/10 text-semantic-positive border border-semantic-positive/30',
+        dot: 'bg-semantic-positive',
         label: 'ACTIVE'
       };
     case 'processed':
       return {
-        badge: 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60',
-        dot: 'bg-emerald-400',
+        badge: 'bg-semantic-positive/10 text-semantic-positive border border-semantic-positive/30',
+        dot: 'bg-semantic-positive',
         label: 'PROCESSED'
       };
     case 'pending':
       return {
-        badge: 'bg-amber-950/70 text-amber-400 border border-amber-800/60',
-        dot: 'bg-amber-400',
+        badge: 'bg-semantic-pending/10 text-semantic-pending border border-semantic-pending/30',
+        dot: 'bg-semantic-pending',
         label: 'PENDING'
       };
     case 'completed':
       return {
-        badge: 'bg-blue-950/70 text-blue-400 border border-blue-800/60',
-        dot: 'bg-blue-400',
+        badge: 'bg-surface-elevated text-text-secondary border border-border-strong',
+        dot: 'bg-text-secondary',
         label: 'COMPLETED'
       };
     case 'cancelled':
       return {
-        badge: 'bg-rose-950/70 text-rose-400 border border-rose-800/60',
-        dot: 'bg-rose-400',
+        badge: 'bg-semantic-danger/10 text-semantic-danger border border-semantic-danger/30',
+        dot: 'bg-semantic-danger',
         label: 'CANCELLED'
       };
     case 'failed':
       return {
-        badge: 'bg-rose-950/70 text-rose-400 border border-rose-800/60',
-        dot: 'bg-rose-400',
+        badge: 'bg-semantic-danger/10 text-semantic-danger border border-semantic-danger/30',
+        dot: 'bg-semantic-danger',
         label: 'FAILED'
       };
     default:
       return {
-        badge: 'bg-slate-800 text-slate-300 border border-slate-700',
-        dot: 'bg-slate-400',
+        badge: 'bg-surface-elevated text-text-muted border border-border-subtle',
+        dot: 'bg-text-muted',
         label: String(status || 'UNKNOWN').toUpperCase()
       };
   }
