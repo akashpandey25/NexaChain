@@ -40,7 +40,7 @@ const ChartLoadingFallback = () => (
  * 
  * Recreates the exact dark fintech UI from the reference design while maintaining
  * 100% of the live backend financial calculations and API contracts:
- * 1. Status Badges: CRON ENGINE: ACTIVE (00:00 UTC) & Paise Precision v2.4
+ * 1. Status Badges: CRON ENGINE: ACTIVE (00:00 IST) & Paise Precision v2.4
  * 2. Header & Action buttons: Deposit Funds, Withdrawal, Reinvest ROI
  * 3. 4 Primary KPI StatCards (Total Invested, Active Principal, Total ROI Yield, Available Balance)
  * 4. Multi-Level Referral Earnings Banner with live link copy and downline trigger
@@ -96,7 +96,7 @@ export const DashboardPage = () => {
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              CRON ENGINE: ACTIVE (00:00 UTC)
+              CRON ENGINE: ACTIVE (00:00 IST)
             </span>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-900 text-slate-400 border border-slate-800">
               Paise Precision v2.4

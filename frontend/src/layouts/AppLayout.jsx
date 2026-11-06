@@ -286,7 +286,7 @@ export const AppLayout = () => {
             {/* Cron Engine Status Pill */}
             <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Cron Engine: Active (Midnight UTC)</span>
+              <span>Cron Engine: Active (Midnight IST)</span>
             </div>
 
             {/* Wallet Balance Pill */}
@@ -323,7 +323,7 @@ export const AppLayout = () => {
         {/* Footer Bar */}
         <footer className="border-t border-slate-800/80 px-6 py-4 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
           <div>NexaChain Capital Platform &bull; Protocol Version 4.1.8-mainnet</div>
-          <div>Daily Midnight UTC Cron Engine Verified &bull; 2026</div>
+          <div>Daily Midnight IST Cron Engine Verified &bull; 2026</div>
         </footer>
       </div>
     </div>

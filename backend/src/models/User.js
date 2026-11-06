@@ -164,6 +164,14 @@ userSchema.methods.toSafeObject = function () {
 };
 
 // Prevent OverwriteModelError in test/dev environments with hot reloads
+userSchema.index(
+  { mobileNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { mobileNumber: { $type: 'string' } }
+  }
+);
+
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 module.exports = User;

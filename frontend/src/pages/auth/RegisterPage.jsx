@@ -5,6 +5,7 @@ import {
   EyeOff,
   User,
   Mail,
+  Phone,
   Lock,
   Key,
   Check,
@@ -19,16 +20,18 @@ import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*\d)/;
+const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
 
 /**
  * RegisterPage Component
  * 
  * Recreates the exact multi-column design from the specification screenshot:
  * - 2-column input grid for Name & Email
+ * - Standardized Indian Mobile Number input with +91 country code badge
  * - 2-column input grid for Password & Confirm Password
  * - Dynamic password strength meter bar & helper text
  * - Green checkmark badge on password match
- * - Monospace referral code input with "Sponsor Verified • +2.5% ROI Boost" pill
+ * - Monospace referral code input with "Sponsor Verified" pill
  * - Protocol Terms, Yield Risk Disclosure & Privacy Policy agreement checkbox
  * - Radiant emerald CTA button
  */
@@ -40,6 +43,7 @@ export const RegisterPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    mobileNumber: '',
     password: '',
     confirmPassword: '',
     referralCode: searchParams.get('ref') || searchParams.get('referralCode') || ''
@@ -60,7 +64,12 @@ export const RegisterPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let sanitizedValue = value;
+    if (name === 'mobileNumber') {
+      // Extract digits only, maximum 10 digits
+      sanitizedValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
 
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: '' }));
@@ -94,6 +103,7 @@ export const RegisterPage = () => {
     const errors = {};
     const trimmedName = formData.name.trim();
     const trimmedEmail = formData.email.trim();
+    const trimmedMobile = formData.mobileNumber.trim();
     const trimmedRef = formData.referralCode.trim();
 
     // 1. Name validation
@@ -112,7 +122,14 @@ export const RegisterPage = () => {
       errors.email = 'Please provide a valid email address.';
     }
 
-    // 3. Password validation
+    // 3. Mobile number validation (10-digit Indian mobile number)
+    if (!trimmedMobile) {
+      errors.mobileNumber = 'Mobile number is required.';
+    } else if (!INDIAN_MOBILE_REGEX.test(trimmedMobile)) {
+      errors.mobileNumber = 'Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.';
+    }
+
+    // 4. Password validation
     if (!formData.password) {
       errors.password = 'Password is required.';
     } else if (formData.password.length < 8) {
@@ -121,19 +138,19 @@ export const RegisterPage = () => {
       errors.password = 'Password must contain at least 1 letter and 1 number.';
     }
 
-    // 4. Confirm password validation
+    // 5. Confirm password validation
     if (!formData.confirmPassword) {
       errors.confirmPassword = 'Confirm password is required.';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match.';
     }
 
-    // 5. Referral code validation (optional)
+    // 6. Referral code validation (optional)
     if (trimmedRef && trimmedRef.length < 3) {
       errors.referralCode = 'Referral code must be at least 3 characters long.';
     }
 
-    // 6. Terms agreement
+    // 7. Terms agreement
     if (!agreeTerms) {
       errors.terms = 'You must agree to the NexaChain Protocol Terms.';
     }
@@ -152,6 +169,7 @@ export const RegisterPage = () => {
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim().toLowerCase(),
+      mobileNumber: `+91${formData.mobileNumber.trim()}`,
       password: formData.password
     };
 
@@ -246,7 +264,37 @@ export const RegisterPage = () => {
           </FormField>
         </div>
 
-        {/* ROW 2: Password & Confirm Password (2-Column Grid on sm+) */}
+        {/* ROW 2: Mobile Number (with +91 country code prefix) */}
+        <FormField
+          id="register-mobile"
+          label="Mobile Number"
+          required
+          error={formErrors.mobileNumber}
+        >
+          <div className="relative flex rounded-xl">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900 border border-r-0 border-slate-800 rounded-l-xl text-xs font-mono font-semibold text-slate-300 select-none shrink-0">
+              <Phone className="w-3.5 h-3.5 text-emerald-400" />
+              <span>+91</span>
+            </div>
+            <input
+              id="register-mobile"
+              name="mobileNumber"
+              type="tel"
+              autoComplete="tel"
+              maxLength={10}
+              value={formData.mobileNumber}
+              onChange={handleChange}
+              placeholder="9876543210"
+              className={`w-full px-3.5 py-2.5 bg-slate-950/90 border rounded-r-xl text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+                formErrors.mobileNumber
+                  ? 'border-rose-500/80 focus:border-rose-500'
+                  : 'border-slate-800 focus:border-emerald-500'
+              }`}
+            />
+          </div>
+        </FormField>
+
+        {/* ROW 3: Password & Confirm Password (2-Column Grid on sm+) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Password */}
           <FormField
@@ -377,7 +425,7 @@ export const RegisterPage = () => {
               <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/90 border border-emerald-500/50 text-[10px] font-semibold text-emerald-400">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  Sponsor Verified • +2.5% ROI Boost
+                  Sponsor Verified
                 </span>
               </div>
             )}

@@ -21,12 +21,16 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
     const list = [];
 
     // Real ROI transactions from GET /api/roi/history
-    const roiRecords = roiHistoryData?.roiRecords || (Array.isArray(roiHistoryData) ? roiHistoryData : []);
+    const roiRecords =
+      roiHistoryData?.roiRecords ||
+      roiHistoryData?.data?.roiRecords ||
+      (Array.isArray(roiHistoryData?.data) ? roiHistoryData.data : []) ||
+      (Array.isArray(roiHistoryData) ? roiHistoryData : []);
     roiRecords.forEach((item) => {
       list.push({
         id: item._id,
         title: item.investment?.planName ? `${item.investment.planName} Plan Yield` : 'Daily ROI Distribution',
-        timestamp: `${formatBusinessDate(item.businessDate)} • Midnight UTC`,
+        timestamp: `${formatBusinessDate(item.businessDate)} • Midnight IST`,
         txHash: `TX-${item._id?.slice(-8).toUpperCase() || 'LEDGER'}`,
         ledgerType: 'Daily ROI Yield',
         ledgerVariant: 'emerald',
@@ -41,12 +45,16 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
     });
 
     // Real investment activations from GET /api/investments
-    const investments = investmentData?.data?.investments || (Array.isArray(investmentData?.data) ? investmentData.data : []);
+    const investments =
+      investmentData?.investments ||
+      investmentData?.data?.investments ||
+      (Array.isArray(investmentData?.data) ? investmentData.data : []) ||
+      (Array.isArray(investmentData) ? investmentData : []);
     investments.forEach((inv) => {
       list.push({
         id: inv._id,
         title: `Package Activation: ${inv.planName || 'Investment'}`,
-        timestamp: `${formatBusinessDate(inv.createdAt)} • UTC`,
+        timestamp: `${formatBusinessDate(inv.createdAt)} • IST`,
         txHash: `TX-${inv._id?.slice(-8).toUpperCase() || 'CONTRACT'}`,
         ledgerType: 'Capital Principal',
         ledgerVariant: 'slate',
@@ -197,7 +205,7 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
       <div className="p-4 bg-slate-950/60 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>NexaChain executes automated settlement batches at midnight UTC. Zero float latency.</span>
+          <span>NexaChain executes automated settlement batches at midnight IST (Asia/Kolkata). Zero float latency.</span>
         </div>
         <div className="font-mono text-slate-400">
           Integer Paise Precision Ledger Active

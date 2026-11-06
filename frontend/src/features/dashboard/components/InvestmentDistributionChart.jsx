@@ -174,7 +174,7 @@ export const InvestmentDistributionChart = ({ amountByStatus = [], totalCount = 
         </div>
         <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60 flex items-center gap-1">
           <ShieldCheck className="w-3 h-3" />
-          Midnight UTC Settlement
+          Midnight IST Settlement
         </span>
       </div>
     </div>

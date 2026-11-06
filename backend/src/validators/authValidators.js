@@ -15,11 +15,23 @@ const registerSchema = z.object({
     .toLowerCase()
     .email('Please provide a valid email address'),
   mobileNumber: z
-    .string()
+    .string({ required_error: 'Mobile number is required' })
     .trim()
-    .max(20, 'Mobile number cannot exceed 20 characters')
-    .optional()
-    .or(z.literal('')),
+    .min(1, 'Mobile number is required')
+    .refine(
+      (val) => {
+        const cleaned = val.replace(/[\s\-]/g, '');
+        return /^(\+91)?[6-9]\d{9}$/.test(cleaned);
+      },
+      {
+        message: 'Please provide a valid 10-digit Indian mobile number (e.g. +919876543210 or 9876543210)'
+      }
+    )
+    .transform((val) => {
+      const cleaned = val.replace(/[\s\-]/g, '');
+      const digits10 = cleaned.slice(-10);
+      return `+91${digits10}`;
+    }),
   password: z
     .string({ required_error: 'Password is required' })
     .min(8, 'Password must be at least 8 characters long')

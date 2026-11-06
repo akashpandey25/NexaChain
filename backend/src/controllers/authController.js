@@ -3,16 +3,32 @@ const { generateToken } = require('../utils/jwt');
 const { generateUniqueReferralCode } = require('../utils/referralCode');
 
 /**
+ * Normalizes an Indian mobile number to E.164 (+91XXXXXXXXXX) format.
+ * Strips whitespace, dashes, and ensures standard formatting.
+ * 
+ * @param {string} mobile 
+ * @returns {string|null}
+ */
+const normalizeIndianMobile = (mobile) => {
+  if (!mobile) return null;
+  const cleaned = String(mobile).replace(/[\s\-]/g, '');
+  if (!cleaned) return null;
+  const digits10 = cleaned.slice(-10);
+  return `+91${digits10}`;
+};
+
+/**
  * Register a new user account.
  * Route: POST /api/auth/register
  */
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, referralCode } = req.body;
+    const { name, email, mobileNumber, password, referralCode } = req.body;
+    const normalizedMobile = normalizeIndianMobile(mobileNumber);
 
     // 1. Check if email is already registered
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       return res.status(409).json({
         success: false,
         message: 'An account with this email address already exists.',
@@ -25,7 +41,24 @@ const register = async (req, res, next) => {
       });
     }
 
-    // 2. Resolve optional referral code
+    // 2. Check if mobile number is already registered
+    if (normalizedMobile) {
+      const existingMobile = await User.findOne({ mobileNumber: normalizedMobile });
+      if (existingMobile) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this mobile number already exists.',
+          errors: [
+            {
+              field: 'mobileNumber',
+              message: 'Mobile number is already in use.'
+            }
+          ]
+        });
+      }
+    }
+
+    // 3. Resolve optional referral code
     let referredBy = null;
     if (referralCode && referralCode.trim() !== '') {
       const normalizedRefCode = referralCode.trim().toUpperCase();
@@ -64,14 +97,14 @@ const register = async (req, res, next) => {
       referredBy = referringUser._id;
     }
 
-    // 3. Generate a collision-tested unique referral code for the new user
+    // 4. Generate a collision-tested unique referral code for the new user
     const newReferralCode = await generateUniqueReferralCode();
 
-    // 4. Create user record (role strictly forced to 'user', password hashed by User model hook)
+    // 5. Create user record (role strictly forced to 'user', password hashed by User model hook)
     const newUser = await User.create({
       name,
       email,
-      mobileNumber: req.body.mobileNumber?.trim() || null,
+      mobileNumber: normalizedMobile,
       password,
       referralCode: newReferralCode,
       referredBy,
@@ -82,10 +115,10 @@ const register = async (req, res, next) => {
       isActive: true
     });
 
-    // 5. Generate JWT token
+    // 6. Generate JWT token
     const token = generateToken(newUser);
 
-    // 6. Return response with safe user representation
+    // 7. Return response with safe user representation
     return res.status(201).json({
       success: true,
       message: 'Account registered successfully.',
@@ -95,6 +128,41 @@ const register = async (req, res, next) => {
       }
     });
   } catch (error) {
+    // Handle MongoDB unique constraint violations (E11000) gracefully
+    if (error.code === 11000) {
+      const isMobile =
+        error.keyPattern?.mobileNumber ||
+        (error.message && error.message.includes('mobileNumber'));
+      const isEmail =
+        error.keyPattern?.email ||
+        (error.message && error.message.includes('email'));
+
+      if (isMobile) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this mobile number already exists.',
+          errors: [
+            {
+              field: 'mobileNumber',
+              message: 'Mobile number is already in use.'
+            }
+          ]
+        });
+      }
+
+      if (isEmail) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email address already exists.',
+          errors: [
+            {
+              field: 'email',
+              message: 'Email address is already in use.'
+            }
+          ]
+        });
+      }
+    }
     next(error);
   }
 };
