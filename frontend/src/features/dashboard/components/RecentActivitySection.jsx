@@ -44,24 +44,65 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
       });
     });
 
-    // Real investment activations from GET /api/investments
+    // Real investment records from GET /api/investments
     const investments =
       investmentData?.investments ||
       investmentData?.data?.investments ||
       (Array.isArray(investmentData?.data) ? investmentData.data : []) ||
       (Array.isArray(investmentData) ? investmentData : []);
     investments.forEach((inv) => {
+      const isPending = inv.status === 'pending';
+      const isActive = inv.status === 'active';
+      const isCompleted = inv.status === 'completed';
+      const isCancelled = inv.status === 'cancelled';
+
+      const title = isPending
+        ? `Investment Request: ${inv.planName || 'Package'}`
+        : isActive
+        ? `Active Contract: ${inv.planName || 'Investment'}`
+        : isCompleted
+        ? `Completed Contract: ${inv.planName || 'Investment'}`
+        : `Cancelled Request: ${inv.planName || 'Investment'}`;
+
+      const ledgerType = isPending
+        ? 'Pending Request'
+        : isActive
+        ? 'Active Principal'
+        : isCompleted
+        ? 'Matured Principal'
+        : 'Cancelled Request';
+
+      const amount = isPending
+        ? formatPaiseToINR(inv.principalAmountPaise)
+        : `-${formatPaiseToINR(inv.principalAmountPaise)}`;
+
+      const statusLabel = isPending
+        ? 'Pending Review'
+        : isActive
+        ? 'Active'
+        : isCompleted
+        ? 'Completed'
+        : 'Cancelled';
+
+      const statusVariant = isActive
+        ? 'emerald'
+        : isPending
+        ? 'amber'
+        : isCancelled
+        ? 'rose'
+        : 'slate';
+
       list.push({
         id: inv._id,
-        title: `Package Activation: ${inv.planName || 'Investment'}`,
+        title,
         timestamp: `${formatBusinessDate(inv.createdAt)} • IST`,
         txHash: inv._id ? `REF-${inv._id.slice(-8).toUpperCase()}` : 'RECORD',
-        ledgerType: 'Capital Principal',
+        ledgerType,
         ledgerVariant: 'slate',
-        amount: `-${formatPaiseToINR(inv.principalAmountPaise)}`,
-        amountColor: 'text-slate-300',
-        status: inv.status === 'active' ? 'Deployed' : (inv.status?.toUpperCase() || 'DEPLOYED'),
-        statusVariant: 'slate',
+        amount,
+        amountColor: isPending ? 'text-amber-300' : 'text-slate-300',
+        status: statusLabel,
+        statusVariant,
         category: 'investments',
         icon: Lock,
         date: new Date(inv.createdAt || 0)
@@ -186,6 +227,10 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
                         className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                           item.statusVariant === 'emerald'
                             ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60'
+                            : item.statusVariant === 'amber'
+                            ? 'bg-amber-950/80 text-amber-300 border border-amber-800/50'
+                            : item.statusVariant === 'rose'
+                            ? 'bg-rose-950/80 text-rose-300 border border-rose-800/50'
                             : 'bg-slate-900 text-slate-400 border border-slate-800'
                         }`}
                       >

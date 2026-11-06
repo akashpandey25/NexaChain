@@ -16,7 +16,7 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body: credentials
       }),
-      invalidatesTags: ['Auth'],
+      invalidatesTags: ['Auth', 'Dashboard', 'Investment', 'Referral', 'ROI'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;

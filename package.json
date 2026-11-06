@@ -11,10 +11,11 @@
     "build:frontend": "npm run build --prefix frontend",
     "test": "npm test --prefix backend",
     "test:backend": "npm test --prefix backend",
+    "test:e2e": "playwright test",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "concurrently": "^9.1.2"
   }
 }
-

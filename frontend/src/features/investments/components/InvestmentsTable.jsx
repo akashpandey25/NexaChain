@@ -128,15 +128,25 @@ export const InvestmentsTable = ({ investments = [] }) => {
 
                   {/* Start Date */}
                   <td className="px-5 py-4 whitespace-nowrap text-slate-300">
-                    {formatBusinessDate(inv.startDate || inv.createdAt)}
+                    {inv.status === 'pending' ? (
+                      <span className="text-amber-400/90 italic">Pending Activation</span>
+                    ) : inv.status === 'cancelled' ? (
+                      <span className="text-slate-500 italic">Not Activated</span>
+                    ) : (
+                      formatBusinessDate(inv.startDate || inv.createdAt)
+                    )}
                   </td>
 
                   {/* End Date */}
                   <td className="px-5 py-4 whitespace-nowrap text-slate-400">
-                    {inv.endDate ? (
+                    {inv.status === 'pending' ? (
+                      <span className="text-amber-400/90 italic">Pending Activation</span>
+                    ) : inv.status === 'cancelled' ? (
+                      <span className="text-slate-500 italic">Not Applicable</span>
+                    ) : inv.endDate ? (
                       formatBusinessDate(inv.endDate)
                     ) : (
-                      <span className="text-slate-500 italic">Indefinite</span>
+                      <span className="text-slate-500 italic">Ongoing</span>
                     )}
                   </td>
 

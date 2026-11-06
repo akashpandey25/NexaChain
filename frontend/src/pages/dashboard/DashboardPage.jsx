@@ -196,14 +196,14 @@ export const DashboardPage = () => {
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h3 className="text-base font-bold text-white tracking-tight">
-                  Multi-Level Referral Earnings
+                  Multi-Level Referral Network
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-800/60">
-                  Tier Network (5% - 3% - 1%)
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                  Affiliate Downline (Commissions Inactive by Policy)
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Accumulated perpetual commissions earned from direct and tier-level sponsored downlines.
+                Direct and tier-level sponsored network tracking with cycle-safe downline tree visualization.
               </p>
             </div>
           </div>
@@ -233,10 +233,10 @@ export const DashboardPage = () => {
 
             <div className="pl-6 border-l border-slate-800 hidden sm:block">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                TIER DEPTH
+                NETWORK DEPTH
               </span>
               <span className="text-sm sm:text-base font-bold text-white">
-                3 Levels Active
+                Multi-Tier Tree
               </span>
             </div>
           </div>
@@ -248,8 +248,8 @@ export const DashboardPage = () => {
             <Share2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Your Referral Link:</span>
             {referralCode ? (
-              <code className="text-emerald-400 font-mono bg-slate-900/80 px-2.5 py-0.5 rounded border border-slate-800">
-                nexachain.io/ref/{referralCode}
+              <code className="text-emerald-400 font-mono bg-slate-900/80 px-2.5 py-0.5 rounded border border-slate-800 text-[11px]">
+                {typeof window !== 'undefined' ? `${window.location.host}/register?ref=${referralCode}` : `ref=${referralCode}`}
               </code>
             ) : (
               <span className="text-slate-500 italic text-[11px]">Active on account</span>

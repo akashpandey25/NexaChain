@@ -28,6 +28,8 @@ backups/
 
 # Coverage / Testing
 coverage/
+test-results/
+playwright-report/
 
 # OS Files
 .DS_Store

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 import { EmptyState } from '../../components/feedback/EmptyState';
@@ -32,6 +32,7 @@ import {
  */
 export const InvestmentDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     data: investment,
     isLoading,
@@ -74,7 +75,7 @@ export const InvestmentDetailPage = () => {
             title="Investment Not Found"
             description="The requested investment contract does not exist or does not belong to your account. Access to another user's financial contracts is strictly forbidden."
             actionText="Return to Portfolio"
-            onAction={() => window.location.assign('/investments')}
+            onAction={() => navigate('/investments')}
           />
         </div>
       </div>
@@ -305,14 +306,24 @@ export const InvestmentDetailPage = () => {
           <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <span className="text-slate-400 font-medium">Contract Start Date</span>
             <span className="text-slate-200 font-medium">
-              {formatBusinessDate(investment.startDate || investment.createdAt)}
+              {investment.status === 'pending' ? (
+                <span className="text-amber-400/90 italic">Pending administrative activation</span>
+              ) : investment.status === 'cancelled' ? (
+                <span className="text-slate-500 italic">Not activated</span>
+              ) : (
+                formatBusinessDate(investment.startDate || investment.createdAt)
+              )}
             </span>
           </div>
 
           <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <span className="text-slate-400 font-medium">Contract End Date</span>
             <span className="text-slate-200 font-medium">
-              {investment.endDate ? (
+              {investment.status === 'pending' ? (
+                <span className="text-amber-400/90 italic">Scheduled upon contract activation</span>
+              ) : investment.status === 'cancelled' ? (
+                <span className="text-slate-500 italic">Not applicable</span>
+              ) : investment.endDate ? (
                 formatBusinessDate(investment.endDate)
               ) : (
                 <span className="text-slate-400 italic">Ongoing / Indefinite Contract</span>

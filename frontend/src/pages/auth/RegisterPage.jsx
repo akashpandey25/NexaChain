@@ -420,12 +420,12 @@ export const RegisterPage = () => {
                 formErrors.referralCode ? 'border-rose-500/80' : 'border-slate-800 focus:border-emerald-500'
               }`}
             />
-            {/* Sponsor Verified Badge Pill */}
+            {/* Referral Code Applied Pill */}
             {isReferralValid && (
               <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/90 border border-emerald-500/50 text-[10px] font-semibold text-emerald-400">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-semibold text-slate-300">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  Sponsor Verified
+                  Code Applied
                 </span>
               </div>
             )}

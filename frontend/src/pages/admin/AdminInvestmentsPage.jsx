@@ -67,6 +67,20 @@ export const AdminInvestmentsPage = () => {
   const investments = pendingData?.investments || [];
   const pagination = pendingData?.pagination || {};
 
+  // Escape key listener for accessible modal dismissal
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !isActivating && !isRejecting) {
+        setInspectItem(null);
+        setActivateTarget(null);
+        setRejectTarget(null);
+        setActionError(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isActivating, isRejecting]);
+
   const handleCopyId = (id) => {
     navigator.clipboard?.writeText(id);
     setCopiedId(id);
@@ -395,17 +409,22 @@ export const AdminInvestmentsPage = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="inspect-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setInspectItem(null);
+          }}
         >
           <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-semibold text-white">Investment Request Specifications</h3>
+                <h3 id="inspect-dialog-title" className="text-sm font-semibold text-white">Investment Request Specifications</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectItem(null)}
                 className="text-slate-400 hover:text-white p-1 rounded-lg"
+                aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -492,12 +511,19 @@ export const AdminInvestmentsPage = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="activate-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isActivating) {
+              setActivateTarget(null);
+              setActionError(null);
+            }
+          }}
         >
           <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-semibold text-white">Confirm Contract Activation</h3>
+                <h3 id="activate-dialog-title" className="text-sm font-semibold text-white">Confirm Contract Activation</h3>
               </div>
               <button
                 type="button"
@@ -507,6 +533,7 @@ export const AdminInvestmentsPage = () => {
                 }}
                 disabled={isActivating}
                 className="text-slate-400 hover:text-white p-1 rounded-lg"
+                aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -578,12 +605,19 @@ export const AdminInvestmentsPage = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="reject-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isRejecting) {
+              setRejectTarget(null);
+              setActionError(null);
+            }
+          }}
         >
           <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
               <div className="flex items-center gap-2">
                 <XCircle className="w-4 h-4 text-rose-400" />
-                <h3 className="text-sm font-semibold text-white">Reject Investment Request</h3>
+                <h3 id="reject-dialog-title" className="text-sm font-semibold text-white">Reject Investment Request</h3>
               </div>
               <button
                 type="button"
@@ -593,6 +627,7 @@ export const AdminInvestmentsPage = () => {
                 }}
                 disabled={isRejecting}
                 className="text-slate-400 hover:text-white p-1 rounded-lg"
+                aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -665,3 +700,4 @@ export const AdminInvestmentsPage = () => {
 };
 
 export default AdminInvestmentsPage;
+

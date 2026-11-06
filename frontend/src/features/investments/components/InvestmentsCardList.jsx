@@ -83,7 +83,11 @@ export const InvestmentsCardList = ({ investments = [] }) => {
                   Start Date
                 </span>
                 <span className="text-slate-300 font-medium">
-                  {formatBusinessDate(inv.startDate || inv.createdAt)}
+                  {inv.status === 'pending'
+                    ? 'Pending Activation'
+                    : inv.status === 'cancelled'
+                    ? 'Not Activated'
+                    : formatBusinessDate(inv.startDate || inv.createdAt)}
                 </span>
               </div>
               <div>
@@ -91,7 +95,13 @@ export const InvestmentsCardList = ({ investments = [] }) => {
                   End Date
                 </span>
                 <span className="text-slate-300 font-medium">
-                  {inv.endDate ? formatBusinessDate(inv.endDate) : 'Ongoing'}
+                  {inv.status === 'pending'
+                    ? 'Pending Activation'
+                    : inv.status === 'cancelled'
+                    ? 'Not Applicable'
+                    : inv.endDate
+                    ? formatBusinessDate(inv.endDate)
+                    : 'Ongoing'}
                 </span>
               </div>
             </div>

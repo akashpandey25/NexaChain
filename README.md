@@ -365,6 +365,24 @@ npm --prefix backend test
 - `src/tests/dashboard.test.js`: Aggregation pipelines, date filters, and wallet synchronization (10 tests).
 - `src/tests/foundation.test.js`: Health check, 503 degraded states, 404 handler, and standard envelopes (7 tests).
 
+### Automated Browser End-to-End Test Suite (Playwright)
+
+The project includes an end-to-end browser test suite verifying real user flows across the running frontend and backend:
+
+```bash
+# Run all end-to-end browser tests
+npm run test:e2e
+
+# Run Playwright tests with UI debugger
+npx playwright test --ui
+```
+
+#### E2E User Journey Breakdown (15 Tests Passing across 4 Suites)
+- **User Journey A – Authentication & Session Management (`e2e/journey-a-auth.spec.js`):** Client and server validation error reporting, successful user registration, protected route authorization, secure session logout, and duplicate email constraint handling (5 tests).
+- **User Journey B – Investment Request Lifecycle (`e2e/journey-b-investment.spec.js`):** Plan fetching, investment submission, unfunded contract notice validation, wallet debit exclusion verification, pending status tracking, and recent activity display (1 test).
+- **User Journey C – Administrative Approvals & Policy Guards (`e2e/journey-c-admin.spec.js`):** Non-admin route blocking, admin pending queue review, request inspection dialog, auditable rejection with custom reason, investor decision verification, and `INVESTMENT_ACTIVATION_ENABLED=false` fail-safe lockout verification (4 tests).
+- **User Journey D – Dashboard, Records, Filters & Depth Controls (`e2e/journey-d-dashboard.spec.js`):** Financial KPI cards, interactive data refresh, investment pagination and status filters, ROI history date ranges, multi-tier referral tree traversal depth selection, and profile copy actions (5 tests).
+
 ### Frontend Production Build Verification
 ```bash
 npm --prefix frontend run build
