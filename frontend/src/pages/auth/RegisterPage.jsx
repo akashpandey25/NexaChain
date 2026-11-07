@@ -5,17 +5,14 @@ import {
   EyeOff,
   User,
   Mail,
-  Phone,
   Lock,
   Key,
   Check,
-  CheckCircle2,
   ArrowRight,
-  ArrowUpRight,
-  RefreshCw
+  RefreshCw,
+  ChevronDown
 } from 'lucide-react';
 import { useRegisterMutation } from '../../features/auth/authApi';
-import { FormField } from '../../components/common/FormField';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,15 +22,15 @@ const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
 /**
  * RegisterPage Component
  * 
- * Recreates the exact multi-column design from the specification screenshot:
- * - 2-column input grid for Name & Email
- * - Standardized Indian Mobile Number input with +91 country code badge
+ * Recreates the exact multi-column institutional fintech design from the Stitch specification:
+ * - 2-column input grid for Name & Corporate/Personal Email
+ * - Standardized Indian Mobile Number input with 🇮🇳 +91 country selector badge
  * - 2-column input grid for Password & Confirm Password
- * - Dynamic password strength meter bar & helper text
+ * - Dynamic password strength meter bar & score feedback
  * - Green checkmark badge on password match
- * - Monospace referral code input with "Sponsor Verified" pill
+ * - Monospace referral code input with Auto-Verified sponsor status & "VERIFIED TIER" badge
  * - Protocol Terms, Yield Risk Disclosure & Privacy Policy agreement checkbox
- * - Standardized primary CTA button
+ * - Solid emerald primary CTA button
  */
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -78,7 +75,7 @@ export const RegisterPage = () => {
 
   // Live password strength computation
   const getPasswordStrength = (pass) => {
-    if (!pass) return { score: 0, label: '', width: '0%', color: 'bg-surface-elevated', text: 'text-text-muted' };
+    if (!pass) return { score: 0, label: '', width: '0%', color: 'bg-slate-800', text: 'text-slate-500' };
     let score = 0;
     if (pass.length >= 8) score += 1;
     if (/[A-Z]/.test(pass)) score += 1;
@@ -186,14 +183,19 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Title & Description */}
+    <div className="space-y-6">
+      {/* Title & Protocol Badge Row */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
-          Create Account
-        </h2>
-        <p className="text-xs sm:text-sm text-text-secondary mt-1">
-          Join NexaChain to access daily ROI contracts and referral network management
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Create Account
+          </h2>
+          <span className="text-xs font-mono text-slate-400 border border-slate-700/80 px-2.5 py-1 rounded-lg bg-[#070b14]/60 select-none">
+            Protocol Tier 1
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+          Join NexaChain to access automated daily compounding ROI contracts and referral hierarchy telemetry.
         </p>
       </div>
 
@@ -208,14 +210,18 @@ export const RegisterPage = () => {
         {/* ROW 1: Full Name & Email Address (2-Column Grid on sm+) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Full Name */}
-          <FormField
-            id="register-name"
-            label="Full Name"
-            required
-            error={formErrors.name}
-          >
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+          <div className="space-y-1.5">
+            <label htmlFor="register-name" className="block text-xs font-medium text-slate-300">
+              Full Legal Name <span className="text-emerald-400">*</span>
+            </label>
+            <div
+              className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+                formErrors.name
+                  ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
+                  : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+              }`}
+            >
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -226,24 +232,29 @@ export const RegisterPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Alex Johnson"
-                className={`w-full pl-10 pr-3.5 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
-                  formErrors.name
-                    ? 'border-semantic-danger focus:border-semantic-danger'
-                    : 'border-border-subtle focus:border-border-strong'
-                }`}
+                className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
               />
             </div>
-          </FormField>
+            {formErrors.name && (
+              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+                <span>•</span> {formErrors.name}
+              </p>
+            )}
+          </div>
 
           {/* Email Address */}
-          <FormField
-            id="register-email"
-            label="Email Address"
-            required
-            error={formErrors.email}
-          >
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+          <div className="space-y-1.5">
+            <label htmlFor="register-email" className="block text-xs font-medium text-slate-300">
+              Corporate / Personal Email <span className="text-emerald-400">*</span>
+            </label>
+            <div
+              className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+                formErrors.email
+                  ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
+                  : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+              }`}
+            >
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -254,27 +265,34 @@ export const RegisterPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="alex@nexachain.io"
-                className={`w-full pl-10 pr-3.5 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
-                  formErrors.email
-                    ? 'border-semantic-danger focus:border-semantic-danger'
-                    : 'border-border-subtle focus:border-border-strong'
-                }`}
+                className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
               />
             </div>
-          </FormField>
+            {formErrors.email && (
+              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+                <span>•</span> {formErrors.email}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* ROW 2: Mobile Number (with +91 country code prefix) */}
-        <FormField
-          id="register-mobile"
-          label="Mobile Number"
-          required
-          error={formErrors.mobileNumber}
-        >
-          <div className="relative flex rounded-button">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-surface-elevated border border-r-0 border-border-subtle rounded-l-button text-xs font-mono font-semibold text-text-secondary select-none shrink-0">
-              <Phone className="w-3.5 h-3.5 text-brand-primary" />
-              <span>+91</span>
+        {/* ROW 2: Mobile Number (with Indian Flag & +91 country selector badge) */}
+        <div className="space-y-1.5">
+          <label htmlFor="register-mobile" className="block text-xs font-medium text-slate-300">
+            Mobile Number <span className="text-emerald-400">*</span>
+          </label>
+          <div
+            className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+              formErrors.mobileNumber
+                ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
+                : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+            }`}
+          >
+            {/* Country Selector Dropdown Pill */}
+            <div className="pl-3 pr-2 flex items-center gap-1.5 select-none shrink-0 border-r border-[#1d273c] my-2 py-0.5">
+              <span className="text-sm">🇮🇳</span>
+              <span className="text-xs font-mono font-semibold text-slate-300">+91</span>
+              <ChevronDown className="w-3 h-3 text-slate-500" />
             </div>
             <input
               id="register-mobile"
@@ -285,26 +303,31 @@ export const RegisterPage = () => {
               value={formData.mobileNumber}
               onChange={handleChange}
               placeholder="9876543210"
-              className={`w-full px-3.5 py-2.5 bg-surface-canvas border rounded-r-button text-sm font-mono text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
-                formErrors.mobileNumber
-                  ? 'border-semantic-danger focus:border-semantic-danger'
-                  : 'border-border-subtle focus:border-border-strong'
-              }`}
+              className="w-full pl-3 pr-4 py-3 bg-transparent text-sm font-mono text-white placeholder-slate-600 focus:outline-none"
             />
           </div>
-        </FormField>
+          {formErrors.mobileNumber && (
+            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+              <span>•</span> {formErrors.mobileNumber}
+            </p>
+          )}
+        </div>
 
         {/* ROW 3: Password & Confirm Password (2-Column Grid on sm+) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Password */}
-          <FormField
-            id="register-password"
-            label="Password"
-            required
-            error={formErrors.password}
-          >
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+          <div className="space-y-1.5">
+            <label htmlFor="register-password" className="block text-xs font-medium text-slate-300">
+              Password <span className="text-emerald-400">*</span>
+            </label>
+            <div
+              className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+                formErrors.password
+                  ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
+                  : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+              }`}
+            >
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -315,32 +338,39 @@ export const RegisterPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className={`w-full pl-10 pr-10 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
-                  formErrors.password
-                    ? 'border-semantic-danger focus:border-semantic-danger'
-                    : 'border-border-subtle focus:border-border-strong'
-                }`}
+                className="w-full pl-10 pr-10 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-secondary transition-colors focus:outline-none"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-          </FormField>
+            {formErrors.password && (
+              <p id="register-password-error" className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+                <span>•</span> {formErrors.password}
+              </p>
+            )}
+          </div>
 
           {/* Confirm Password */}
-          <FormField
-            id="register-confirm-password"
-            label="Confirm Password"
-            required
-            error={formErrors.confirmPassword}
-          >
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+          <div className="space-y-1.5">
+            <label htmlFor="register-confirm-password" className="block text-xs font-medium text-slate-300">
+              Confirm Password <span className="text-emerald-400">*</span>
+            </label>
+            <div
+              className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+                formErrors.confirmPassword
+                  ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
+                  : isPasswordMatch
+                  ? 'border-emerald-500/80 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+                  : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+              }`}
+            >
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -351,41 +381,40 @@ export const RegisterPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className={`w-full pl-10 pr-10 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
-                  formErrors.confirmPassword
-                    ? 'border-semantic-danger focus:border-semantic-danger'
-                    : isPasswordMatch
-                    ? 'border-semantic-positive/80 focus:border-semantic-positive'
-                    : 'border-border-subtle focus:border-border-strong'
-                }`}
+                className="w-full pl-10 pr-10 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
               />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
+              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1.5">
                 {isPasswordMatch && (
-                  <div className="w-5 h-5 rounded-full bg-semantic-positive/10 border border-semantic-positive/40 flex items-center justify-center text-semantic-positive">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                  <div className="w-4 h-4 rounded-full bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-emerald-400">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  className="text-text-muted hover:text-text-secondary transition-colors focus:outline-none"
+                  className="text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
                   aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
-          </FormField>
+            {formErrors.confirmPassword && (
+              <p id="register-confirm-password-error" className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+                <span>•</span> {formErrors.confirmPassword}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Live Password Strength Meter Row */}
+        {/* Live Password Strength Meter Bar */}
         {formData.password && (
           <div className="space-y-1.5 -mt-1 pb-1">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-text-secondary">Minimum 8 characters with 1 letter & 1 number</span>
+              <span className="text-slate-400">Minimum 8 characters with 1 letter & 1 number</span>
               <span className={`font-semibold ${strength.text}`}>{strength.label}</span>
             </div>
-            <div className="h-1.5 w-full bg-surface-elevated rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-[#070b14] border border-[#1b253b] rounded-full overflow-hidden">
               <div
                 className={`h-full ${strength.color} transition-all duration-300 rounded-full`}
                 style={{ width: strength.width }}
@@ -394,20 +423,27 @@ export const RegisterPage = () => {
           </div>
         )}
 
-        {/* ROW 3: Referral Code (Optional) with Sponsor Pill */}
+        {/* ROW 4: Referral Sponsor Code (Optional) with Auto-Verified Status */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="register-referral-code" className="font-semibold text-text-secondary">
-              Referral Code <span className="text-text-muted font-normal">(Optional)</span>
+            <label htmlFor="register-referral-code" className="font-medium text-slate-300">
+              Referral Sponsor Code (Optional)
             </label>
-            <span className="text-[11px] text-text-muted hidden sm:inline">
-              If invited by a sponsor, enter their 8-character code
+            <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              {isReferralValid ? 'Auto-Verified: Shan (ID #8831)' : 'Auto-Verified Sponsor Network'}
             </span>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
-              <Key className="w-4 h-4 text-brand-primary/80" />
+          <div
+            className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+              formErrors.referralCode
+                ? 'border-rose-500/80'
+                : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
+            }`}
+          >
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <Key className="w-4 h-4" />
             </div>
             <input
               id="register-referral-code"
@@ -415,28 +451,24 @@ export const RegisterPage = () => {
               type="text"
               value={formData.referralCode}
               onChange={handleChange}
-              placeholder="e.g. A1B2C3D4"
-              className={`w-full pl-10 pr-40 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus font-mono uppercase tracking-wider transition-all ${
-                formErrors.referralCode ? 'border-semantic-danger' : 'border-border-subtle focus:border-border-strong'
-              }`}
+              placeholder="E.G. NEXASHH2LU"
+              className="w-full pl-10 pr-32 py-3 bg-transparent text-sm font-mono uppercase tracking-wider text-white placeholder-slate-600 focus:outline-none"
             />
-            {/* Referral Code Applied Pill */}
-            {isReferralValid && (
-              <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-elevated border border-border-subtle text-[10px] font-semibold text-text-secondary">
-                  <CheckCircle2 className="w-3 h-3 text-semantic-positive" />
-                  Code Applied
-                </span>
-              </div>
-            )}
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-[#0c1624] border border-[#1b253b] text-slate-400 uppercase">
+                Verified Tier
+              </span>
+            </div>
           </div>
           {formErrors.referralCode && (
-            <p className="text-xs text-semantic-danger mt-1">{formErrors.referralCode}</p>
+            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+              <span>•</span> {formErrors.referralCode}
+            </p>
           )}
         </div>
 
-        {/* ROW 4: Terms & Protocol Agreement Checkbox */}
-        <div className="pt-2">
+        {/* ROW 5: Terms & Protocol Agreement Checkbox */}
+        <div className="pt-1">
           <label className="flex items-start gap-2.5 cursor-pointer group select-none">
             <input
               type="checkbox"
@@ -447,25 +479,26 @@ export const RegisterPage = () => {
                   setFormErrors((prev) => ({ ...prev, terms: '' }));
                 }
               }}
-              className="mt-0.5 w-4 h-4 rounded border-border-strong bg-surface-canvas text-brand-primary focus:ring-semantic-focus focus:ring-offset-surface-canvas accent-emerald-500 cursor-pointer"
+              className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-[#070b14] text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer accent-emerald-500"
             />
-            <span className="text-xs text-text-secondary leading-snug">
+            <span className="text-xs text-slate-300 leading-snug">
               I agree to the NexaChain{' '}
-              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
+              <span className="text-emerald-400 hover:text-emerald-300 font-semibold underline-offset-2 hover:underline">
                 Protocol Terms
               </span>
               ,{' '}
-              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
+              <span className="text-emerald-400 hover:text-emerald-300 font-semibold underline-offset-2 hover:underline">
                 Yield Risk Disclosure
-              </span>{' '}
-              &{' '}
-              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
+              </span>
+              , &{' '}
+              <span className="text-emerald-400 hover:text-emerald-300 font-semibold underline-offset-2 hover:underline">
                 Privacy Policy
               </span>
+              .
             </span>
           </label>
           {formErrors.terms && (
-            <p className="text-xs text-semantic-danger mt-1">{formErrors.terms}</p>
+            <p className="text-xs text-rose-400 mt-1">{formErrors.terms}</p>
           )}
         </div>
 
@@ -473,33 +506,35 @@ export const RegisterPage = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-3 py-3 px-5 rounded-button bg-brand-primary hover:bg-brand-hover active:bg-emerald-700 text-brand-primary-foreground font-semibold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas"
+          className="w-full mt-2 py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1322]"
         >
           {isLoading ? (
             <span className="inline-flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin text-brand-primary-foreground" />
+              <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
               <span>Creating NexaChain Account...</span>
             </span>
           ) : (
-            <>
+            <span className="inline-flex items-center gap-2">
               <span>Create NexaChain Account</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </>
+              <ArrowRight className="w-4 h-4" />
+            </span>
           )}
         </button>
-      </form>
 
-      {/* Already Have An Account Link */}
-      <div className="text-center pt-2 text-xs text-text-secondary">
-        Already have a portfolio account?{' '}
-        <Link
-          to="/login"
-          className="text-brand-primary hover:text-brand-hover hover:underline font-semibold inline-flex items-center gap-0.5 underline-offset-2 transition-colors ml-1"
-        >
-          <span>Sign In Instead</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
+        {/* Already Have An Account Link */}
+        <div className="pt-2 text-center">
+          <p className="text-xs sm:text-sm text-slate-400">
+            Already have a portfolio account?{' '}
+            <Link
+              to="/login"
+              className="text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Sign In Instead</span>
+              <span>↗</span>
+            </Link>
+          </p>
+        </div>
+      </form>
     </div>
   );
 };

@@ -181,7 +181,7 @@ test.describe('Phase 3 Application Shell & Responsive Navigation Verification', 
 
     // 3. Verify restrained brand showcase
     await expect(page.getByText('Multi-Level Affiliate Network').first()).toBeVisible();
-    await expect(page.getByText('Tier 1')).toBeVisible();
+    await expect(page.getByText('Tier 1', { exact: true })).toBeVisible();
     await expect(page.getByText('Integer Paise Precision').first()).toBeVisible();
 
     // Capture restrained AuthLayout screenshot
