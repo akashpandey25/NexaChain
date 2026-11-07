@@ -11,28 +11,28 @@ export const RoiSkeleton = () => {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-28 bg-slate-900/60 border border-slate-800 rounded-xl p-5"
+            className="h-28 bg-surface-card border border-border-subtle rounded-card p-5"
           />
         ))}
       </div>
 
       {/* Chart Skeleton */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 h-72">
-        <div className="w-48 h-5 bg-slate-800 rounded mb-6" />
-        <div className="w-full h-44 bg-slate-800/40 rounded-lg" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-6 h-72">
+        <div className="w-48 h-5 bg-surface-elevated rounded mb-6" />
+        <div className="w-full h-44 bg-surface-elevated/40 rounded-card" />
       </div>
 
       {/* Table Skeleton */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="h-12 bg-slate-950/50 border-b border-slate-800" />
-        <div className="divide-y divide-slate-800/60">
+      <div className="bg-surface-card border border-border-subtle rounded-card overflow-hidden">
+        <div className="h-12 bg-surface-elevated/50 border-b border-border-subtle" />
+        <div className="divide-y divide-border-subtle">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="px-5 py-4 flex items-center justify-between">
-              <div className="w-24 h-4 bg-slate-800 rounded" />
-              <div className="w-20 h-4 bg-slate-800 rounded" />
-              <div className="w-24 h-4 bg-slate-800 rounded" />
-              <div className="w-16 h-4 bg-slate-800 rounded" />
-              <div className="w-20 h-6 bg-slate-800 rounded-full" />
+              <div className="w-24 h-4 bg-surface-elevated rounded" />
+              <div className="w-20 h-4 bg-surface-elevated rounded" />
+              <div className="w-24 h-4 bg-surface-elevated rounded" />
+              <div className="w-16 h-4 bg-surface-elevated rounded" />
+              <div className="w-20 h-6 bg-surface-elevated rounded-full" />
             </div>
           ))}
         </div>
@@ -42,4 +42,3 @@ export const RoiSkeleton = () => {
 };
 
 export default RoiSkeleton;
-

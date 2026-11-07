@@ -33,44 +33,52 @@ export const RoiOverviewCards = ({ summary = {}, isLoading = false }) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Card 1: Total Processed ROI */}
+      {/* Card 1: Total Credited ROI */}
       <StatCard
-        title="Total Processed ROI"
+        title="TOTAL CREDITED ROI"
         amountPaise={totalProcessedPaise}
         icon={TrendingUp}
-        subtitle="Credited directly to available wallet"
-        variant="positive"
+        subtitle="Cumulatively credited to wallet balance"
+        variant={totalProcessedPaise > 0 ? 'emerald' : 'default'}
+        footerLeft="Cumulative ledger"
+        footerRight={`${formatIndianNumber(processedCount)} confirmed credits`}
       />
 
-      {/* Card 2: Pending Executions */}
+      {/* Card 2: Posted Distributions */}
       <StatCard
-        title="Pending Executions"
-        value={`${formatIndianNumber(pendingCount)} ${pendingCount === 1 ? 'event' : 'events'}`}
-        icon={Clock}
-        subtitle="Awaiting next daily batch run"
-        variant={pendingCount > 0 ? 'pending' : 'default'}
-      />
-
-      {/* Card 3: Total ROI Distributions */}
-      <StatCard
-        title="Distribution Events"
-        value={formatIndianNumber(totalRecords)}
-        icon={Calendar}
-        subtitle={`${processedCount} confirmed disbursements`}
-        variant="default"
-      />
-
-      {/* Card 4: Latest Payout Event */}
-      <StatCard
-        title="Latest Distribution"
-        value={latestPayout ? formatPaiseToINR(latestPayout.amountPaise) : '—'}
+        title="POSTED CREDITS"
+        value={`${formatIndianNumber(processedCount)} ${processedCount === 1 ? 'credit' : 'credits'}`}
         icon={CheckCircle2}
+        subtitle="Verified daily disbursements"
+        variant="default"
+        footerLeft="Server-verified"
+        footerRight="Posted"
+      />
+
+      {/* Card 3: Pending Disbursements */}
+      <StatCard
+        title="PENDING RUNS"
+        value={`${formatIndianNumber(pendingCount)} ${pendingCount === 1 ? 'batch' : 'batches'}`}
+        icon={Clock}
+        subtitle={pendingCount > 0 ? 'Queued for midnight execution' : 'All payouts current'}
+        variant={pendingCount > 0 ? 'pending' : 'default'}
+        footerLeft="00:00 IST engine"
+        footerRight={pendingCount > 0 ? 'Pending' : 'Up to date'}
+      />
+
+      {/* Card 4: Latest Distribution */}
+      <StatCard
+        title="LATEST DISTRIBUTION"
+        value={latestPayout ? formatPaiseToINR(latestPayout.amountPaise) : '—'}
+        icon={Calendar}
         subtitle={
           latestPayout
-            ? `On ${formatBusinessDate(latestPayout.businessDate)}`
+            ? `Posted on ${formatBusinessDate(latestPayout.businessDate)}`
             : 'No historical distributions'
         }
         variant="default"
+        footerLeft="Most recent"
+        footerRight={latestPayout ? 'Credited' : 'None'}
       />
     </div>
   );

@@ -105,11 +105,11 @@ export const RoiHistoryPage = () => {
             type="button"
             onClick={handleRefreshAll}
             disabled={isHistoryFetching}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium bg-surface-card border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors disabled:opacity-50"
             title="Refresh ROI records"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 ${isHistoryFetching ? 'animate-spin text-emerald-400' : ''}`}
+              className={`w-3.5 h-3.5 ${isHistoryFetching ? 'animate-spin text-brand-primary' : ''}`}
             />
             <span>Refresh</span>
           </button>
@@ -156,7 +156,7 @@ export const RoiHistoryPage = () => {
           onRetry={refetchHistory}
         />
       ) : records.length === 0 ? (
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-8">
           <EmptyState
             icon={TrendingUp}
             title={
@@ -203,10 +203,10 @@ export const RoiHistoryPage = () => {
       )}
 
       {/* Financial Governance Footer Note */}
-      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4 flex items-start gap-3 text-xs text-slate-400">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-4.5 flex items-start gap-3 text-xs text-text-secondary">
+        <ShieldCheck className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong className="text-slate-300">Automated Daily ROI Distribution Notice:</strong> Yield calculations are strictly computed and disbursed on the server at 12:00 AM IST (Asia/Kolkata) using verified business dates and configured plan parameters. Client-side tampering or rate modifications are cryptographically blocked.
+          <strong className="text-text-primary">Automated Daily ROI Distribution Notice:</strong> Yield calculations are strictly computed and disbursed on the server at 12:00 AM IST (Asia/Kolkata) using verified business dates and configured plan parameters. Client-side tampering or rate modifications are cryptographically blocked.
         </p>
       </div>
     </div>

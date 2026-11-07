@@ -22,21 +22,21 @@ const CustomChartTooltip = ({ active, payload }) => {
   if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs space-y-1.5 backdrop-blur-md">
-        <div className="font-semibold text-slate-200 border-b border-slate-800 pb-1 flex items-center justify-between gap-4">
+      <div className="bg-surface-card border border-border-strong rounded-card p-3 shadow-2xl text-xs space-y-1.5 backdrop-blur-md">
+        <div className="font-semibold text-text-primary border-b border-border-subtle pb-1 flex items-center justify-between gap-4">
           <span>{formatBusinessDate(data.businessDate)}</span>
-          <span className="text-[10px] text-slate-400 font-mono">Asia/Kolkata</span>
+          <span className="text-[10px] text-text-muted font-mono">Asia/Kolkata</span>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <span className="text-slate-400">Total Yield:</span>
-          <span className="font-bold text-emerald-400">
+          <span className="text-text-secondary">Total Credited:</span>
+          <span className="font-bold text-semantic-positive tabular-nums">
             {formatPaiseToINR(data.amountPaise)}
           </span>
         </div>
         {typeof data.count === 'number' && (
-          <div className="flex items-center justify-between gap-4 text-[11px] text-slate-400">
-            <span>Packages Processed:</span>
-            <span className="font-mono text-slate-300">{data.count}</span>
+          <div className="flex items-center justify-between gap-4 text-[11px] text-text-muted">
+            <span>Contracts Processed:</span>
+            <span className="font-mono text-text-secondary">{data.count}</span>
           </div>
         )}
       </div>
@@ -56,21 +56,21 @@ const CustomChartTooltip = ({ active, payload }) => {
 export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 h-80 animate-pulse flex items-center justify-center">
-        <div className="w-full h-full bg-slate-800/30 rounded-lg" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-6 h-80 animate-pulse flex items-center justify-center">
+        <div className="w-full h-full bg-surface-elevated/40 rounded-card" />
       </div>
     );
   }
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-8 text-center flex flex-col items-center justify-center min-h-[280px]">
-        <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 mb-3">
-          <BarChart2 className="w-6 h-6 text-emerald-400" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-8 text-center flex flex-col items-center justify-center min-h-[280px]">
+        <div className="w-12 h-12 rounded-card bg-surface-elevated border border-border-subtle flex items-center justify-center text-text-muted mb-3">
+          <BarChart2 className="w-6 h-6 text-brand-primary" />
         </div>
-        <h3 className="text-sm font-semibold text-white">No Historical Earnings Data Yet</h3>
-        <p className="text-xs text-slate-400 mt-1 max-w-sm">
-          Daily return distributions are aggregated automatically across business dates. Chart trends will appear after the first batch process executes.
+        <h3 className="text-sm font-semibold text-text-primary">No Historical Credited ROI Yet</h3>
+        <p className="text-xs text-text-secondary mt-1 max-w-sm">
+          Daily return distributions are aggregated automatically across business dates. Chart trends will appear after active contracts receive their first midnight batch credit.
         </p>
       </div>
     );
@@ -83,24 +83,24 @@ export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
   }));
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 sm:p-6 shadow-xl">
+    <div className="bg-surface-card border border-border-subtle rounded-card p-5 sm:p-6 shadow-sm">
       {/* Chart Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-sm font-bold text-white tracking-tight">
-              Daily ROI Yield Performance
+            <TrendingUp className="w-4 h-4 text-brand-primary" />
+            <h2 className="text-sm font-bold text-text-primary tracking-tight">
+              Historical Credited ROI Performance
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Historical aggregated returns plotted by verified business calendar dates
+          <p className="text-xs text-text-secondary mt-0.5">
+            Aggregated daily returns credited across verified Asia/Kolkata business dates
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 font-mono text-[11px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="flex items-center gap-2 text-xs text-text-secondary">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-semantic-positive/10 border border-semantic-positive/30 text-semantic-positive font-mono text-[11px]">
+            <span className="w-1.5 h-1.5 rounded-full bg-semantic-positive" />
             {chartData.length} Business Dates
           </span>
         </div>
@@ -115,12 +115,12 @@ export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
           >
             <defs>
               <linearGradient id="roiChartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1B2438" vertical={false} />
 
             <XAxis
               dataKey="businessDate"
@@ -128,7 +128,7 @@ export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
               stroke="#64748b"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: '#334155' }}
+              axisLine={{ stroke: '#1B2438' }}
             />
 
             <YAxis
@@ -144,7 +144,7 @@ export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
             <Area
               type="monotone"
               dataKey="amountRupees"
-              name="ROI Yield"
+              name="Credited ROI"
               stroke="#10b981"
               strokeWidth={2}
               fillOpacity={1}
@@ -158,4 +158,3 @@ export const RoiAnalyticsChart = ({ chartData = [], isLoading = false }) => {
 };
 
 export default RoiAnalyticsChart;
-

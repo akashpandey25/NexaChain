@@ -161,7 +161,7 @@ export const InvestmentsPage = () => {
                 ? `There are currently no investment contracts with status "${status}". Try clearing the filter to see all packages.`
                 : 'You do not have any registered investment packages yet. Submit an investment request below to initiate a contract.'
             }
-            actionText={status !== 'all' ? 'Clear Status Filter' : 'Create Investment Request'}
+            actionText={status !== 'all' ? 'Clear Status Filter' : 'Request New Package'}
             onAction={status !== 'all' ? handleResetFilters : () => setIsCreateModalOpen(true)}
           />
         </div>
