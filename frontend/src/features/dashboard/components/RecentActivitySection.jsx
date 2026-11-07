@@ -33,12 +33,12 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
         id: item._id,
         title: item.investment?.planName ? `${item.investment.planName} Plan Yield` : 'Daily ROI Distribution',
         timestamp: `${formatBusinessDate(item.businessDate)} • Midnight IST`,
-        txHash: item._id ? `REF-${item._id.slice(-8).toUpperCase()}` : 'RECORD',
+        refId: item._id ? `REF-${item._id.slice(-8).toUpperCase()}` : 'RECORD',
         ledgerType: 'Daily ROI Yield',
         amount: `+${formatPaiseToINR(item.amountPaise)}`,
         amountColor: 'text-semantic-positive',
         statusKey: item.status === 'processed' ? 'processed' : (item.status || 'processed'),
-        statusLabel: 'Verified',
+        statusLabel: 'PROCESSED',
         category: 'roi',
         icon: TrendingUp,
         date: new Date(item.createdAt || item.businessDate || 0),
@@ -98,7 +98,7 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
         id: inv._id,
         title,
         timestamp: `${formatBusinessDate(inv.createdAt)} • IST`,
-        txHash: inv._id ? `REF-${inv._id.slice(-8).toUpperCase()}` : 'RECORD',
+        refId: inv._id ? `REF-${inv._id.slice(-8).toUpperCase()}` : 'RECORD',
         ledgerType,
         amount,
         amountColor: isPending ? 'text-semantic-pending' : 'text-text-primary',
@@ -159,14 +159,14 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
       {/* Table or Empty State */}
       {isLoading ? (
         <div className="p-8 text-center text-xs text-text-muted">
-          Syncing verified transaction history...
+          Syncing transaction history...
         </div>
       ) : filteredRecords.length === 0 ? (
         <div className="p-6">
           <EmptyState
             icon={Clock}
             title="No Activity Logged Yet"
-            description="Verified payouts and contract activations will record here in real-time as cycles execute."
+            description="Yield distributions and contract activations will record here as cycles execute."
             className="w-full border-0 bg-transparent py-6"
           />
         </div>
@@ -201,9 +201,9 @@ export const RecentActivitySection = ({ roiChartData = [] }) => {
                       </div>
                     </td>
 
-                    {/* Column 2: Reference Hash */}
+                    {/* Column 2: Reference ID */}
                     <td className="py-3.5 px-5 sm:px-6 whitespace-nowrap font-mono text-[11px] text-text-muted">
-                      {item.txHash}
+                      {item.refId}
                     </td>
 
                     {/* Column 3: Ledger Type */}

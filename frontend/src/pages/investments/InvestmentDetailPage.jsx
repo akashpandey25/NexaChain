@@ -363,7 +363,7 @@ export const InvestmentDetailPage = () => {
             Server-Authoritative Contract Governance
           </p>
           <p className="leading-relaxed">
-            All daily yields are calculated and credited via automated server batch jobs based on verified business dates. Contract terms, percentages, and balances are immutable and cryptographically bound to your account ID.
+            All daily yields are calculated and credited via automated server batch jobs based on verified business dates. Contract terms, percentages, and balances are immutable once active and persisted under your account ID.
           </p>
         </div>
       </div>

@@ -22,7 +22,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * - Clean fintech inputs with iconography
  * - Remember device & password recovery options
  * - Dynamic loading state and error handling
- * - Radiant emerald CTA button
+ * - Standardized primary CTA button
  * - Seamless deep link to Create Account
  */
 export const LoginPage = () => {
@@ -87,10 +87,10 @@ export const LoginPage = () => {
     <div className="space-y-5">
       {/* Title & Description */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
           Sign In
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-text-secondary mt-1">
           Access your NexaChain portfolio and automated daily yields
         </p>
       </div>
@@ -111,7 +111,7 @@ export const LoginPage = () => {
           error={formErrors.email}
         >
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
               <Mail className="w-4 h-4" />
             </div>
             <input
@@ -122,10 +122,10 @@ export const LoginPage = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="alex@nexachain.io"
-              className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+              className={`w-full pl-10 pr-3.5 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                 formErrors.email
-                  ? 'border-rose-500/80 focus:border-rose-500'
-                  : 'border-slate-800 focus:border-emerald-500'
+                  ? 'border-semantic-danger focus:border-semantic-danger'
+                  : 'border-border-subtle focus:border-border-strong'
               }`}
             />
           </div>
@@ -139,7 +139,7 @@ export const LoginPage = () => {
           error={formErrors.password}
         >
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
               <Lock className="w-4 h-4" />
             </div>
             <input
@@ -150,16 +150,16 @@ export const LoginPage = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••••••"
-              className={`w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+              className={`w-full pl-10 pr-10 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                 formErrors.password
-                  ? 'border-rose-500/80 focus:border-rose-500'
-                  : 'border-slate-800 focus:border-emerald-500'
+                  ? 'border-semantic-danger focus:border-semantic-danger'
+                  : 'border-border-subtle focus:border-border-strong'
               }`}
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors focus:outline-none"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-secondary transition-colors focus:outline-none"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -171,11 +171,11 @@ export const LoginPage = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-3 py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none"
+          className="w-full mt-3 py-3 px-5 rounded-button bg-brand-primary hover:bg-brand-hover active:bg-emerald-700 text-brand-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas"
         >
           {isLoading ? (
             <span className="inline-flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+              <RefreshCw className="w-4 h-4 animate-spin text-brand-primary-foreground" />
               <span>Authenticating...</span>
             </span>
           ) : (
@@ -188,11 +188,11 @@ export const LoginPage = () => {
       </form>
 
       {/* Switch to Register */}
-      <div className="text-center pt-2 text-xs text-slate-400">
+      <div className="text-center pt-2 text-xs text-text-secondary">
         Don&apos;t have an account yet?{' '}
         <Link
           to="/register"
-          className="text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-0.5 underline-offset-2 hover:underline transition-colors ml-1"
+          className="text-brand-primary hover:text-brand-hover hover:underline font-semibold inline-flex items-center gap-0.5 underline-offset-2 transition-colors ml-1"
         >
           <span>Create Account Instead</span>
           <ArrowUpRight className="w-3.5 h-3.5" />

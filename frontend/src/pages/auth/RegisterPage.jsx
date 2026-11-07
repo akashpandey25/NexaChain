@@ -33,7 +33,7 @@ const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
  * - Green checkmark badge on password match
  * - Monospace referral code input with "Sponsor Verified" pill
  * - Protocol Terms, Yield Risk Disclosure & Privacy Policy agreement checkbox
- * - Radiant emerald CTA button
+ * - Standardized primary CTA button
  */
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -78,7 +78,7 @@ export const RegisterPage = () => {
 
   // Live password strength computation
   const getPasswordStrength = (pass) => {
-    if (!pass) return { score: 0, label: '', width: '0%', color: 'bg-slate-700', text: 'text-slate-500' };
+    if (!pass) return { score: 0, label: '', width: '0%', color: 'bg-surface-elevated', text: 'text-text-muted' };
     let score = 0;
     if (pass.length >= 8) score += 1;
     if (/[A-Z]/.test(pass)) score += 1;
@@ -189,11 +189,11 @@ export const RegisterPage = () => {
     <div className="space-y-5">
       {/* Title & Description */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">
           Create Account
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Join NexaChain to start earning daily ROI and multi-tier referral rewards
+        <p className="text-xs sm:text-sm text-text-secondary mt-1">
+          Join NexaChain to access daily ROI contracts and referral network management
         </p>
       </div>
 
@@ -215,7 +215,7 @@ export const RegisterPage = () => {
             error={formErrors.name}
           >
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -226,10 +226,10 @@ export const RegisterPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Alex Johnson"
-                className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+                className={`w-full pl-10 pr-3.5 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                   formErrors.name
-                    ? 'border-rose-500/80 focus:border-rose-500'
-                    : 'border-slate-800 focus:border-emerald-500'
+                    ? 'border-semantic-danger focus:border-semantic-danger'
+                    : 'border-border-subtle focus:border-border-strong'
                 }`}
               />
             </div>
@@ -243,7 +243,7 @@ export const RegisterPage = () => {
             error={formErrors.email}
           >
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -254,10 +254,10 @@ export const RegisterPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="alex@nexachain.io"
-                className={`w-full pl-10 pr-3.5 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+                className={`w-full pl-10 pr-3.5 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                   formErrors.email
-                    ? 'border-rose-500/80 focus:border-rose-500'
-                    : 'border-slate-800 focus:border-emerald-500'
+                    ? 'border-semantic-danger focus:border-semantic-danger'
+                    : 'border-border-subtle focus:border-border-strong'
                 }`}
               />
             </div>
@@ -271,9 +271,9 @@ export const RegisterPage = () => {
           required
           error={formErrors.mobileNumber}
         >
-          <div className="relative flex rounded-xl">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900 border border-r-0 border-slate-800 rounded-l-xl text-xs font-mono font-semibold text-slate-300 select-none shrink-0">
-              <Phone className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="relative flex rounded-button">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-surface-elevated border border-r-0 border-border-subtle rounded-l-button text-xs font-mono font-semibold text-text-secondary select-none shrink-0">
+              <Phone className="w-3.5 h-3.5 text-brand-primary" />
               <span>+91</span>
             </div>
             <input
@@ -285,10 +285,10 @@ export const RegisterPage = () => {
               value={formData.mobileNumber}
               onChange={handleChange}
               placeholder="9876543210"
-              className={`w-full px-3.5 py-2.5 bg-slate-950/90 border rounded-r-xl text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+              className={`w-full px-3.5 py-2.5 bg-surface-canvas border rounded-r-button text-sm font-mono text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                 formErrors.mobileNumber
-                  ? 'border-rose-500/80 focus:border-rose-500'
-                  : 'border-slate-800 focus:border-emerald-500'
+                  ? 'border-semantic-danger focus:border-semantic-danger'
+                  : 'border-border-subtle focus:border-border-strong'
               }`}
             />
           </div>
@@ -304,7 +304,7 @@ export const RegisterPage = () => {
             error={formErrors.password}
           >
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -315,16 +315,16 @@ export const RegisterPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className={`w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+                className={`w-full pl-10 pr-10 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                   formErrors.password
-                    ? 'border-rose-500/80 focus:border-rose-500'
-                    : 'border-slate-800 focus:border-emerald-500'
+                    ? 'border-semantic-danger focus:border-semantic-danger'
+                    : 'border-border-subtle focus:border-border-strong'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors focus:outline-none"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-secondary transition-colors focus:outline-none"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -340,7 +340,7 @@ export const RegisterPage = () => {
             error={formErrors.confirmPassword}
           >
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -351,24 +351,24 @@ export const RegisterPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className={`w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all ${
+                className={`w-full pl-10 pr-10 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus transition-all ${
                   formErrors.confirmPassword
-                    ? 'border-rose-500/80 focus:border-rose-500'
+                    ? 'border-semantic-danger focus:border-semantic-danger'
                     : isPasswordMatch
-                    ? 'border-emerald-500/80 focus:border-emerald-500'
-                    : 'border-slate-800 focus:border-emerald-500'
+                    ? 'border-semantic-positive/80 focus:border-semantic-positive'
+                    : 'border-border-subtle focus:border-border-strong'
                 }`}
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
                 {isPasswordMatch && (
-                  <div className="w-5 h-5 rounded-full bg-emerald-950 border border-emerald-500/60 flex items-center justify-center text-emerald-400">
+                  <div className="w-5 h-5 rounded-full bg-semantic-positive/10 border border-semantic-positive/40 flex items-center justify-center text-semantic-positive">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  className="text-slate-400 hover:text-slate-200 transition-colors focus:outline-none"
+                  className="text-text-muted hover:text-text-secondary transition-colors focus:outline-none"
                   aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -382,10 +382,10 @@ export const RegisterPage = () => {
         {formData.password && (
           <div className="space-y-1.5 -mt-1 pb-1">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Minimum 8 characters with 1 letter & 1 number</span>
+              <span className="text-text-secondary">Minimum 8 characters with 1 letter & 1 number</span>
               <span className={`font-semibold ${strength.text}`}>{strength.label}</span>
             </div>
-            <div className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-surface-elevated rounded-full overflow-hidden">
               <div
                 className={`h-full ${strength.color} transition-all duration-300 rounded-full`}
                 style={{ width: strength.width }}
@@ -397,17 +397,17 @@ export const RegisterPage = () => {
         {/* ROW 3: Referral Code (Optional) with Sponsor Pill */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="register-referral-code" className="font-semibold text-slate-300">
-              Referral Code <span className="text-slate-500 font-normal">(Optional)</span>
+            <label htmlFor="register-referral-code" className="font-semibold text-text-secondary">
+              Referral Code <span className="text-text-muted font-normal">(Optional)</span>
             </label>
-            <span className="text-[11px] text-slate-400 hidden sm:inline">
+            <span className="text-[11px] text-text-muted hidden sm:inline">
               If invited by a sponsor, enter their 8-character code
             </span>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-              <Key className="w-4 h-4 text-emerald-500/70" />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+              <Key className="w-4 h-4 text-brand-primary/80" />
             </div>
             <input
               id="register-referral-code"
@@ -416,22 +416,22 @@ export const RegisterPage = () => {
               value={formData.referralCode}
               onChange={handleChange}
               placeholder="e.g. A1B2C3D4"
-              className={`w-full pl-10 pr-40 py-2.5 bg-slate-950/90 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono uppercase tracking-wider transition-all ${
-                formErrors.referralCode ? 'border-rose-500/80' : 'border-slate-800 focus:border-emerald-500'
+              className={`w-full pl-10 pr-40 py-2.5 bg-surface-canvas border rounded-button text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-semantic-focus font-mono uppercase tracking-wider transition-all ${
+                formErrors.referralCode ? 'border-semantic-danger' : 'border-border-subtle focus:border-border-strong'
               }`}
             />
             {/* Referral Code Applied Pill */}
             {isReferralValid && (
               <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-semibold text-slate-300">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-elevated border border-border-subtle text-[10px] font-semibold text-text-secondary">
+                  <CheckCircle2 className="w-3 h-3 text-semantic-positive" />
                   Code Applied
                 </span>
               </div>
             )}
           </div>
           {formErrors.referralCode && (
-            <p className="text-xs text-rose-400 mt-1">{formErrors.referralCode}</p>
+            <p className="text-xs text-semantic-danger mt-1">{formErrors.referralCode}</p>
           )}
         </div>
 
@@ -447,25 +447,25 @@ export const RegisterPage = () => {
                   setFormErrors((prev) => ({ ...prev, terms: '' }));
                 }
               }}
-              className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-950 accent-emerald-500 cursor-pointer"
+              className="mt-0.5 w-4 h-4 rounded border-border-strong bg-surface-canvas text-brand-primary focus:ring-semantic-focus focus:ring-offset-surface-canvas accent-emerald-500 cursor-pointer"
             />
-            <span className="text-xs text-slate-400 leading-snug">
+            <span className="text-xs text-text-secondary leading-snug">
               I agree to the NexaChain{' '}
-              <span className="text-slate-200 font-medium hover:text-emerald-400 underline-offset-2 hover:underline">
+              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
                 Protocol Terms
               </span>
               ,{' '}
-              <span className="text-slate-200 font-medium hover:text-emerald-400 underline-offset-2 hover:underline">
+              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
                 Yield Risk Disclosure
               </span>{' '}
               &{' '}
-              <span className="text-slate-200 font-medium hover:text-emerald-400 underline-offset-2 hover:underline">
+              <span className="text-text-primary font-medium hover:text-brand-primary underline-offset-2 hover:underline">
                 Privacy Policy
               </span>
             </span>
           </label>
           {formErrors.terms && (
-            <p className="text-xs text-rose-400 mt-1">{formErrors.terms}</p>
+            <p className="text-xs text-semantic-danger mt-1">{formErrors.terms}</p>
           )}
         </div>
 
@@ -473,11 +473,11 @@ export const RegisterPage = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-3 py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none"
+          className="w-full mt-3 py-3 px-5 rounded-button bg-brand-primary hover:bg-brand-hover active:bg-emerald-700 text-brand-primary-foreground font-semibold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-60 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-canvas"
         >
           {isLoading ? (
             <span className="inline-flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
+              <RefreshCw className="w-4 h-4 animate-spin text-brand-primary-foreground" />
               <span>Creating NexaChain Account...</span>
             </span>
           ) : (
@@ -490,11 +490,11 @@ export const RegisterPage = () => {
       </form>
 
       {/* Already Have An Account Link */}
-      <div className="text-center pt-2 text-xs text-slate-400">
+      <div className="text-center pt-2 text-xs text-text-secondary">
         Already have a portfolio account?{' '}
         <Link
           to="/login"
-          className="text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-0.5 underline-offset-2 hover:underline transition-colors ml-1"
+          className="text-brand-primary hover:text-brand-hover hover:underline font-semibold inline-flex items-center gap-0.5 underline-offset-2 transition-colors ml-1"
         >
           <span>Sign In Instead</span>
           <ArrowUpRight className="w-3.5 h-3.5" />

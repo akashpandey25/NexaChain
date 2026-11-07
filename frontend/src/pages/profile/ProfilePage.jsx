@@ -205,7 +205,7 @@ export const ProfilePage = () => {
               Account Standing
             </span>
             <span className="text-sm font-semibold text-brand-primary mt-0.5 block">
-              {user?.isActive ? 'Active & Verified' : 'Deactivated'}
+              {user?.isActive ? 'Active Account' : 'Deactivated'}
             </span>
           </div>
         </div>
@@ -219,7 +219,7 @@ export const ProfilePage = () => {
             <h3 className="text-sm font-semibold text-text-primary">Personal Information</h3>
           </div>
           <span className="text-[11px] text-text-muted font-medium bg-surface-canvas px-2.5 py-0.5 rounded-full border border-border-subtle">
-            Verified · Read-Only
+            Registered · Read-Only
           </span>
         </div>
 
@@ -257,7 +257,7 @@ export const ProfilePage = () => {
         <div className="px-5 sm:px-6 py-3 bg-surface-canvas/60 border-t border-border-subtle flex items-start gap-2.5 text-[11px] text-text-muted">
           <Info className="w-3.5 h-3.5 text-text-muted shrink-0 mt-0.5" />
           <span>
-            Personal identity credentials are verified upon registration for AML/KYC audit compliance. Client-side modifications are locked.
+            Registered identity credentials are recorded upon account creation. Direct client-side editing is disabled to preserve audit trail consistency.
           </span>
         </div>
       </div>
@@ -442,13 +442,13 @@ export const ProfilePage = () => {
               JWT Bearer (HTTP Header)
             </span>
             <span className="text-[11px] text-text-secondary mt-0.5 block">
-              Cryptographically signed token
+              Signed JWT access token
             </span>
           </div>
 
           <div className="p-3.5 bg-surface-canvas rounded-card border border-border-subtle">
             <span className="text-[10px] uppercase font-semibold text-text-muted block tracking-wider">
-              Token Invalidation
+              Client Session Cleanup
             </span>
             <span className="text-xs text-text-primary mt-1 block font-semibold">
               Purged on Sign Out
@@ -479,7 +479,7 @@ export const ProfilePage = () => {
               Profile Immutability Policy
             </p>
             <p className="leading-relaxed">
-              In accordance with NexaChain financial audit integrity guidelines, primary account properties (legal name, registered email, and sponsor linkage) are cryptographically anchored upon registration. Client-side profile mutations are restricted. To request a verified legal name or credential update, please reach out through authenticated administrative channels.
+              In accordance with platform record-keeping policies, primary account properties (legal name, registered email, and sponsor linkage) are permanently recorded upon registration and cannot be modified through self-service. To request an update to your registered name or contact details, please contact administrative support.
             </p>
           </div>
         </div>

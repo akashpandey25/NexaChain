@@ -206,7 +206,7 @@ export const RoiHistoryPage = () => {
       <div className="bg-surface-card border border-border-subtle rounded-card p-4.5 flex items-start gap-3 text-xs text-text-secondary">
         <ShieldCheck className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong className="text-text-primary">Automated Daily ROI Distribution Notice:</strong> Yield calculations are strictly computed and disbursed on the server at 12:00 AM IST (Asia/Kolkata) using verified business dates and configured plan parameters. Client-side tampering or rate modifications are cryptographically blocked.
+          <strong className="text-text-primary">Automated Daily ROI Distribution Notice:</strong> Yield calculations are strictly computed and disbursed on the server at 12:00 AM IST (Asia/Kolkata) using verified business dates and configured plan parameters. Client-side tampering or rate modifications are rejected by server-side business validation.
         </p>
       </div>
     </div>

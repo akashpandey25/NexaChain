@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
+import { StatusBadge } from '../../components/common/StatusBadge';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 import { EmptyState } from '../../components/feedback/EmptyState';
 import {
@@ -145,11 +146,11 @@ export const AdminInvestmentsPage = () => {
             type="button"
             onClick={refetch}
             disabled={isFetching}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium bg-surface-canvas border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors disabled:opacity-50"
             title="Refresh pending requests"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-emerald-400' : ''}`}
+              className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-brand-primary' : ''}`}
             />
             <span>Refresh</span>
           </button>
@@ -158,15 +159,15 @@ export const AdminInvestmentsPage = () => {
 
       {/* Global Action Feedback Banners */}
       {actionSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 text-xs flex items-center justify-between">
+        <div className="p-4 rounded-card bg-semantic-positive/10 border border-semantic-positive/30 text-semantic-positive text-xs flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-semantic-positive shrink-0" />
             <span>{actionSuccess}</span>
           </div>
           <button
             type="button"
             onClick={() => setActionSuccess(null)}
-            className="text-emerald-400 hover:text-emerald-200"
+            className="text-semantic-positive hover:opacity-80"
           >
             <X className="w-4 h-4" />
           </button>
@@ -176,74 +177,74 @@ export const AdminInvestmentsPage = () => {
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Metric 1: Pending Count */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
               Pending Requests
             </span>
-            <div className="p-2 bg-amber-950/60 text-amber-400 border border-amber-800/40 rounded-lg">
+            <div className="p-2 bg-semantic-pending/10 text-semantic-pending border border-semantic-pending/20 rounded-lg">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-white">
+          <div className="mt-3 text-2xl font-bold tracking-tight text-text-primary font-tabular tabular-nums">
             {pagination.totalRecords !== undefined ? pagination.totalRecords : investments.length}
           </div>
-          <p className="mt-1 text-xs text-slate-400">Awaiting administrative decision</p>
+          <p className="mt-1 text-xs text-text-secondary">Awaiting administrative decision</p>
         </div>
 
         {/* Metric 2: Pending Volume */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
               Pending Capital Volume
             </span>
             <div className="p-2 bg-indigo-950/60 text-indigo-400 border border-indigo-800/40 rounded-lg">
               <FileText className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-white">
+          <div className="mt-3 text-2xl font-bold tracking-tight text-text-primary font-tabular tabular-nums">
             {formatPaiseToINR(totalPendingPaise)}
           </div>
-          <p className="mt-1 text-xs text-slate-400">Total requested principal across list</p>
+          <p className="mt-1 text-xs text-text-secondary">Total requested principal across list</p>
         </div>
 
         {/* Metric 3: Policy Status */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
               Production Activation Gate
             </span>
-            <div className="p-2 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg">
-              <Lock className="w-4 h-4 text-amber-400" />
+            <div className="p-2 bg-surface-elevated text-text-secondary border border-border-subtle rounded-lg">
+              <Lock className="w-4 h-4 text-semantic-pending" />
             </div>
           </div>
-          <div className="mt-3 text-sm font-semibold text-amber-300 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <div className="mt-3 text-sm font-semibold text-semantic-pending flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-semantic-pending" />
             <span>Policy Guard Active</span>
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-text-secondary">
             Activation gated by INVESTMENT_ACTIVATION_ENABLED
           </p>
         </div>
       </div>
 
       {/* Production Safety Notice Banner */}
-      <div className="bg-amber-950/30 border border-amber-800/40 rounded-xl p-4.5 flex items-start gap-3.5 text-xs text-amber-300">
-        <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+      <div className="bg-semantic-pending/10 border border-semantic-pending/30 rounded-card p-4.5 flex items-start gap-3.5 text-xs text-semantic-pending">
+        <ShieldAlert className="w-5 h-5 text-semantic-pending shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-semibold text-amber-200">
+          <p className="font-semibold text-text-primary">
             Production Safety Gate & Corporate Governance Notice
           </p>
-          <p className="text-amber-400/90 leading-relaxed">
-            The investment packages (Starter 1.0%, Growth 1.5%, Premium 2.0%) represent illustrative technical testing defaults. In production deployments with <strong className="font-mono text-amber-300">INVESTMENT_ACTIVATION_ENABLED=false</strong>, activation attempts will be blocked with policy errors to prevent unratified yield accrual. Rejections and request inspections remain fully operational.
+          <p className="text-text-secondary leading-relaxed">
+            The investment packages (Starter 1.0%, Growth 1.5%, Premium 2.0%) represent illustrative technical testing defaults. In production deployments with <strong className="font-mono text-text-primary">INVESTMENT_ACTIVATION_ENABLED=false</strong>, activation attempts will be blocked with policy errors to prevent unratified yield accrual. Rejections and request inspections remain fully operational.
           </p>
         </div>
       </div>
 
       {/* Main Content Area */}
       {isLoading ? (
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+        <div className="bg-surface-card border border-border-subtle rounded-card p-12 text-center text-xs text-text-muted flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
           <span>Loading pending investment requests...</span>
         </div>
       ) : error ? (
@@ -253,7 +254,7 @@ export const AdminInvestmentsPage = () => {
           onRetry={refetch}
         />
       ) : investments.length === 0 ? (
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-8">
           <EmptyState
             icon={ShieldCheck}
             title="No Pending Investment Requests"
@@ -261,11 +262,11 @@ export const AdminInvestmentsPage = () => {
           />
         </div>
       ) : (
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-border-subtle bg-surface-canvas/50 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
                   <th scope="col" className="px-5 py-3.5">
                     Investor
                   </th>
@@ -286,28 +287,28 @@ export const AdminInvestmentsPage = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-border-subtle text-xs">
                 {investments.map((inv) => {
                   const investorName = inv.user?.name || 'Unknown User';
                   const investorEmail = inv.user?.email || '—';
                   const investorMobile = inv.user?.mobileNumber || '—';
 
                   return (
-                    <tr key={inv._id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={inv._id} className="hover:bg-surface-card-hover/40 transition-colors">
                       {/* Investor Column */}
                       <td className="px-5 py-4">
                         <div className="space-y-0.5">
-                          <div className="font-semibold text-white flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
+                          <div className="font-semibold text-text-primary flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-text-muted" />
                             <span>{investorName}</span>
                           </div>
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                            <Mail className="w-3 h-3 text-slate-500" />
+                          <div className="text-[11px] text-text-secondary flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-text-muted" />
                             <span>{investorEmail}</span>
                           </div>
                           {investorMobile !== '—' && (
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1 font-mono">
-                              <Phone className="w-3 h-3 text-slate-600" />
+                            <div className="text-[11px] text-text-muted flex items-center gap-1 font-mono">
+                              <Phone className="w-3 h-3 text-text-muted" />
                               <span>{investorMobile}</span>
                             </div>
                           )}
@@ -320,7 +321,7 @@ export const AdminInvestmentsPage = () => {
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">
                             {inv.planName}
                           </span>
-                          <div className="text-[11px] text-emerald-400 font-medium">
+                          <div className="text-[11px] text-brand-primary font-medium font-tabular tabular-nums">
                             {Number(inv.roiPercentage).toFixed(1)}% Daily
                           </div>
                         </div>
@@ -328,28 +329,25 @@ export const AdminInvestmentsPage = () => {
 
                       {/* Principal Amount */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-text-primary font-tabular tabular-nums">
                           {formatPaiseToINR(inv.principalAmountPaise)}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-[10px] text-text-muted font-mono">
                           {formatIndianNumber(inv.principalAmountPaise)} paise
                         </div>
                       </td>
 
                       {/* Submission Date */}
-                      <td className="px-5 py-4 whitespace-nowrap text-slate-300">
-                        <div>{formatBusinessDate(inv.createdAt)}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                      <td className="px-5 py-4 whitespace-nowrap text-text-secondary">
+                        <div className="font-tabular tabular-nums">{formatBusinessDate(inv.createdAt)}</div>
+                        <div className="text-[10px] text-text-muted font-mono">
                           {formatDateTime(inv.createdAt)}
                         </div>
                       </td>
 
                       {/* Status */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-950/70 text-amber-400 border border-amber-800/60">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          <span>PENDING</span>
-                        </span>
+                        <StatusBadge status="pending" size="sm" />
                       </td>
 
                       {/* Actions */}
@@ -358,7 +356,7 @@ export const AdminInvestmentsPage = () => {
                         <button
                           type="button"
                           onClick={() => setInspectItem(inv)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-button text-xs font-medium text-text-secondary hover:text-text-primary bg-surface-elevated hover:bg-surface-card-hover border border-border-subtle transition-colors"
                           title="Inspect application details"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -372,7 +370,7 @@ export const AdminInvestmentsPage = () => {
                             setActionError(null);
                             setActivateTarget(inv);
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:text-white bg-emerald-950/40 hover:bg-emerald-600 border border-emerald-800/50 hover:border-emerald-600 transition-all"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-button text-xs font-medium text-brand-primary hover:text-brand-primary-foreground bg-brand-primary/10 hover:bg-brand-primary border border-brand-primary/30 transition-colors"
                           title="Activate contract"
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -387,7 +385,7 @@ export const AdminInvestmentsPage = () => {
                             setRejectionReason('');
                             setRejectTarget(inv);
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-400 hover:text-white bg-rose-950/40 hover:bg-rose-600 border border-rose-800/50 hover:border-rose-600 transition-all"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-button text-xs font-medium text-semantic-danger hover:text-white bg-semantic-danger/10 hover:bg-semantic-danger border border-semantic-danger/30 transition-colors"
                           title="Reject contract"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -406,7 +404,7 @@ export const AdminInvestmentsPage = () => {
       {/* 1. INSPECT MODAL */}
       {inspectItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-canvas/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="inspect-dialog-title"
@@ -414,34 +412,34 @@ export const AdminInvestmentsPage = () => {
             if (e.target === e.currentTarget) setInspectItem(null);
           }}
         >
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div className="relative w-full max-w-lg bg-surface-card border border-border-subtle rounded-card shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-surface-canvas/50">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-emerald-400" />
-                <h3 id="inspect-dialog-title" className="text-sm font-semibold text-white">Investment Request Specifications</h3>
+                <FileText className="w-4 h-4 text-brand-primary" />
+                <h3 id="inspect-dialog-title" className="text-sm font-semibold text-text-primary">Investment Request Specifications</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectItem(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="text-text-muted hover:text-text-primary p-1 rounded-button"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 text-xs divide-y divide-slate-800/60">
+            <div className="p-6 space-y-4 text-xs divide-y divide-border-subtle">
               <div className="flex items-center justify-between pb-3">
-                <span className="text-slate-400">Request Reference ID</span>
-                <span className="font-mono text-white flex items-center gap-1.5">
+                <span className="text-text-secondary">Request Reference ID</span>
+                <span className="font-mono text-text-primary flex items-center gap-1.5">
                   <span>{inspectItem._id}</span>
                   <button
                     type="button"
                     onClick={() => handleCopyId(inspectItem._id)}
-                    className="text-slate-500 hover:text-slate-300"
+                    className="text-text-muted hover:text-text-primary"
                   >
                     {copiedId === inspectItem._id ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-brand-primary" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
@@ -450,53 +448,53 @@ export const AdminInvestmentsPage = () => {
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Applicant Name</span>
-                <span className="text-white font-semibold">{inspectItem.user?.name || '—'}</span>
+                <span className="text-text-secondary">Applicant Name</span>
+                <span className="text-text-primary font-semibold">{inspectItem.user?.name || '—'}</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Applicant Email</span>
-                <span className="text-slate-200">{inspectItem.user?.email || '—'}</span>
+                <span className="text-text-secondary">Applicant Email</span>
+                <span className="text-text-secondary">{inspectItem.user?.email || '—'}</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Mobile Number</span>
-                <span className="font-mono text-slate-200">{inspectItem.user?.mobileNumber || 'Not Provided'}</span>
+                <span className="text-text-secondary">Mobile Number</span>
+                <span className="font-mono text-text-secondary">{inspectItem.user?.mobileNumber || 'Not Provided'}</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Referral Code</span>
+                <span className="text-text-secondary">Referral Code</span>
                 <span className="font-mono text-indigo-400">{inspectItem.user?.referralCode || '—'}</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Selected Plan</span>
+                <span className="text-text-secondary">Selected Plan</span>
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">
                   {inspectItem.planName}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Daily Return Rate</span>
-                <span className="text-emerald-400 font-semibold">{Number(inspectItem.roiPercentage).toFixed(2)}% Daily</span>
+                <span className="text-text-secondary">Daily Return Rate</span>
+                <span className="text-brand-primary font-semibold font-tabular tabular-nums">{Number(inspectItem.roiPercentage).toFixed(2)}% Daily</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Principal Commitment</span>
-                <span className="text-white font-bold text-sm">{formatPaiseToINR(inspectItem.principalAmountPaise)}</span>
+                <span className="text-text-secondary">Principal Commitment</span>
+                <span className="text-text-primary font-bold text-sm font-tabular tabular-nums">{formatPaiseToINR(inspectItem.principalAmountPaise)}</span>
               </div>
 
               <div className="flex items-center justify-between py-3">
-                <span className="text-slate-400">Submission Timestamp</span>
-                <span className="text-slate-300">{formatDateTime(inspectItem.createdAt)}</span>
+                <span className="text-text-secondary">Submission Timestamp</span>
+                <span className="text-text-secondary font-tabular tabular-nums">{formatDateTime(inspectItem.createdAt)}</span>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-950/50 border-t border-slate-800 flex justify-end">
+            <div className="px-6 py-3.5 bg-surface-canvas/50 border-t border-border-subtle flex justify-end">
               <button
                 type="button"
                 onClick={() => setInspectItem(null)}
-                className="px-4 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:text-white"
+                className="px-4 py-1.5 rounded-button text-xs font-medium bg-surface-elevated text-text-secondary hover:text-text-primary border border-border-subtle transition-colors"
               >
                 Close
               </button>
@@ -508,7 +506,7 @@ export const AdminInvestmentsPage = () => {
       {/* 2. ACTIVATION CONFIRMATION MODAL */}
       {activateTarget && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-canvas/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="activate-dialog-title"
@@ -519,11 +517,11 @@ export const AdminInvestmentsPage = () => {
             }
           }}
         >
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div className="relative w-full max-w-md bg-surface-card border border-border-subtle rounded-card shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-surface-canvas/50">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <h3 id="activate-dialog-title" className="text-sm font-semibold text-white">Confirm Contract Activation</h3>
+                <ShieldCheck className="w-4 h-4 text-brand-primary" />
+                <h3 id="activate-dialog-title" className="text-sm font-semibold text-text-primary">Confirm Contract Activation</h3>
               </div>
               <button
                 type="button"
@@ -532,7 +530,7 @@ export const AdminInvestmentsPage = () => {
                   setActionError(null);
                 }}
                 disabled={isActivating}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="text-text-muted hover:text-text-primary p-1 rounded-button"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
@@ -541,33 +539,33 @@ export const AdminInvestmentsPage = () => {
 
             <div className="p-6 space-y-4 text-xs">
               {actionError && (
-                <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-card bg-semantic-danger/10 border border-semantic-danger/30 text-semantic-danger text-xs flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-semantic-danger shrink-0 mt-0.5" />
                   <span>{actionError}</span>
                 </div>
               )}
 
-              <p className="text-slate-300 leading-relaxed">
-                Are you sure you want to activate the <strong className="text-white">{activateTarget.planName}</strong> contract for investor <strong className="text-white">{activateTarget.user?.name || 'User'}</strong> with principal amount of <strong className="text-emerald-400">{formatPaiseToINR(activateTarget.principalAmountPaise)}</strong>?
+              <p className="text-text-secondary leading-relaxed">
+                Are you sure you want to activate the <strong className="text-text-primary">{activateTarget.planName}</strong> contract for investor <strong className="text-text-primary">{activateTarget.user?.name || 'User'}</strong> with principal amount of <strong className="text-brand-primary font-tabular tabular-nums">{formatPaiseToINR(activateTarget.principalAmountPaise)}</strong>?
               </p>
 
-              <div className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 space-y-1.5 text-[11px] text-slate-400">
+              <div className="p-3 rounded-card bg-surface-canvas border border-border-subtle space-y-1.5 text-[11px] text-text-secondary">
                 <div className="flex items-center justify-between">
                   <span>Start Date:</span>
-                  <span className="text-slate-200">Immediate (Now)</span>
+                  <span className="text-text-primary">Immediate (Now)</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Daily Yield:</span>
-                  <span className="text-emerald-400 font-semibold">{Number(activateTarget.roiPercentage).toFixed(2)}%</span>
+                  <span className="text-brand-primary font-semibold font-tabular tabular-nums">{Number(activateTarget.roiPercentage).toFixed(2)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Scheduler Policy:</span>
-                  <span className="text-slate-200">Accrues midnight IST (00:00)</span>
+                  <span className="text-text-primary">Accrues midnight IST (00:00)</span>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-2.5">
+            <div className="px-6 py-3.5 bg-surface-canvas/50 border-t border-border-subtle flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => {
@@ -575,7 +573,7 @@ export const AdminInvestmentsPage = () => {
                   setActionError(null);
                 }}
                 disabled={isActivating}
-                className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white"
+                className="px-4 py-2 rounded-button text-xs font-medium text-text-secondary hover:text-text-primary"
               >
                 Cancel
               </button>
@@ -583,7 +581,7 @@ export const AdminInvestmentsPage = () => {
                 type="button"
                 onClick={handleConfirmActivation}
                 disabled={isActivating}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-button text-xs font-semibold bg-brand-primary hover:bg-brand-hover text-brand-primary-foreground transition-all disabled:opacity-50"
               >
                 {isActivating ? (
                   <>
@@ -602,7 +600,7 @@ export const AdminInvestmentsPage = () => {
       {/* 3. REJECTION MODAL */}
       {rejectTarget && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-canvas/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="reject-dialog-title"
@@ -613,11 +611,11 @@ export const AdminInvestmentsPage = () => {
             }
           }}
         >
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+          <div className="relative w-full max-w-md bg-surface-card border border-border-subtle rounded-card shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-surface-canvas/50">
               <div className="flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-rose-400" />
-                <h3 id="reject-dialog-title" className="text-sm font-semibold text-white">Reject Investment Request</h3>
+                <XCircle className="w-4 h-4 text-semantic-danger" />
+                <h3 id="reject-dialog-title" className="text-sm font-semibold text-text-primary">Reject Investment Request</h3>
               </div>
               <button
                 type="button"
@@ -626,7 +624,7 @@ export const AdminInvestmentsPage = () => {
                   setActionError(null);
                 }}
                 disabled={isRejecting}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="text-text-muted hover:text-text-primary p-1 rounded-button"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
@@ -635,18 +633,18 @@ export const AdminInvestmentsPage = () => {
 
             <div className="p-6 space-y-4 text-xs">
               {actionError && (
-                <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-card bg-semantic-danger/10 border border-semantic-danger/30 text-semantic-danger text-xs flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-semantic-danger shrink-0 mt-0.5" />
                   <span>{actionError}</span>
                 </div>
               )}
 
-              <p className="text-slate-300 leading-relaxed">
-                Rejecting this request will mark the contract as <strong className="text-rose-400 font-semibold">cancelled</strong>. Provide an auditable explanation for the investor and administrative logs:
+              <p className="text-text-secondary leading-relaxed">
+                Rejecting this request will mark the contract as <strong className="text-semantic-danger font-semibold">cancelled</strong>. Provide an auditable explanation for the investor and administrative logs:
               </p>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase">
+                <label className="block text-[11px] font-semibold text-text-secondary uppercase">
                   Rejection Reason (Required)
                 </label>
                 <textarea
@@ -654,17 +652,17 @@ export const AdminInvestmentsPage = () => {
                   disabled={isRejecting}
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="e.g. Identity verification pending; KYC document mismatch; capital allocation threshold exceeded..."
-                  className="w-full p-3 bg-slate-950/70 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl text-white text-xs placeholder:text-slate-600 transition-colors disabled:opacity-50"
+                  placeholder="e.g. Incomplete application details; administrative review criteria not met; allocation threshold exceeded..."
+                  className="w-full p-3 bg-surface-canvas border border-border-subtle focus:border-semantic-danger focus:ring-1 focus:ring-semantic-danger rounded-button text-text-primary text-xs placeholder:text-text-muted transition-colors disabled:opacity-50"
                 />
-                <div className="flex justify-between text-[10px] text-slate-500">
+                <div className="flex justify-between text-[10px] text-text-muted">
                   <span>Minimum 3 characters</span>
                   <span>{rejectionReason.length}/500</span>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-950/50 border-t border-slate-800 flex items-center justify-end gap-2.5">
+            <div className="px-6 py-3.5 bg-surface-canvas/50 border-t border-border-subtle flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => {
@@ -672,7 +670,7 @@ export const AdminInvestmentsPage = () => {
                   setActionError(null);
                 }}
                 disabled={isRejecting}
-                className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white"
+                className="px-4 py-2 rounded-button text-xs font-medium text-text-secondary hover:text-text-primary"
               >
                 Cancel
               </button>
@@ -680,7 +678,7 @@ export const AdminInvestmentsPage = () => {
                 type="button"
                 onClick={handleConfirmRejection}
                 disabled={isRejecting || rejectionReason.trim().length < 3}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-button text-xs font-semibold bg-semantic-danger hover:bg-semantic-danger/90 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isRejecting ? (
                   <>

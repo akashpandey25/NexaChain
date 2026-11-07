@@ -40,7 +40,7 @@ test.describe('Phase 4.5 Account Profile & Security Refinement Verification', ()
 
     // 2. Personal Information Section (Read-Only)
     await expect(page.getByRole('heading', { name: 'Personal Information' })).toBeVisible();
-    await expect(page.getByText('Verified · Read-Only')).toBeVisible();
+    await expect(page.getByText('Registered · Read-Only')).toBeVisible();
     await expect(page.getByText('Registered Email', { exact: true })).toBeVisible();
     await expect(page.getByText('Registered Mobile', { exact: true })).toBeVisible();
     await expect(page.getByText('Registration Date', { exact: true }).first()).toBeVisible();
