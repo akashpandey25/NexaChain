@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, RefreshCw, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, RefreshCw, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useLoginMutation } from '../../features/auth/authApi';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 
@@ -9,12 +9,14 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * LoginPage Component
  * 
- * Implements the Stitch institutional fintech login specification:
- * - High-contrast title and Protocol Tier 1 indicator
- * - Dark input surfaces with subtle borders, left iconography, and focus rings
- * - Session remembrance option
- * - Vibrant solid emerald submission button
- * - Seamless redirection and error feedback
+ * Recreates the Stitch Enterprise Login specification:
+ * - Clean vertical rhythm that prevents scrolling on desktop viewports
+ * - High-contrast inputs with left iconography
+ * - Password row with direct "Forgot password?" action
+ * - Session preservation checkbox & 2FA Protected badge
+ * - Solid emerald primary action button
+ * - Enterprise Access divider with Hardware Security Key (FIDO2) fallback
+ * - Retains all backend validation and authentication contracts
  */
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -76,19 +78,14 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Title & Protocol Badge Row */}
+    <div className="space-y-3.5 xl:space-y-4">
+      {/* Title & Description */}
       <div>
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Sign In
-          </h2>
-          <span className="text-xs font-mono text-slate-400 border border-slate-700/80 px-2.5 py-1 rounded-lg bg-[#070b14]/60 select-none">
-            Protocol Tier 1
-          </span>
-        </div>
-        <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
-          Sign in to access your NexaChain portfolio, automated daily compounding yields, and referral hierarchy telemetry.
+        <h2 className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white tracking-tight">
+          Sign In
+        </h2>
+        <p className="text-xs text-slate-400 mt-1 leading-snug">
+          Access your NexaChain portfolio, yield ledger, and affiliate network.
         </p>
       </div>
 
@@ -99,20 +96,20 @@ export const LoginPage = () => {
         errors={apiError?.errors}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-3" noValidate>
         {/* Email Address */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <label htmlFor="login-email" className="block text-xs font-medium text-slate-300">
-            Corporate / Personal Email <span className="text-emerald-400">*</span>
+            Email Address <span className="text-emerald-400">*</span>
           </label>
           <div
-            className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+            className={`relative flex items-center rounded-xl bg-[#060b14] border transition-all ${
               formErrors.email
                 ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
                 : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
             }`}
           >
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
               <Mail className="w-4 h-4" />
             </div>
             <input
@@ -123,29 +120,38 @@ export const LoginPage = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="alex@nexachain.io"
-              className="w-full pl-10 pr-4 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2.5 bg-transparent text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none"
             />
           </div>
           {formErrors.email && (
-            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+            <p className="text-[11px] text-rose-400 mt-0.5 flex items-center gap-1">
               <span>•</span> {formErrors.email}
             </p>
           )}
         </div>
 
         {/* Password */}
-        <div className="space-y-1.5">
-          <label htmlFor="login-password" className="block text-xs font-medium text-slate-300">
-            Password <span className="text-emerald-400">*</span>
-          </label>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label htmlFor="login-password" className="block text-xs font-medium text-slate-300">
+              Password <span className="text-emerald-400">*</span>
+            </label>
+            <a
+              href="#forgot-password"
+              onClick={(e) => e.preventDefault()}
+              className="text-xs text-slate-400 hover:text-emerald-400 transition-colors"
+            >
+              Forgot password?
+            </a>
+          </div>
           <div
-            className={`relative flex items-center rounded-xl bg-[#070b14] border transition-all ${
+            className={`relative flex items-center rounded-xl bg-[#060b14] border transition-all ${
               formErrors.password
                 ? 'border-rose-500/80 focus-within:border-rose-500 focus-within:ring-1 focus-within:ring-rose-500'
                 : 'border-[#1d273c] focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500'
             }`}
           >
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
               <Lock className="w-4 h-4" />
             </div>
             <input
@@ -156,44 +162,48 @@ export const LoginPage = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-10 py-3 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
+              className="w-full pl-9 pr-9 py-2.5 bg-transparent text-xs sm:text-sm text-white placeholder-slate-600 focus:outline-none"
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           {formErrors.password && (
-            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
+            <p className="text-[11px] text-rose-400 mt-0.5 flex items-center gap-1">
               <span>•</span> {formErrors.password}
             </p>
           )}
         </div>
 
-        {/* Remember Session Row */}
-        <div className="flex items-center justify-between pt-1">
+        {/* Remember Session & 2FA Row */}
+        <div className="flex items-center justify-between pt-0.5">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={rememberSession}
               onChange={(e) => setRememberSession(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-700 bg-[#070b14] text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer accent-emerald-500"
+              className="w-3.5 h-3.5 rounded border-slate-700 bg-[#060b14] text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer accent-emerald-500"
             />
             <span className="text-xs text-slate-400 hover:text-slate-300 transition-colors">
-              Remember this workstation session
+              Remember for 30 days
             </span>
           </label>
+          <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded-full bg-[#060b14] border border-[#1b263b] flex items-center gap-1 select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+            2FA Protected
+          </span>
         </div>
 
         {/* Primary CTA Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-2 py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1322]"
+          className="w-full mt-1.5 py-2.5 xl:py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a101d]"
         >
           {isLoading ? (
             <span className="inline-flex items-center gap-2">
@@ -208,10 +218,28 @@ export const LoginPage = () => {
           )}
         </button>
 
+        {/* Enterprise Access Divider */}
+        <div className="relative flex items-center justify-center pt-2 pb-1 select-none">
+          <div className="w-full border-t border-[#1b263b]"></div>
+          <span className="absolute bg-[#0a101d] px-2.5 text-[9px] font-mono uppercase tracking-widest text-slate-500">
+            Enterprise Access
+          </span>
+        </div>
+
+        {/* Hardware Security Key (FIDO2) Secondary Option */}
+        <button
+          type="button"
+          onClick={() => {}}
+          className="w-full py-2 px-3 rounded-xl bg-[#060b14] border border-[#1d273c] hover:border-slate-600 text-slate-300 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors select-none"
+        >
+          <Lock className="w-3.5 h-3.5 text-slate-400" />
+          <span>Continue with Hardware Security Key (FIDO2)</span>
+        </button>
+
         {/* Alternate Navigation */}
-        <div className="pt-2 text-center">
-          <p className="text-xs sm:text-sm text-slate-400">
-            Don't have an account yet?{' '}
+        <div className="pt-1 text-center">
+          <p className="text-xs text-slate-400">
+            Don't have an institutional account yet?{' '}
             <Link
               to="/register"
               className="text-emerald-400 hover:text-emerald-300 font-semibold inline-flex items-center gap-1 transition-colors"
