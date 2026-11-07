@@ -9,6 +9,7 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
 
 # Logs
 npm-debug.log*
@@ -48,4 +49,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# AI Agent & Assistant Development Artifacts
+.agents/
 
