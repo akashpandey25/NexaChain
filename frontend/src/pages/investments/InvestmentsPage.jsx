@@ -94,7 +94,7 @@ export const InvestmentsPage = () => {
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-button text-xs font-semibold bg-brand-primary hover:bg-brand-hover active:bg-emerald-700 text-brand-primary-foreground shadow-sm transition-all"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Create Investment</span>
@@ -103,11 +103,11 @@ export const InvestmentsPage = () => {
               type="button"
               onClick={handleRefreshAll}
               disabled={isInvestmentsFetching}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium bg-surface-card border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors disabled:opacity-50"
               title="Refresh portfolio data"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${isInvestmentsFetching ? 'animate-spin text-emerald-400' : ''}`}
+                className={`w-3.5 h-3.5 ${isInvestmentsFetching ? 'animate-spin text-brand-primary' : ''}`}
               />
               <span>Refresh</span>
             </button>
@@ -148,7 +148,7 @@ export const InvestmentsPage = () => {
           onRetry={refetchInvestments}
         />
       ) : investments.length === 0 ? (
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-8">
           <EmptyState
             icon={PiggyBank}
             title={
@@ -187,55 +187,55 @@ export const InvestmentsPage = () => {
       )}
 
       {/* Investment Lifecycle & Status Guide */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 space-y-3.5">
+      <div className="bg-surface-card border border-border-subtle rounded-card p-5 space-y-3.5">
         <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-xs font-semibold text-white uppercase tracking-wider">
+          <Info className="w-4 h-4 text-brand-primary" />
+          <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
             Investment Lifecycle & Status Guide
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           {/* Pending */}
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-amber-400">
+          <div className="p-3 rounded-card bg-surface-elevated/40 border border-border-subtle space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-pending">
               <Clock className="w-3.5 h-3.5" />
               <span>Pending</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               Unfunded application logged. Awaiting administrative review and verification. Zero yield accrues while pending.
             </p>
           </div>
 
           {/* Active */}
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
+          <div className="p-3 rounded-card bg-surface-elevated/40 border border-border-subtle space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-brand-primary">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Active</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               Operational contract. Accrues automated daily yield dividends every midnight at 00:00 IST.
             </p>
           </div>
 
           {/* Completed */}
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-1">
+          <div className="p-3 rounded-card bg-surface-elevated/40 border border-border-subtle space-y-1">
             <div className="flex items-center gap-1.5 font-semibold text-blue-400">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Completed</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               Contract has reached full calendar maturity. All daily yield distributions credited to available balance.
             </p>
           </div>
 
           {/* Cancelled */}
-          <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-rose-400">
+          <div className="p-3 rounded-card bg-surface-elevated/40 border border-border-subtle space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-danger">
               <XCircle className="w-3.5 h-3.5" />
               <span>Cancelled</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               Request rejected or cancelled prior to contract execution. Rejection reason logged in audit history.
             </p>
           </div>

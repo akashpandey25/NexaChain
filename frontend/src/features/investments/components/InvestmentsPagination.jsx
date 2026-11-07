@@ -50,12 +50,12 @@ export const InvestmentsPagination = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+    <div className="bg-surface-card border border-border-subtle rounded-card px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs shadow-sm">
       {/* Information string */}
-      <div className="text-slate-400">
-        Showing <span className="font-semibold text-white">{startRecord}</span> to{' '}
-        <span className="font-semibold text-white">{endRecord}</span> of{' '}
-        <span className="font-semibold text-white">{totalRecords}</span> investments
+      <div className="text-text-muted">
+        Showing <span className="font-semibold text-text-primary font-tabular tabular-nums">{startRecord}</span> to{' '}
+        <span className="font-semibold text-text-primary font-tabular tabular-nums">{endRecord}</span> of{' '}
+        <span className="font-semibold text-text-primary font-tabular tabular-nums">{totalRecords}</span> investments
       </div>
 
       {/* Pagination controls */}
@@ -70,7 +70,7 @@ export const InvestmentsPagination = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={!hasPrevPage || disabled}
           aria-label="Go to previous page"
-          className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="inline-flex items-center justify-center p-1.5 rounded-button border border-border-subtle bg-surface-canvas text-text-secondary hover:bg-surface-elevated hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -82,12 +82,12 @@ export const InvestmentsPagination = ({
               type="button"
               onClick={() => onPageChange(1)}
               disabled={disabled}
-              className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 transition-colors"
+              className="px-2.5 py-1 rounded-button border border-border-subtle bg-surface-canvas text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus font-tabular tabular-nums"
             >
               1
             </button>
             {pageNumbers[0] > 2 && (
-              <span className="px-1 text-slate-600">...</span>
+              <span className="px-1 text-text-muted">...</span>
             )}
           </>
         )}
@@ -102,10 +102,10 @@ export const InvestmentsPagination = ({
               onClick={() => onPageChange(pageNum)}
               disabled={disabled}
               aria-current={isActive ? 'page' : undefined}
-              className={`min-w-8 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+              className={`min-w-8 px-2.5 py-1 rounded-button text-xs font-medium font-tabular tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus ${
                 isActive
-                  ? 'bg-emerald-600 text-white font-semibold shadow-sm'
-                  : 'border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-surface-elevated text-text-primary border border-border-strong font-semibold shadow-sm'
+                  : 'border border-border-subtle bg-surface-canvas text-text-muted hover:bg-surface-elevated hover:text-text-primary'
               }`}
             >
               {pageNum}
@@ -117,13 +117,13 @@ export const InvestmentsPagination = ({
         {pageNumbers[pageNumbers.length - 1] < totalPages && (
           <>
             {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-              <span className="px-1 text-slate-600">...</span>
+              <span className="px-1 text-text-muted">...</span>
             )}
             <button
               type="button"
               onClick={() => onPageChange(totalPages)}
               disabled={disabled}
-              className="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 transition-colors"
+              className="px-2.5 py-1 rounded-button border border-border-subtle bg-surface-canvas text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus font-tabular tabular-nums"
             >
               {totalPages}
             </button>
@@ -136,7 +136,7 @@ export const InvestmentsPagination = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={!hasNextPage || disabled}
           aria-label="Go to next page"
-          className="inline-flex items-center justify-center p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="inline-flex items-center justify-center p-1.5 rounded-button border border-border-subtle bg-surface-canvas text-text-secondary hover:bg-surface-elevated hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -146,4 +146,3 @@ export const InvestmentsPagination = ({
 };
 
 export default InvestmentsPagination;
-

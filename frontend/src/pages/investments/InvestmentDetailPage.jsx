@@ -3,13 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ErrorMessage } from '../../components/feedback/ErrorMessage';
 import { EmptyState } from '../../components/feedback/EmptyState';
+import { StatusBadge } from '../../components/common/StatusBadge';
 import { useGetInvestmentByIdQuery } from '../../features/investments/investmentApi';
 import { InvestmentDetailSkeleton } from '../../features/investments/components/InvestmentDetailSkeleton';
 import {
   formatPaiseToINR,
   formatBusinessDate,
-  formatDateTime,
-  getStatusStyle
+  formatDateTime
 } from '../../utils/formatters';
 import {
   ArrowLeft,
@@ -17,7 +17,6 @@ import {
   TrendingUp,
   Percent,
   ShieldCheck,
-  Calendar,
   Clock,
   Copy,
   Check,
@@ -63,13 +62,13 @@ export const InvestmentDetailPage = () => {
       <div className="space-y-6">
         <Link
           to="/investments"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Investments</span>
         </Link>
 
-        <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-8">
           <EmptyState
             icon={AlertCircle}
             title="Investment Not Found"
@@ -88,7 +87,7 @@ export const InvestmentDetailPage = () => {
       <div className="space-y-6">
         <Link
           to="/investments"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Investments</span>
@@ -108,22 +107,20 @@ export const InvestmentDetailPage = () => {
     );
   }
 
-  const statusStyle = getStatusStyle(investment.status);
-
   return (
     <div className="space-y-6">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link
           to="/investments"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Investments Portfolio</span>
         </Link>
 
         {isFetching && (
-          <span className="text-xs text-emerald-400 animate-pulse font-mono">
+          <span className="text-xs text-brand-primary animate-pulse font-mono">
             Refreshing...
           </span>
         )}
@@ -133,102 +130,95 @@ export const InvestmentDetailPage = () => {
       <PageHeader
         title={`${investment.planName || 'Investment'} Package`}
         subtitle={
-          <span className="inline-flex items-center gap-2 font-mono text-xs text-slate-400">
-            <span>Reference ID: {investment._id}</span>
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-text-secondary">
+            <span className="break-all">Reference ID: {investment._id}</span>
             <button
               type="button"
               onClick={handleCopyId}
-              className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              className="text-text-muted hover:text-text-primary transition-colors p-1 shrink-0"
               title="Copy Investment ID"
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3.5 h-3.5 text-brand-primary" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
             </button>
-          </span>
+          </div>
         }
-        actions={
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusStyle.badge}`}
-          >
-            <span className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />
-            {statusStyle.label}
-          </span>
-        }
+        actions={<StatusBadge status={investment.status} />}
       />
 
       {/* Financial Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Principal Amount */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Principal Amount
             </span>
-            <div className="p-2 bg-indigo-950/60 text-indigo-400 border border-indigo-800/40 rounded-lg">
+            <div className="p-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-button">
               <PiggyBank className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-white">
+          <div className="mt-3 text-2xl font-semibold tracking-tight text-text-primary tabular-nums">
             {formatPaiseToINR(investment.principalAmountPaise)}
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-text-muted">
             Locked capital allocation
           </p>
         </div>
 
         {/* Metric 2: Total ROI Generated */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Total ROI Generated
             </span>
-            <div className="p-2 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 rounded-lg">
+            <div className="p-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-button">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-emerald-400">
+          <div className="mt-3 text-2xl font-semibold tracking-tight text-brand-primary tabular-nums">
             {formatPaiseToINR(investment.totalRoiEarnedPaise || 0)}
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-text-muted">
             Credited to available wallet
           </p>
         </div>
 
         {/* Metric 3: Daily Rate */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Daily Yield Rate
             </span>
-            <div className="p-2 bg-cyan-950/60 text-cyan-400 border border-cyan-800/40 rounded-lg">
+            <div className="p-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-button">
               <Percent className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-cyan-400">
+          <div className="mt-3 text-2xl font-semibold tracking-tight text-cyan-400 tabular-nums">
             {Number(investment.roiPercentage).toFixed(2)}%
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-text-muted">
             Server-authoritative rate
           </p>
         </div>
 
         {/* Metric 4: Lifecycle Status */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface-card border border-border-subtle rounded-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Contract Lifecycle
             </span>
-            <div className="p-2 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <div className="p-2 bg-surface-elevated text-text-secondary border border-border-subtle rounded-button">
+              <ShieldCheck className="w-4 h-4 text-brand-primary" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold tracking-tight text-white capitalize">
+          <div className="mt-3 text-2xl font-semibold tracking-tight text-text-primary capitalize">
             {investment.status}
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-text-muted">
             {investment.status === 'active'
               ? 'Accruing daily dividends'
               : investment.status === 'pending'
@@ -242,13 +232,13 @@ export const InvestmentDetailPage = () => {
 
       {/* Lifecycle Status Banner */}
       {investment.status === 'pending' && (
-        <div className="bg-amber-950/30 border border-amber-800/40 rounded-xl p-4.5 flex items-start gap-3 text-xs text-amber-300">
-          <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="bg-pending/10 border border-pending/30 rounded-card p-4 flex items-start gap-3 text-xs text-pending">
+          <Clock className="w-5 h-5 text-pending shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold text-amber-200">
+            <p className="font-semibold text-amber-300">
               Request Awaiting Administrative Review
             </p>
-            <p className="text-amber-400/90 leading-relaxed">
+            <p className="text-amber-200/90 leading-relaxed">
               This investment request was logged on {formatDateTime(investment.createdAt)} and is queued for verification. This application is unfunded and no wallet balance was debited upon submission. In accordance with platform governance, daily returns do not accrue until the contract is administratively verified and activated.
             </p>
           </div>
@@ -256,18 +246,18 @@ export const InvestmentDetailPage = () => {
       )}
 
       {investment.status === 'cancelled' && (
-        <div className="bg-rose-950/30 border border-rose-800/40 rounded-xl p-4.5 flex items-start gap-3 text-xs text-rose-300">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+        <div className="bg-danger/10 border border-danger/30 rounded-card p-4 flex items-start gap-3 text-xs text-danger">
+          <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold text-rose-200">
+            <p className="font-semibold text-rose-300">
               Contract Cancelled / Rejected
             </p>
-            <p className="text-rose-400/90 leading-relaxed">
+            <p className="text-rose-200/90 leading-relaxed">
               {investment.rejectionReason
                 ? `Administrative Decision: "${investment.rejectionReason}"`
                 : 'This investment request was rejected or cancelled prior to contract execution.'}
               {investment.actionedAt && (
-                <span className="block mt-1 text-[11px] text-rose-400/80">
+                <span className="block mt-1 text-[11px] text-rose-300/80">
                   Decision recorded on: {formatDateTime(investment.actionedAt)}
                 </span>
               )}
@@ -277,87 +267,87 @@ export const InvestmentDetailPage = () => {
       )}
 
       {/* Contract & Lifecycle Details */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+      <div className="bg-surface-card border border-border-subtle rounded-card overflow-hidden shadow-sm">
+        <div className="px-5 py-4 border-b border-border-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 bg-surface-elevated/40">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-sm font-semibold text-white">
+            <FileText className="w-4 h-4 text-brand-primary shrink-0" />
+            <h2 className="text-sm font-semibold text-text-primary">
               Contract Specifications & Dates
             </h2>
           </div>
-          <span className="text-[11px] text-slate-400 font-mono">
+          <span className="text-[11px] text-text-secondary font-mono">
             Asia/Kolkata Business Dates
           </span>
         </div>
 
-        <div className="divide-y divide-slate-800/60 text-xs">
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Investment Reference</span>
-            <span className="text-white font-mono font-medium">{investment._id}</span>
+        <div className="divide-y divide-border-subtle text-xs">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Investment Reference</span>
+            <span className="text-text-primary font-mono font-medium break-all">{investment._id}</span>
           </div>
 
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Plan Name</span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-950/70 text-indigo-300 border border-indigo-800/50 w-fit">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Plan Name</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 w-fit">
               {investment.planName}
             </span>
           </div>
 
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Contract Start Date</span>
-            <span className="text-slate-200 font-medium">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Contract Start Date</span>
+            <span className="text-text-primary font-medium">
               {investment.status === 'pending' ? (
-                <span className="text-amber-400/90 italic">Pending administrative activation</span>
+                <span className="text-pending italic">Pending administrative activation</span>
               ) : investment.status === 'cancelled' ? (
-                <span className="text-slate-500 italic">Not activated</span>
+                <span className="text-text-muted italic">Not activated</span>
               ) : (
                 formatBusinessDate(investment.startDate || investment.createdAt)
               )}
             </span>
           </div>
 
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Contract End Date</span>
-            <span className="text-slate-200 font-medium">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Contract End Date</span>
+            <span className="text-text-primary font-medium">
               {investment.status === 'pending' ? (
-                <span className="text-amber-400/90 italic">Scheduled upon contract activation</span>
+                <span className="text-pending italic">Scheduled upon contract activation</span>
               ) : investment.status === 'cancelled' ? (
-                <span className="text-slate-500 italic">Not applicable</span>
+                <span className="text-text-muted italic">Not applicable</span>
               ) : investment.endDate ? (
                 formatBusinessDate(investment.endDate)
               ) : (
-                <span className="text-slate-400 italic">Ongoing / Indefinite Contract</span>
+                <span className="text-text-muted italic">Ongoing / Indefinite Contract</span>
               )}
             </span>
           </div>
 
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Created Timestamp</span>
-            <span className="text-slate-300">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Created Timestamp</span>
+            <span className="text-text-primary">
               {formatDateTime(investment.createdAt)}
             </span>
           </div>
 
-          <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <span className="text-slate-400 font-medium">Last Record Update</span>
-            <span className="text-slate-300">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span className="text-text-secondary font-medium">Last Record Update</span>
+            <span className="text-text-primary">
               {formatDateTime(investment.updatedAt)}
             </span>
           </div>
 
           {investment.actionedAt && (
-            <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-              <span className="text-slate-400 font-medium">Administrative Decision Date</span>
-              <span className="text-slate-200 font-medium">
+            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <span className="text-text-secondary font-medium">Administrative Decision Date</span>
+              <span className="text-text-primary font-medium">
                 {formatDateTime(investment.actionedAt)}
               </span>
             </div>
           )}
 
           {investment.rejectionReason && (
-            <div className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-              <span className="text-slate-400 font-medium">Rejection Reason</span>
-              <span className="text-rose-400 font-medium max-w-md text-right">
+            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <span className="text-text-secondary font-medium">Rejection Reason</span>
+              <span className="text-danger font-medium max-w-md text-right">
                 {investment.rejectionReason}
               </span>
             </div>
@@ -366,10 +356,10 @@ export const InvestmentDetailPage = () => {
       </div>
 
       {/* Governance & Security Disclaimer */}
-      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 flex items-start gap-3.5 text-xs text-slate-400">
-        <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-5 flex items-start gap-3.5 text-xs text-text-secondary">
+        <ShieldCheck className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-semibold text-slate-300">
+          <p className="font-semibold text-text-primary">
             Server-Authoritative Contract Governance
           </p>
           <p className="leading-relaxed">

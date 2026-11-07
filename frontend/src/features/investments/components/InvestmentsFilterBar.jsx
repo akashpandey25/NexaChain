@@ -2,7 +2,7 @@ import React from 'react';
 import { Filter, RotateCcw } from 'lucide-react';
 
 /**
- * Status filter options supported by the backend Zod validator:
+ * Status filter options supported by backend Zod validator:
  * ['pending', 'active', 'completed', 'cancelled']
  */
 const STATUS_OPTIONS = [
@@ -40,57 +40,59 @@ export const InvestmentsFilterBar = ({
   const isFiltered = status !== 'all';
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="bg-surface-card border border-border-subtle rounded-card p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm">
       {/* Left: Status Filter Tabs */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 mr-2">
-          <Filter className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-1.5 text-xs font-medium text-text-muted mr-1">
+          <Filter className="w-3.5 h-3.5 text-text-muted" />
           <span>Status:</span>
         </div>
-        {STATUS_OPTIONS.map((opt) => {
-          const isSelected = status === opt.value;
-          const count =
-            opt.value === 'all'
-              ? counts.totalCount
-              : counts[`${opt.value}Count`];
+        <div className="inline-flex items-center p-0.5 bg-surface-canvas border border-border-subtle rounded-button flex-wrap gap-1">
+          {STATUS_OPTIONS.map((opt) => {
+            const isSelected = status === opt.value;
+            const count =
+              opt.value === 'all'
+                ? counts.totalCount
+                : counts[`${opt.value}Count`];
 
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onStatusChange(opt.value)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                isSelected
-                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-950 font-semibold'
-                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <span>{opt.label}</span>
-              {typeof count === 'number' && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isSelected
-                      ? 'bg-emerald-800/80 text-white'
-                      : 'bg-slate-700/80 text-slate-400'
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onStatusChange(opt.value)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium transition-colors ${
+                  isSelected
+                    ? 'bg-surface-elevated text-text-primary border border-border-strong shadow-sm font-semibold'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {typeof count === 'number' && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-sans font-tabular tabular-nums ${
+                      isSelected
+                        ? 'bg-surface-card text-text-primary border border-border-subtle'
+                        : 'bg-surface-elevated/70 text-text-muted'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Right: Page Size Selector & Reset */}
       <div className="flex items-center justify-between md:justify-end gap-3 shrink-0">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-text-muted">
           <span>Show:</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             aria-label="Items per page"
-            className="px-2.5 py-1 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+            className="px-2.5 py-1.5 bg-surface-canvas border border-border-subtle rounded-button text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-semantic-focus cursor-pointer"
           >
             {PAGE_SIZE_OPTIONS.map((size) => (
               <option key={size} value={size}>
@@ -104,7 +106,7 @@ export const InvestmentsFilterBar = ({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800/60 hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary px-2.5 py-1.5 rounded-button bg-surface-elevated hover:bg-surface-card-hover border border-border-subtle transition-colors"
             title="Reset filters to default"
           >
             <RotateCcw className="w-3 h-3" />
@@ -113,7 +115,7 @@ export const InvestmentsFilterBar = ({
         )}
 
         {isFetching && (
-          <span className="text-[11px] text-emerald-400 animate-pulse font-mono">
+          <span className="text-[11px] text-semantic-positive animate-pulse font-mono">
             Updating...
           </span>
         )}
@@ -123,4 +125,3 @@ export const InvestmentsFilterBar = ({
 };
 
 export default InvestmentsFilterBar;
-

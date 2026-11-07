@@ -393,13 +393,13 @@ export const AppLayout = () => {
       <div className="flex-1 flex flex-col md:pl-64 min-w-0">
         {/* Top Header Bar */}
         <header className="sticky top-0 z-20 h-16 bg-surface-canvas/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {/* Mobile menu toggle button */}
             <button
               ref={triggerButtonRef}
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 rounded-button text-text-secondary hover:text-text-primary hover:bg-surface-card-hover md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus"
+              className="p-2 -ml-2 rounded-button text-text-secondary hover:text-text-primary hover:bg-surface-card-hover md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-semantic-focus shrink-0"
               aria-label="Open sidebar menu"
             >
               <Menu className="w-5 h-5" />

@@ -4,16 +4,13 @@ import {
   ArrowUpRight,
   Copy,
   Check,
-  Calendar,
-  Percent,
-  Clock,
-  ShieldCheck
+  Percent
 } from 'lucide-react';
 import {
   formatPaiseToINR,
-  formatBusinessDate,
-  getStatusStyle
+  formatBusinessDate
 } from '../../../utils/formatters';
+import { StatusBadge } from '../../../components/common/StatusBadge';
 
 /**
  * Desktop Investment Listing Table Component
@@ -33,11 +30,11 @@ export const InvestmentsTable = ({ investments = [] }) => {
   };
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+    <div className="bg-surface-card border border-border-subtle rounded-card overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-950/50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <tr className="border-b border-border-subtle bg-surface-canvas/50 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
               <th scope="col" className="px-5 py-3.5">
                 Reference ID
               </th>
@@ -64,22 +61,21 @@ export const InvestmentsTable = ({ investments = [] }) => {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 text-xs">
+          <tbody className="divide-y divide-border-subtle text-xs">
             {investments.map((inv) => {
-              const statusStyle = getStatusStyle(inv.status);
               const shortId = inv._id ? `${inv._id.slice(0, 6)}...${inv._id.slice(-4)}` : '—';
               const isCopied = copiedId === inv._id;
 
               return (
                 <tr
                   key={inv._id}
-                  className="hover:bg-slate-800/40 transition-colors group"
+                  className="hover:bg-surface-card-hover/40 transition-colors group"
                 >
                   {/* Reference ID */}
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span
-                        className="font-mono text-slate-300 font-medium tracking-tight"
+                        className="font-mono text-text-secondary font-medium tracking-tight text-xs"
                         title={inv._id}
                       >
                         {shortId}
@@ -87,13 +83,13 @@ export const InvestmentsTable = ({ investments = [] }) => {
                       <button
                         type="button"
                         onClick={(e) => handleCopy(inv._id, e)}
-                        className="text-slate-500 hover:text-slate-300 p-1 rounded transition-colors"
+                        className="text-text-muted hover:text-text-primary p-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus"
                         title={isCopied ? 'Copied ID!' : 'Copy full ID'}
                       >
                         {isCopied ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-semantic-positive" />
                         ) : (
-                          <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         )}
                       </button>
                     </div>
@@ -101,18 +97,18 @@ export const InvestmentsTable = ({ investments = [] }) => {
 
                   {/* Plan Name */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-800/50">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-surface-elevated text-text-primary border border-border-subtle">
                       {inv.planName || 'STANDARD'}
                     </span>
                   </td>
 
                   {/* Principal Amount */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <div className="font-semibold text-white">
+                    <div className="font-semibold font-sans font-tabular tabular-nums text-text-primary text-sm">
                       {formatPaiseToINR(inv.principalAmountPaise)}
                     </div>
                     {typeof inv.totalRoiEarnedPaise === 'number' && inv.totalRoiEarnedPaise > 0 && (
-                      <div className="text-[10px] text-emerald-400/90 mt-0.5">
+                      <div className="text-[11px] font-sans font-tabular tabular-nums text-semantic-positive mt-0.5">
                         +{formatPaiseToINR(inv.totalRoiEarnedPaise)} earned
                       </div>
                     )}
@@ -120,54 +116,49 @@ export const InvestmentsTable = ({ investments = [] }) => {
 
                   {/* ROI Percentage */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 font-semibold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
+                    <span className="inline-flex items-center gap-1 font-semibold font-sans font-tabular tabular-nums text-semantic-positive bg-semantic-positive/10 px-2 py-0.5 rounded border border-semantic-positive/30">
                       <Percent className="w-3 h-3" />
                       {Number(inv.roiPercentage).toFixed(2)}% Daily
                     </span>
                   </td>
 
                   {/* Start Date */}
-                  <td className="px-5 py-4 whitespace-nowrap text-slate-300">
+                  <td className="px-5 py-4 whitespace-nowrap text-text-secondary">
                     {inv.status === 'pending' ? (
-                      <span className="text-amber-400/90 italic">Pending Activation</span>
+                      <span className="text-semantic-pending italic">Pending Activation</span>
                     ) : inv.status === 'cancelled' ? (
-                      <span className="text-slate-500 italic">Not Activated</span>
+                      <span className="text-text-muted italic">Not Activated</span>
                     ) : (
                       formatBusinessDate(inv.startDate || inv.createdAt)
                     )}
                   </td>
 
                   {/* End Date */}
-                  <td className="px-5 py-4 whitespace-nowrap text-slate-400">
+                  <td className="px-5 py-4 whitespace-nowrap text-text-muted">
                     {inv.status === 'pending' ? (
-                      <span className="text-amber-400/90 italic">Pending Activation</span>
+                      <span className="text-semantic-pending italic">Pending Activation</span>
                     ) : inv.status === 'cancelled' ? (
-                      <span className="text-slate-500 italic">Not Applicable</span>
+                      <span className="text-text-muted italic">Not Applicable</span>
                     ) : inv.endDate ? (
                       formatBusinessDate(inv.endDate)
                     ) : (
-                      <span className="text-slate-500 italic">Ongoing</span>
+                      <span className="text-text-muted italic">Ongoing</span>
                     )}
                   </td>
 
                   {/* Status Badge */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle.badge}`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
-                      {statusStyle.label}
-                    </span>
+                    <StatusBadge status={inv.status} size="sm" />
                   </td>
 
                   {/* Action */}
                   <td className="px-5 py-4 whitespace-nowrap text-right">
                     <Link
                       to={`/investments/${inv._id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:text-white bg-emerald-950/40 hover:bg-emerald-600 border border-emerald-800/50 hover:border-emerald-600 transition-all shadow-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-button text-xs font-medium text-text-primary bg-surface-elevated hover:bg-surface-card-hover border border-border-subtle hover:border-border-strong transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-semantic-focus"
                     >
                       <span>Details</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-text-muted" />
                     </Link>
                   </td>
                 </tr>
@@ -181,4 +172,3 @@ export const InvestmentsTable = ({ investments = [] }) => {
 };
 
 export default InvestmentsTable;
-

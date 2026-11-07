@@ -2,10 +2,9 @@ import React from 'react';
 import {
   Wallet,
   TrendingUp,
-  CheckCircle2,
-  Layers
+  Coins,
+  ShieldCheck
 } from 'lucide-react';
-import { formatIndianNumber } from '../../../utils/formatters';
 import { StatCard } from '../../../components/common/StatCard';
 
 /**
@@ -30,6 +29,7 @@ export const InvestmentsOverview = ({
 
   const totalInvestmentPaise = summary?.totalInvestmentPaise ?? 0;
   const activeInvestmentPaise = summary?.activeInvestmentPaise ?? 0;
+  const totalRoiPaise = summary?.totalRoiPaise ?? 0;
 
   if (isLoading) {
     return (
@@ -45,7 +45,7 @@ export const InvestmentsOverview = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Invested Principal */}
         <StatCard
@@ -54,6 +54,8 @@ export const InvestmentsOverview = ({
           icon={Wallet}
           subtitle="Cumulative principal allocated"
           variant="default"
+          footerLeft="All packages"
+          footerRight={`${totalCount} total`}
         />
 
         {/* Card 2: Active Working Capital */}
@@ -61,32 +63,38 @@ export const InvestmentsOverview = ({
           title="Active Capital"
           amountPaise={activeInvestmentPaise}
           icon={TrendingUp}
-          subtitle="Currently generating daily ROI"
-          variant="positive"
+          subtitle="Earning automated daily yield"
+          variant={activeInvestmentPaise > 0 ? 'emerald' : 'default'}
+          footerLeft="Operational contracts"
+          footerRight={`${activeCount} active`}
         />
 
-        {/* Card 3: Total Packages */}
+        {/* Card 3: Total ROI Earned */}
         <StatCard
-          title="Total Packages"
-          value={formatIndianNumber(totalCount)}
-          icon={Layers}
-          subtitle={`${activeCount} active · ${pendingCount} pending`}
+          title="Total ROI Earned"
+          amountPaise={totalRoiPaise}
+          icon={Coins}
+          subtitle="Credited to available wallet"
+          variant={totalRoiPaise > 0 ? 'emerald' : 'default'}
+          footerLeft="Yield distributions"
+          footerRight="Verified ledger"
+        />
+
+        {/* Card 4: Contract Lifecycle Status */}
+        <StatCard
+          title="Portfolio Contracts"
+          value={`${activeCount} Active`}
+          icon={ShieldCheck}
+          subtitle={`${pendingCount} pending · ${completedCount} completed`}
           variant="default"
-        />
-
-        {/* Card 4: Active Contracts */}
-        <StatCard
-          title="Active Contracts"
-          value={formatIndianNumber(activeCount)}
-          icon={CheckCircle2}
-          subtitle={`${completedCount} completed · ${cancelledCount} cancelled`}
-          variant="positive"
+          footerLeft="Lifecycle breakdown"
+          footerRight={`${totalCount} packages`}
         />
       </div>
 
       {/* Status Breakdown Bar */}
       <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-text-secondary">
-        <span className="font-medium text-text-secondary">Portfolio Status:</span>
+        <span className="font-medium text-text-muted">Lifecycle Breakdown:</span>
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-semantic-positive/10 text-semantic-positive border border-semantic-positive/30 font-medium text-[11px]">
           <span className="w-1.5 h-1.5 rounded-full bg-semantic-positive" />
           Active: {activeCount}
