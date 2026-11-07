@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Share2, Link as LinkIcon, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Copy, Check, Share2, Link as LinkIcon, AlertCircle } from 'lucide-react';
 
 /**
  * Referral Code and Sharing Card Component
@@ -32,10 +32,10 @@ export const ReferralCodeShareCard = ({ referralCode }) => {
 
   if (!referralCode) {
     return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex items-center gap-3 text-slate-400 text-xs">
-        <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-5 flex items-center gap-3 text-text-secondary text-xs shadow-sm">
+        <AlertCircle className="w-5 h-5 text-pending shrink-0" />
         <div>
-          <span className="font-semibold text-white block">Referral Code Unavailable</span>
+          <span className="font-semibold text-text-primary block">Referral Code Unavailable</span>
           <span>Your account does not currently have an assigned referral code. Contact system support to initialize your affiliate identity.</span>
         </div>
       </div>
@@ -43,52 +43,52 @@ export const ReferralCodeShareCard = ({ referralCode }) => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 hover:border-slate-700/80 rounded-xl p-5 sm:p-6 transition-all shadow-lg">
+    <div className="bg-surface-card border border-border-subtle rounded-card p-5 sm:p-6 shadow-sm">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         {/* Left: Code info */}
-        <div className="space-y-2 max-w-xl">
+        <div className="space-y-2 max-w-xl min-w-0">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-2.5 py-0.5 rounded-full border border-brand-primary/20">
               <Share2 className="w-3 h-3" />
               Affiliate Program
             </span>
           </div>
 
-          <h2 className="text-xl font-bold text-white tracking-tight">
-            Invite Partners & Expand Your Network
+          <h2 className="text-lg sm:text-xl font-bold text-text-primary tracking-tight">
+            Invite Affiliates & Expand Your Network
           </h2>
 
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Share your unique referral code or link with your affiliates. New accounts registering with your code will be permanently mapped to your multi-tier downline.
+          <p className="text-xs text-text-secondary leading-relaxed">
+            Share your personal referral code or registration link with prospective affiliates. New accounts registering with your code are mapped directly to your affiliate network.
           </p>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+        <div className="flex flex-col gap-3 min-w-0 w-full lg:w-80 shrink-0">
           {/* Referral Code Box */}
-          <div className="flex items-center justify-between gap-3 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+          <div className="flex items-center justify-between gap-3 bg-surface-canvas border border-border-subtle rounded-card px-4 py-2.5 min-w-0">
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-semibold text-text-muted block tracking-wider">
                 Referral Code
               </span>
-              <span className="text-lg font-mono font-bold text-white tracking-wider">
+              <span className="text-base sm:text-lg font-mono font-bold text-text-primary tracking-wider">
                 {referralCode}
               </span>
             </div>
             <button
               type="button"
               onClick={handleCopyCode}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium bg-surface-elevated hover:bg-surface-hover text-text-primary border border-border-subtle transition-colors shrink-0"
               title="Copy referral code"
             >
               {copiedCode ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
+                  <Check className="w-3.5 h-3.5 text-brand-primary" />
+                  <span className="text-brand-primary font-semibold">Copied!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-slate-300" />
+                  <Copy className="w-3.5 h-3.5 text-text-secondary" />
                   <span>Copy Code</span>
                 </>
               )}
@@ -96,19 +96,19 @@ export const ReferralCodeShareCard = ({ referralCode }) => {
           </div>
 
           {/* Referral Link Box */}
-          <div className="flex items-center justify-between gap-3 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5">
-            <div className="truncate max-w-[200px] sm:max-w-[240px]">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+          <div className="flex items-center justify-between gap-3 bg-surface-canvas border border-border-subtle rounded-card px-4 py-2.5 min-w-0">
+            <div className="truncate min-w-0 flex-1 mr-2">
+              <span className="text-[10px] uppercase font-semibold text-text-muted block tracking-wider">
                 Registration Link
               </span>
-              <span className="text-xs font-mono text-slate-400 truncate block">
+              <span className="text-xs font-mono text-text-secondary truncate block">
                 {registrationUrl}
               </span>
             </div>
             <button
               type="button"
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shrink-0 shadow-sm shadow-emerald-950"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-semibold bg-brand-primary hover:bg-brand-hover active:bg-emerald-700 text-brand-primary-foreground transition-all shrink-0 shadow-sm"
               title="Copy registration link"
             >
               {copiedLink ? (
@@ -131,4 +131,3 @@ export const ReferralCodeShareCard = ({ referralCode }) => {
 };
 
 export default ReferralCodeShareCard;
-

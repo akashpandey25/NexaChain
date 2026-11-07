@@ -52,7 +52,7 @@ export const ReferralsPage = () => {
   const networkSize = treeData?.metadata?.totalMembers ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0">
       {/* Header */}
       <PageHeader
         title="Referral Management"
@@ -61,7 +61,7 @@ export const ReferralsPage = () => {
           <button
             type="button"
             onClick={handleRefresh}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-button text-xs font-medium bg-surface-card border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors shadow-sm"
             title="Refresh referral metrics"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -82,7 +82,7 @@ export const ReferralsPage = () => {
       <ReferralCodeShareCard referralCode={user?.referralCode} />
 
       {/* Navigation Tabs */}
-      <div className="border-b border-slate-800">
+      <div className="border-b border-border-subtle">
         <div className="flex flex-wrap gap-2 sm:gap-6">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -94,11 +94,11 @@ export const ReferralsPage = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`pb-3.5 pt-1 inline-flex items-center gap-2 border-b-2 text-xs sm:text-sm font-medium transition-all ${
                   isActive
-                    ? 'border-emerald-500 text-emerald-400 font-semibold'
-                    : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'border-brand-primary text-brand-primary font-semibold'
+                    : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-strong'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-brand-primary' : 'text-text-muted'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -114,10 +114,10 @@ export const ReferralsPage = () => {
       </div>
 
       {/* Governance & Compliance Footer Note */}
-      <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-4 flex items-start gap-3 text-xs text-slate-400">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+      <div className="bg-surface-card border border-border-subtle rounded-card p-4.5 flex items-start gap-3 text-xs text-text-secondary shadow-sm">
+        <ShieldCheck className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong className="text-slate-300">Affiliate Governance Notice:</strong> Referral commissions are triggered and calculated strictly by server batch jobs upon validated downline investment activations or daily ROI payouts. Commission percentages and eligible depths follow the system's approved financial rules.
+          <strong className="text-text-primary">Affiliate Governance Notice:</strong> Referral commissions are triggered and calculated strictly by server batch jobs upon validated downline investment activations or daily ROI payouts. Commission percentages and eligible depths follow the system's approved financial rules.
         </p>
       </div>
     </div>

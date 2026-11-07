@@ -103,8 +103,17 @@ async function cleanupTestData() {
     });
 
     // Delete any ROI or referral records created for these test users
+    await db.collection('roi_histories').deleteMany({
+      user: { $in: testUserIds }
+    });
     await db.collection('roihistories').deleteMany({
       user: { $in: testUserIds }
+    });
+    await db.collection('referral_incomes').deleteMany({
+      $or: [
+        { beneficiary: { $in: testUserIds } },
+        { sourceUser: { $in: testUserIds } }
+      ]
     });
     await db.collection('referralincomes').deleteMany({
       $or: [
